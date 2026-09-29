@@ -12,7 +12,7 @@
     if (sectionId === "boundary") return state.ui.boundarySeen ? "done" : "none";
     if (sec.entity) { const list = state[sectionId] || []; if (!list.length) return "none"; }
     if (sectionId === "check") return val.errors.length ? "block" : "done";
-    if (sectionId === "results" || sectionId === "home" || sectionId === "parameters") return "opt";
+    if (sectionId === "results" || sectionId === "home" || sectionId === "parameters" || sectionId === "batch") return "opt";
     if (sectionId === "fertiliser") return Object.values(state.fertilizer || {}).some((v) => v != null && v !== "") ? "done" : "none";
     // touched?
     const prefix = sec.entity ? sectionId + "[" : sectionId === "location" || sectionId === "inputs" || sectionId === "losses" ? "farm." : sectionId;

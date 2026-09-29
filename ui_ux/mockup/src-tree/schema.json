@@ -154,6 +154,14 @@
    "purpose": "The reference values this scenario starts from. Shipped sets are read-only; make your own copy to change values.",
    "order": 15,
    "wizard": false
+  },
+  {
+   "id": "batch",
+   "title": "Batch upload",
+   "short": "Batch",
+   "purpose": "Check and run many enterprises at once from a spreadsheet or a JSON file.",
+   "order": 16,
+   "wizard": false
   }
  ],
  "systemQuestions": [

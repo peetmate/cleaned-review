@@ -115,6 +115,16 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .filterchip.bad[aria-pressed="true"] { background: var(--danger); border-color: var(--danger); color: #fff; }
 .filterchip .cnt { background: var(--surface-2); border-radius: 999px; padding: 0 6px; font-size: .74rem; color: var(--muted); }
 .listfilter input[type="search"] { min-width: 220px; flex: 1; }
+.dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 22px; text-align: center; display: grid; gap: 4px; margin-bottom: 10px; }
+.dropzone.over { border-color: var(--prov-db); background: var(--surface-2); }
+ul.problems { margin: 6px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; }
+ul.problems li { font-size: .85rem; }
+.distrow { display: grid; grid-template-columns: minmax(120px, 1.4fr) minmax(80px, 3fr) auto; gap: 8px; align-items: center; font-size: .82rem; margin: 3px 0; }
+.distrow .dl { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.distrow .db { background: var(--surface-2); border-radius: 999px; height: 10px; overflow: hidden; }
+.distrow .dbf { display: block; height: 100%; background: var(--prov-db); border-radius: 999px; }
+.distrow .dv { text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .distrow { grid-template-columns: 1fr auto; } .distrow .db { grid-column: 1 / -1; } }
 .chip button { all: unset; cursor: pointer; text-decoration: underline; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
 .card.soft { background: var(--surface-2); border-color: transparent; }

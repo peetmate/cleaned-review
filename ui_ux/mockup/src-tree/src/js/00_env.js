@@ -65,6 +65,23 @@ window.ICL = window.ICL || {};
 
   ICL.env = { build, hasClaude, caps, ready, isResolved: () => resolved };
   ICL.buildShort = buildShort; ICL.buildLong = buildLong;
+
+  /** Save a text file: the runtime's downloads capability when present, a link offline, a copy box as a last resort. */
+  ICL.download = async function (filename, data, mime) {
+    const dl = caps.downloads;
+    if (dl) { try { await dl.save({ filename, data }); ICL.toast("Saved."); return true; } catch (e) { if (e && e.code === "declined") return false; } }
+    if (!hasClaude) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([data], { type: mime || "text/plain" }));
+      a.download = filename; document.body.append(a); a.click(); a.remove();
+      return true;
+    }
+    const ta = h("textarea", { style: "width:100%;height:220px", readonly: true }, data);
+    const box = h("div", { class: "card" }, h("p", null, `Copy the contents of ${filename}:`), ta,
+      h("button", { type: "button", class: "btn-sm", onclick: () => navigator.clipboard.writeText(data).then(() => ICL.toast("Copied."), () => ta.select()) }, "Copy"));
+    document.getElementById("screen").prepend(box);
+    return true;
+  };
   ICL.h = h; ICL.uid = uid; ICL.fmt = fmt; ICL.toast = toast; ICL.storage = storage; ICL.parseNumber = parseNumber;
   ICL.MONTHS = MONTHS; ICL.MONTH_DAYS = MONTH_DAYS;
 })(window.ICL);
