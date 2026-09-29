@@ -54,7 +54,17 @@ window.ICL = window.ICL || {};
   };
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  /** "v0.7.0 · 29 Sep 16:42" — short enough for the header, precise to the minute. */
+  const buildShort = () => {
+    if (!build.semver) return build.version || "dev";
+    const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/.exec(build.stamp || "");
+    if (!m) return `v${build.semver}`;
+    return `v${build.semver} \u00b7 ${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[4]}`;
+  };
+  const buildLong = () => `${build.version || "dev"}${build.sha && build.sha !== "dev" ? " \u00b7 commit " + build.sha : ""} \u00b7 ${build.target} build`;
+
   ICL.env = { build, hasClaude, caps, ready, isResolved: () => resolved };
+  ICL.buildShort = buildShort; ICL.buildLong = buildLong;
   ICL.h = h; ICL.uid = uid; ICL.fmt = fmt; ICL.toast = toast; ICL.storage = storage; ICL.parseNumber = parseNumber;
   ICL.MONTHS = MONTHS; ICL.MONTH_DAYS = MONTH_DAYS;
 })(window.ICL);

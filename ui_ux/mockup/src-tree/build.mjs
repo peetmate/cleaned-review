@@ -23,8 +23,13 @@ function walk(dir) {
 function version() {
   let sha = "dev";
   try { sha = execSync("git rev-parse --short HEAD", { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch {}
-  const d = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  return `${sha}-${d}`;
+  let pkg = "0.0.0";
+  try { pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version; } catch {}
+  const d = new Date();
+  const p2 = (n) => String(n).padStart(2, "0");
+  // minute precision: the point of the stamp is telling one build from the next
+  const stamp = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  return { semver: pkg, sha, stamp, label: `v${pkg} \u00b7 ${stamp}` };
 }
 
 // ---- dictionary validation -------------------------------------------------
@@ -86,7 +91,7 @@ function build() {
   const dataJs = `window.ICL_SCHEMA=${J(schema)};\nwindow.ICL_VOCAB=${J(vocab)};\nwindow.ICL_VARIANTS=${J(variants)};\nwindow.ICL_DEMO=${J(demo)};\nwindow.ICL_SCENARIOS=${J(scenarios)};`;
   const html = readFileSync(join(SRC, "index.html"), "utf8");
 
-  const buildTag = (target) => `<script>window.ICL_BUILD=${JSON.stringify({ version: ver, target, built: new Date().toISOString() })};</script>`;
+  const buildTag = (target) => `<script>window.ICL_BUILD=${JSON.stringify({ version: ver.label, semver: ver.semver, sha: ver.sha, stamp: ver.stamp, target, built: new Date().toISOString() })};</script>`;
 
   // artifact target (multi-file)
   mkdirSync(join(ROOT, "dist", "artifact"), { recursive: true });
@@ -107,7 +112,7 @@ function build() {
     .replace("<!-- @data -->", `<script>\n${dataJs}\n</script>`)
     .replace("<!-- @js -->", `<script>\n${js.replace(/<\/script/g, "<\\/script")}\n</script>`);
   writeFileSync(join(ROOT, "dist", "offline", "icleaned-mockup.html"), inline);
-  console.log(`built ${ver} in ${Date.now() - t0} ms: ${jsFiles.length} js files, offline ${(inline.length / 1024).toFixed(0)} KB, ${schema.fields.length} dictionary fields, ${Object.keys(scenarios.scenarios).length} example scenarios`);
+  console.log(`built ${ver.label} (${ver.sha}) in ${Date.now() - t0} ms: ${jsFiles.length} js files, offline ${(inline.length / 1024).toFixed(0)} KB, ${schema.fields.length} dictionary fields, ${Object.keys(scenarios.scenarios).length} example scenarios`);
 }
 
 build();

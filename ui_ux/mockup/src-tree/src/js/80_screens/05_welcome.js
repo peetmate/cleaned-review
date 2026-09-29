@@ -33,6 +33,7 @@
       "It does not run the model and it does not save to a server. Everything you type stays in this browser. Numbered headings (",
       h("span", { class: "num-demo" }, "3.2"),
       ") are there so you can point at exactly what you are commenting on — turn on ",
-      h("strong", null, "Comment"), " at the bottom right and click anything."));
+      h("strong", null, "Comment"), " at the bottom right and click anything.",
+      h("div", { class: "small", style: "margin-top:6px" }, "Build ", h("strong", null, ICL.buildShort()), " \u2014 the same stamp is in the header, so you can tell whether you are looking at the latest changes. Full: ", ICL.buildLong(), ".")));
   };
 })(window.ICL);

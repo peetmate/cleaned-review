@@ -21,7 +21,7 @@
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
       fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { scenarios: (LIB().library || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
-      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null },
+      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {} },
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };
   }
@@ -73,7 +73,7 @@
         for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
         if (known && known.owner) state.meta.owner = known.owner;
         state.library = lib;
-        state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, validateAll: false, homeTab: state.ui.homeTab });
+        state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, listFilter: {}, listView: {}, validateAll: false, homeTab: state.ui.homeTab });
         persist(); notify(); return true;
       },
       /** Copy the scenario that is open into a new library entry. */

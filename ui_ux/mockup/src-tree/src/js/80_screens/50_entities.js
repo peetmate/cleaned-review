@@ -18,11 +18,122 @@
       if (collection === "seasons") root.append(seasonsOverview(state, val));
       if (collection === "animals" && (state.ui.variant.V1 || "A") === "B") { root.append(animalsTable(state, val)); }
       else if (!list.length) root.append(h("div", { class: "empty" }, emptyText(collection, state), h("div", { style: "margin-top:10px" }, h("a", { class: "btn", href: ICL.router.hashFor(collection, "new") }, "+ Add " + noun))));
-      else { for (const e of list) root.append(card(collection, e, state, val, false)); root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + noun)); }
+      else {
+        // Long lists need finding, not scrolling: chips + search, and a compact list
+        // once there are more records than fit comfortably as cards.
+        const flt = (state.ui.listFilter || {})[collection] || { tag: "all", q: "" };
+        const shown = filterList(collection, list, state, val, flt);
+        if (FILTERABLE[collection]) root.append(filterBar(collection, list, shown, state, val, flt));
+        if (!shown.length) root.append(h("div", { class: "empty" }, "Nothing matches that filter.", h("div", { style: "margin-top:8px" }, h("button", { type: "button", class: "btn-sm", onclick: () => setFilter(collection, { tag: "all", q: "" }) }, "Clear the filter"))));
+        else if (compactMode(collection, list, state)) root.append(compactList(collection, shown, state, val));
+        else for (const e of shown) root.append(card(collection, e, state, val, false));
+        root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + noun));
+      }
       if (collection === "seasons" && list.length) root.append(h("div", { style: "margin-top:12px" }, seasonTemplates(state)));
     };
   }
   const emptyText = (c, s) => ({ plots: `Add the first ${ICL.dict.words().plot} that grows feed or is grazed.`, seasons: "Add the first feeding period, or pick a template below.", herds: "Add a herd: animals kept together and managed the same way. One herd is enough for most enterprises.", animals: "Add the first group of animals, for example the milking cows.", feeds: "Add the first feed the animals eat, for example the grass they graze or are cut." }[c]);
+
+  // ---- filtering and compact lists ---------------------------------------------
+  const FILTERABLE = { feeds: true, animals: true, plots: true };
+  const COMPACT_AT = 8;
+  const setFilter = (collection, next) => ICL.store.set((s) => { s.ui.listFilter = Object.assign({}, s.ui.listFilter, { [collection]: next }); return s; });
+  const compactMode = (collection, list, state) => {
+    const pref = (state.ui.listView || {})[collection];
+    if (pref) return pref === "list";
+    return FILTERABLE[collection] && list.length > COMPACT_AT;
+  };
+
+  function searchText(collection, e, state) {
+    const d = D.decorate(e, TYPE[collection], state);
+    if (collection === "feeds") {
+      const syn = (D.tables().feedSynonyms || {})[e.feed_item] || [];
+      return [d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "", d._crop ? d._crop.crop_name : "", ...syn, e.feed_origin || "", e.feed_part || ""].join(" ").toLowerCase();
+    }
+    if (collection === "animals") return [e.group_name || "", d._desc || "", D.livetypeLabel(d._desc) || ""].join(" ").toLowerCase();
+    return [e.plot_name || "", e.plot_use || "", e.land_cover || ""].join(" ").toLowerCase();
+  }
+
+  /** Chip definitions per collection: {value, label, test}. Built from the data, so a chip only appears when it matches something. */
+  function chipsFor(collection, list, state) {
+    const out = [{ value: "all", label: "All", test: () => true }];
+    if (collection === "feeds") {
+      const W = ICL.dict.words();
+      for (const [v, l] of [["grown", "Grown here"], ["bought", "Bought"], ["collected", ICL.t("Collected {offfarm}")]])
+        if (list.some((e) => e.feed_origin === v)) out.push({ value: "origin:" + v, label: l, test: (e) => e.feed_origin === v });
+      if (list.some((e) => e.feed_part === "residue")) out.push({ value: "part:main", label: "Main product", test: (e) => (e.feed_part || "main") === "main" });
+      if (list.some((e) => e.feed_part === "residue")) out.push({ value: "part:residue", label: "Residues", test: (e) => e.feed_part === "residue" });
+      for (const p of state.plots) if (list.some((e) => e.feed_plot === p.id))
+        out.push({ value: "plot:" + p.id, label: p.plot_name || W.plot, test: (e) => e.feed_plot === p.id });
+    }
+    if (collection === "animals") {
+      for (const hd of state.herds) if (list.some((e) => e.herd_ref === hd.id))
+        out.push({ value: "herd:" + hd.id, label: hd.herd_name || "Herd", test: (e) => e.herd_ref === hd.id });
+      if (list.some((e) => D.decorate(e, "animal", state)._milking)) out.push({ value: "milking", label: "Milking", test: (e) => D.decorate(e, "animal", state)._milking });
+      if (list.some((e) => D.decorate(e, "animal", state)._young)) out.push({ value: "young", label: "Young stock", test: (e) => D.decorate(e, "animal", state)._young });
+    }
+    if (collection === "plots") {
+      for (const [v, l] of [["crops", "Feed or crops"], ["grazing", "Grazing"], ["both", "Crops and grazing"]])
+        if (list.some((e) => e.plot_use === v)) out.push({ value: "use:" + v, label: l, test: (e) => e.plot_use === v });
+    }
+    return out;
+  }
+
+  function filterList(collection, list, state, val, flt) {
+    const chip = chipsFor(collection, list, state).find((c) => c.value === flt.tag) || { test: () => true };
+    const q = (flt.q || "").trim().toLowerCase();
+    return list.filter((e) => {
+      if (flt.tag === "attention") return val.errors.some((x) => x.screen === collection && x.entityId === e.id);
+      if (!chip.test(e)) return false;
+      return !q || searchText(collection, e, state).includes(q);
+    });
+  }
+
+  function filterBar(collection, list, shown, state, val, flt) {
+    const chips = chipsFor(collection, list, state);
+    const attention = list.filter((e) => val.errors.some((x) => x.screen === collection && x.entityId === e.id)).length;
+    const wrap = h("div", { class: "listfilter", dataset: { fb: "filter:" + collection, fbLabel: "Filter " + collection, noNumber: "" } });
+    const row = h("div", { class: "chips", role: "group", "aria-label": "Filter" });
+    for (const c of chips) {
+      const n = c.value === "all" ? list.length : list.filter(c.test).length;
+      row.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(flt.tag === c.value), onclick: () => setFilter(collection, Object.assign({}, flt, { tag: c.value })) }, c.label, h("span", { class: "cnt" }, String(n))));
+    }
+    if (attention) row.append(h("button", { type: "button", class: "filterchip bad", "aria-pressed": String(flt.tag === "attention"), onclick: () => setFilter(collection, Object.assign({}, flt, { tag: "attention" })) }, "Needs attention", h("span", { class: "cnt" }, String(attention))));
+    const search = h("input", { type: "search", value: flt.q || "", placeholder: collection === "feeds" ? "Search feeds, crops, local names…" : "Search…", "aria-label": "Search " + collection });
+    search.addEventListener("input", () => setFilter(collection, Object.assign({}, flt, { q: search.value })));
+    const compact = compactMode(collection, list, state);
+    const viewBtn = h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.set((s) => { s.ui.listView = Object.assign({}, s.ui.listView, { [collection]: compact ? "cards" : "list" }); return s; }) }, compact ? "Show as cards" : "Show as a list");
+    wrap.append(row, h("div", { class: "control" }, search, viewBtn,
+      h("span", { class: "small" }, shown.length === list.length ? `${list.length} in total` : `${shown.length} of ${list.length} shown`)));
+    return wrap;
+  }
+
+  function compactList(collection, shown, state, val) {
+    const cols = collection === "feeds" ? ["Feed", "From", "Part", "Fed"] : collection === "animals" ? ["Group", "Herd", "Head", "Day (h)"] : ["Plot", "Area", "Use", "Grows"];
+    const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, ...cols.map((c) => h("th", null, c)), h("th", null, ""))));
+    const tb = h("tbody");
+    for (const e of shown) {
+      const d = D.decorate(e, TYPE[collection], state);
+      const errs = val.errors.filter((x) => x.screen === collection && x.entityId === e.id).length;
+      const cells = collection === "feeds"
+        ? [h("td", null, d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "New feed", errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+           h("td", null, { grown: (state.plots.find((p) => p.id === e.feed_plot) || {}).plot_name || "grown here", bought: "bought", collected: ICL.t("collected {offfarm}") }[e.feed_origin] || "—"),
+           h("td", null, e.feed_part === "residue" ? "residue" : "main"),
+           h("td", null, e.feed_origin === "grown" ? (e.main_fed_share != null ? e.main_fed_share + "%" : "—") : "—")]
+        : collection === "animals"
+          ? [h("td", null, D.livetypeLabel(d._desc), errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+             h("td", null, (state.herds.find((x) => x.id === e.herd_ref) || {}).herd_name || "—"),
+             h("td", null, e.herd_n != null ? ICL.fmt(e.herd_n, 0) : "—"),
+             h("td", null, `${d.hours_stable || 0}/${d.hours_pen || 0}/${d.hours_onfarm || 0}/${d.hours_offfarm || 0}`)]
+          : [h("td", null, e.plot_name || "New plot", errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+             h("td", null, e.plot_area_ha != null ? ICL.fmt(e.plot_area_ha, 2) + " ha" : "—"),
+             h("td", null, { crops: "Feed or crops", grazing: "Grazing", both: "Crops and grazing" }[e.plot_use] || "—"),
+             h("td", null, state.feeds.filter((f) => f.feed_plot === e.id).length + " feeds")];
+      tb.append(h("tr", null, ...cells, h("td", null, h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, e.id) }, "Edit"))));
+    }
+    t.append(tb);
+    return h("div", { class: "tablewrap card", dataset: { fb: collection + ":list", fbLabel: ICL.common.entityNoun(collection) + " list" } }, t);
+  }
 
   function card(collection, e, state, val, expanded) {
     const etype = TYPE[collection]; const dec = D.decorate(e, etype, state);

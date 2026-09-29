@@ -1,6 +1,7 @@
 /* Layout: topbar scenario chip, sidebar tree with status, wizard bar, preview panel, rating strip. */
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
+  const CHILD_LIMIT = 6; // above this the sidebar shows a count instead of every record
 
   function statusFor(sectionId, state, val, entityId) {
     const sec = D.section(sectionId);
@@ -43,10 +44,23 @@
       const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
       ul.append(li);
       if (sec.entity && st !== "off") {
-        (state[sec.id] || []).forEach((e, i) => {
-          const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
-          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
-        });
+        // The sidebar is a map of the steps, not a list of records: a national herd can
+        // have dozens of feeds. Children are listed only while the list is short enough
+        // to be a map; beyond that the count links to the step, which has its own filter.
+        const list = state[sec.id] || [];
+        const errCount = list.filter((e) => val.errors.some((x) => x.screen === sec.id && x.entityId === e.id)).length;
+        if (list.length) li.querySelector("a").append(h("span", { class: "cnt", title: `${list.length} ${list.length === 1 ? sec.entity : sec.entity + "s"}` }, "\u00d7" + list.length));
+        if (list.length && list.length <= CHILD_LIMIT) {
+          list.forEach((e, i) => {
+            const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
+            ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
+          });
+        } else if (list.length) {
+          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && route.entity ? "page" : null },
+            statusIcon(errCount ? "block" : "done"),
+            h("span", null, `${list.length} ${sec.entity === "plot" ? ICL.dict.words().plot + "s" : sec.entity + "s"}`, errCount ? ` · ${errCount} to fix` : ""),
+            h("span", { class: "cnt", title: "Open the step to search and filter" }, "filter"))));
+        }
         ul.append(h("li", { class: "child add" }, h("a", { href: ICL.router.hashFor(sec.id, "new") }, statusIcon("opt"), h("span", null, "+ Add " + (sec.entity === "plot" ? ICL.dict.words().plot : sec.entity)))));
       }
     }
@@ -69,6 +83,15 @@
   }
 
   function renderTopbar(state) {
+    // Build stamp in the header: the only way to tell at a glance whether what you
+    // are looking at includes the last change.
+    const bb = document.getElementById("brand-build");
+    if (bb) {
+      const b = ICL.env.build;
+      bb.textContent = "";
+      bb.append(h("span", { class: "bt-name" }, "Scenario Builder · mockup "), h("span", { class: "bt-ver" }, ICL.buildShort()));
+      bb.title = "Build " + ICL.buildLong();
+    }
     const el = document.getElementById("topbar-scenario"); el.innerHTML = "";
     if (state.route.screen === "home" || state.route.screen === "feedback") return;
     const row = (state.library.scenarios || []).find((x) => x.id === state.meta.id);

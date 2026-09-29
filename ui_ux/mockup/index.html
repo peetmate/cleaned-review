@@ -5,7 +5,7 @@
 <meta name="description" content="Clickable mockup of a redesigned iCLEANED data-entry flow, with built-in feedback capture for workshop testing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Merriweather+Sans:wght@300;400;600;700&display=swap">
-<script>window.ICL_BUILD={"version":"dev-20260929","target":"offline","built":"2026-09-29T13:34:46.990Z"};</script>
+<script>window.ICL_BUILD={"version":"v0.7.0 · 2026-09-29 16:46","semver":"0.7.0","sha":"dev","stamp":"2026-09-29 16:46","target":"offline","built":"2026-09-29T13:46:56.569Z"};</script>
 <style>
 /* iCLEANED Farm Builder mockup — tokens, themes, layout */
 :root {
@@ -52,13 +52,13 @@ small, .small { font-size: .85rem; color: var(--muted); }
 
 /* ---- shell ---- */
 .app { min-height: 100%; display: flex; flex-direction: column; }
-.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 12px; padding: 8px var(--gutter); background: var(--surface); border-bottom: 1px solid var(--border); }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; flex-wrap: wrap; row-gap: 6px; gap: 12px; padding: 8px var(--gutter); background: var(--surface); border-bottom: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
 .brand-mark { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(from 200deg, var(--success-fill), var(--primary) 60%, var(--accent)); flex: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; } .brand-text strong { font-family: var(--font-head); color: var(--primary); } .brand-text small { color: var(--muted); font-size: .72rem; }
-.topbar-scenario { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
+.topbar-scenario { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
 .topbar-scenario .chip { max-width: 100%; }
-.topbar-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.topbar-actions { order: 2; margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
 .tb-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: .84rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .tb-btn[aria-pressed="true"] { background: var(--tint); border-color: var(--primary); color: var(--primary); }
 .badge { background: var(--danger-fill); color: #fff; border-radius: 999px; font-size: .7rem; padding: 0 6px; min-width: 18px; text-align: center; }
@@ -76,6 +76,8 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .status.s-done { border-color: var(--success); background: var(--success); } .status.s-block { border-color: var(--danger-fill); background: var(--danger-fill); border-radius: 3px; }
 .status.s-opt { border-style: dashed; } .status.s-off { opacity: .35; }
 .sidebar-nav .cnt { margin-left: auto; font-size: .72rem; color: var(--warn); }
+.sidebar-nav .cnt + .cnt { margin-left: 6px; color: var(--muted); }
+.sidebar-nav .child .cnt { margin-left: 6px; color: var(--muted); font-style: italic; }
 .sidebar-nav .fbc { font-size: .7rem; background: var(--surface-2); border-radius: 999px; padding: 0 6px; color: var(--muted); }
 .sidebar-nav .sep { height: 1px; background: var(--border); margin: 8px 6px; }
 .sidebar-nav .add a { color: var(--primary); font-style: italic; }
@@ -112,6 +114,16 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .chip.c-db { border-color: var(--prov-db); color: var(--prov-db); } .chip.c-derived { border-color: var(--prov-derived); color: var(--prov-derived); background: transparent; }
 .chip.c-blank { border-style: dashed; }
 .chip.c-herd { border-color: var(--prov-derived); color: var(--prov-derived); background: transparent; }
+.listfilter { margin-bottom: 12px; }
+.listfilter .chips { gap: 6px; margin-bottom: 8px; }
+.filterchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: 4px 11px; font-size: .82rem; cursor: pointer; }
+.filterchip:hover { border-color: var(--prov-db); }
+.filterchip[aria-pressed="true"] { background: var(--prov-db); border-color: var(--prov-db); color: #fff; }
+.filterchip[aria-pressed="true"] .cnt { background: rgba(255,255,255,.25); color: #fff; }
+.filterchip.bad { border-color: var(--danger); color: var(--danger); }
+.filterchip.bad[aria-pressed="true"] { background: var(--danger); border-color: var(--danger); color: #fff; }
+.filterchip .cnt { background: var(--surface-2); border-radius: 999px; padding: 0 6px; font-size: .74rem; color: var(--muted); }
+.listfilter input[type="search"] { min-width: 220px; flex: 1; }
 .chip button { all: unset; cursor: pointer; text-decoration: underline; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
 .card.soft { background: var(--surface-2); border-color: transparent; }
@@ -195,7 +207,7 @@ table.grid tfoot td { font-weight: 600; } .tablewrap { overflow-x: auto; }
   .sidebar { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--border); padding: 6px var(--gutter); }
   .sidebar-toggle { display: inline-block; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
   .sidebar-nav { display: none; } .sidebar-toggle[aria-expanded="true"] + .sidebar-nav { display: block; margin-top: 8px; }
-  .topbar-actions .tb-btn { padding: 5px 8px; font-size: .78rem; } .brand-text small { display: none; }
+  .topbar-actions .tb-btn { padding: 5px 8px; font-size: .78rem; } .brand-text small .bt-name { display: none; } .brand-text small { font-size: .68rem; }
   .preview { top: auto; bottom: 0; width: 100vw; max-height: 60vh; border-left: 0; border-top: 1px solid var(--border); }
   .fb-fab { bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
   .months { grid-template-columns: repeat(6, 1fr); }
@@ -278,7 +290,7 @@ legend .num, h3 .num { font-size: .9em; }
   <header class="topbar" role="banner">
     <a class="brand" href="#home" aria-label="iCLEANED home">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-text"><strong>iCLEANED</strong><small>Scenario Builder · mockup</small></span>
+      <span class="brand-text"><strong>iCLEANED</strong><small id="brand-build">Scenario Builder · mockup</small></span>
     </a>
     <div class="topbar-scenario" id="topbar-scenario"></div>
     <nav class="topbar-actions" aria-label="Tools">
@@ -388,7 +400,17 @@ window.ICL = window.ICL || {};
   };
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  /** "v0.7.0 · 29 Sep 16:42" — short enough for the header, precise to the minute. */
+  const buildShort = () => {
+    if (!build.semver) return build.version || "dev";
+    const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/.exec(build.stamp || "");
+    if (!m) return `v${build.semver}`;
+    return `v${build.semver} \u00b7 ${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[4]}`;
+  };
+  const buildLong = () => `${build.version || "dev"}${build.sha && build.sha !== "dev" ? " \u00b7 commit " + build.sha : ""} \u00b7 ${build.target} build`;
+
   ICL.env = { build, hasClaude, caps, ready, isResolved: () => resolved };
+  ICL.buildShort = buildShort; ICL.buildLong = buildLong;
   ICL.h = h; ICL.uid = uid; ICL.fmt = fmt; ICL.toast = toast; ICL.storage = storage; ICL.parseNumber = parseNumber;
   ICL.MONTHS = MONTHS; ICL.MONTH_DAYS = MONTH_DAYS;
 })(window.ICL);
@@ -418,7 +440,7 @@ window.ICL = window.ICL || {};
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
       fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { scenarios: (LIB().library || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
-      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null },
+      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {} },
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };
   }
@@ -470,7 +492,7 @@ window.ICL = window.ICL || {};
         for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
         if (known && known.owner) state.meta.owner = known.owner;
         state.library = lib;
-        state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, validateAll: false, homeTab: state.ui.homeTab });
+        state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, listFilter: {}, listView: {}, validateAll: false, homeTab: state.ui.homeTab });
         persist(); notify(); return true;
       },
       /** Copy the scenario that is open into a new library entry. */
@@ -1363,6 +1385,7 @@ window.ICL = window.ICL || {};
 /* Layout: topbar scenario chip, sidebar tree with status, wizard bar, preview panel, rating strip. */
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
+  const CHILD_LIMIT = 6; // above this the sidebar shows a count instead of every record
 
   function statusFor(sectionId, state, val, entityId) {
     const sec = D.section(sectionId);
@@ -1405,10 +1428,23 @@ window.ICL = window.ICL || {};
       const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
       ul.append(li);
       if (sec.entity && st !== "off") {
-        (state[sec.id] || []).forEach((e, i) => {
-          const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
-          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
-        });
+        // The sidebar is a map of the steps, not a list of records: a national herd can
+        // have dozens of feeds. Children are listed only while the list is short enough
+        // to be a map; beyond that the count links to the step, which has its own filter.
+        const list = state[sec.id] || [];
+        const errCount = list.filter((e) => val.errors.some((x) => x.screen === sec.id && x.entityId === e.id)).length;
+        if (list.length) li.querySelector("a").append(h("span", { class: "cnt", title: `${list.length} ${list.length === 1 ? sec.entity : sec.entity + "s"}` }, "\u00d7" + list.length));
+        if (list.length && list.length <= CHILD_LIMIT) {
+          list.forEach((e, i) => {
+            const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
+            ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
+          });
+        } else if (list.length) {
+          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && route.entity ? "page" : null },
+            statusIcon(errCount ? "block" : "done"),
+            h("span", null, `${list.length} ${sec.entity === "plot" ? ICL.dict.words().plot + "s" : sec.entity + "s"}`, errCount ? ` · ${errCount} to fix` : ""),
+            h("span", { class: "cnt", title: "Open the step to search and filter" }, "filter"))));
+        }
         ul.append(h("li", { class: "child add" }, h("a", { href: ICL.router.hashFor(sec.id, "new") }, statusIcon("opt"), h("span", null, "+ Add " + (sec.entity === "plot" ? ICL.dict.words().plot : sec.entity)))));
       }
     }
@@ -1431,6 +1467,15 @@ window.ICL = window.ICL || {};
   }
 
   function renderTopbar(state) {
+    // Build stamp in the header: the only way to tell at a glance whether what you
+    // are looking at includes the last change.
+    const bb = document.getElementById("brand-build");
+    if (bb) {
+      const b = ICL.env.build;
+      bb.textContent = "";
+      bb.append(h("span", { class: "bt-name" }, "Scenario Builder · mockup "), h("span", { class: "bt-ver" }, ICL.buildShort()));
+      bb.title = "Build " + ICL.buildLong();
+    }
     const el = document.getElementById("topbar-scenario"); el.innerHTML = "";
     if (state.route.screen === "home" || state.route.screen === "feedback") return;
     const row = (state.library.scenarios || []).find((x) => x.id === state.meta.id);
@@ -1658,7 +1703,8 @@ window.ICL = window.ICL || {};
       "It does not run the model and it does not save to a server. Everything you type stays in this browser. Numbered headings (",
       h("span", { class: "num-demo" }, "3.2"),
       ") are there so you can point at exactly what you are commenting on — turn on ",
-      h("strong", null, "Comment"), " at the bottom right and click anything."));
+      h("strong", null, "Comment"), " at the bottom right and click anything.",
+      h("div", { class: "small", style: "margin-top:6px" }, "Build ", h("strong", null, ICL.buildShort()), " \u2014 the same stamp is in the header, so you can tell whether you are looking at the latest changes. Full: ", ICL.buildLong(), ".")));
   };
 })(window.ICL);
 
@@ -1907,11 +1953,122 @@ window.ICL = window.ICL || {};
       if (collection === "seasons") root.append(seasonsOverview(state, val));
       if (collection === "animals" && (state.ui.variant.V1 || "A") === "B") { root.append(animalsTable(state, val)); }
       else if (!list.length) root.append(h("div", { class: "empty" }, emptyText(collection, state), h("div", { style: "margin-top:10px" }, h("a", { class: "btn", href: ICL.router.hashFor(collection, "new") }, "+ Add " + noun))));
-      else { for (const e of list) root.append(card(collection, e, state, val, false)); root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + noun)); }
+      else {
+        // Long lists need finding, not scrolling: chips + search, and a compact list
+        // once there are more records than fit comfortably as cards.
+        const flt = (state.ui.listFilter || {})[collection] || { tag: "all", q: "" };
+        const shown = filterList(collection, list, state, val, flt);
+        if (FILTERABLE[collection]) root.append(filterBar(collection, list, shown, state, val, flt));
+        if (!shown.length) root.append(h("div", { class: "empty" }, "Nothing matches that filter.", h("div", { style: "margin-top:8px" }, h("button", { type: "button", class: "btn-sm", onclick: () => setFilter(collection, { tag: "all", q: "" }) }, "Clear the filter"))));
+        else if (compactMode(collection, list, state)) root.append(compactList(collection, shown, state, val));
+        else for (const e of shown) root.append(card(collection, e, state, val, false));
+        root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + noun));
+      }
       if (collection === "seasons" && list.length) root.append(h("div", { style: "margin-top:12px" }, seasonTemplates(state)));
     };
   }
   const emptyText = (c, s) => ({ plots: `Add the first ${ICL.dict.words().plot} that grows feed or is grazed.`, seasons: "Add the first feeding period, or pick a template below.", herds: "Add a herd: animals kept together and managed the same way. One herd is enough for most enterprises.", animals: "Add the first group of animals, for example the milking cows.", feeds: "Add the first feed the animals eat, for example the grass they graze or are cut." }[c]);
+
+  // ---- filtering and compact lists ---------------------------------------------
+  const FILTERABLE = { feeds: true, animals: true, plots: true };
+  const COMPACT_AT = 8;
+  const setFilter = (collection, next) => ICL.store.set((s) => { s.ui.listFilter = Object.assign({}, s.ui.listFilter, { [collection]: next }); return s; });
+  const compactMode = (collection, list, state) => {
+    const pref = (state.ui.listView || {})[collection];
+    if (pref) return pref === "list";
+    return FILTERABLE[collection] && list.length > COMPACT_AT;
+  };
+
+  function searchText(collection, e, state) {
+    const d = D.decorate(e, TYPE[collection], state);
+    if (collection === "feeds") {
+      const syn = (D.tables().feedSynonyms || {})[e.feed_item] || [];
+      return [d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "", d._crop ? d._crop.crop_name : "", ...syn, e.feed_origin || "", e.feed_part || ""].join(" ").toLowerCase();
+    }
+    if (collection === "animals") return [e.group_name || "", d._desc || "", D.livetypeLabel(d._desc) || ""].join(" ").toLowerCase();
+    return [e.plot_name || "", e.plot_use || "", e.land_cover || ""].join(" ").toLowerCase();
+  }
+
+  /** Chip definitions per collection: {value, label, test}. Built from the data, so a chip only appears when it matches something. */
+  function chipsFor(collection, list, state) {
+    const out = [{ value: "all", label: "All", test: () => true }];
+    if (collection === "feeds") {
+      const W = ICL.dict.words();
+      for (const [v, l] of [["grown", "Grown here"], ["bought", "Bought"], ["collected", ICL.t("Collected {offfarm}")]])
+        if (list.some((e) => e.feed_origin === v)) out.push({ value: "origin:" + v, label: l, test: (e) => e.feed_origin === v });
+      if (list.some((e) => e.feed_part === "residue")) out.push({ value: "part:main", label: "Main product", test: (e) => (e.feed_part || "main") === "main" });
+      if (list.some((e) => e.feed_part === "residue")) out.push({ value: "part:residue", label: "Residues", test: (e) => e.feed_part === "residue" });
+      for (const p of state.plots) if (list.some((e) => e.feed_plot === p.id))
+        out.push({ value: "plot:" + p.id, label: p.plot_name || W.plot, test: (e) => e.feed_plot === p.id });
+    }
+    if (collection === "animals") {
+      for (const hd of state.herds) if (list.some((e) => e.herd_ref === hd.id))
+        out.push({ value: "herd:" + hd.id, label: hd.herd_name || "Herd", test: (e) => e.herd_ref === hd.id });
+      if (list.some((e) => D.decorate(e, "animal", state)._milking)) out.push({ value: "milking", label: "Milking", test: (e) => D.decorate(e, "animal", state)._milking });
+      if (list.some((e) => D.decorate(e, "animal", state)._young)) out.push({ value: "young", label: "Young stock", test: (e) => D.decorate(e, "animal", state)._young });
+    }
+    if (collection === "plots") {
+      for (const [v, l] of [["crops", "Feed or crops"], ["grazing", "Grazing"], ["both", "Crops and grazing"]])
+        if (list.some((e) => e.plot_use === v)) out.push({ value: "use:" + v, label: l, test: (e) => e.plot_use === v });
+    }
+    return out;
+  }
+
+  function filterList(collection, list, state, val, flt) {
+    const chip = chipsFor(collection, list, state).find((c) => c.value === flt.tag) || { test: () => true };
+    const q = (flt.q || "").trim().toLowerCase();
+    return list.filter((e) => {
+      if (flt.tag === "attention") return val.errors.some((x) => x.screen === collection && x.entityId === e.id);
+      if (!chip.test(e)) return false;
+      return !q || searchText(collection, e, state).includes(q);
+    });
+  }
+
+  function filterBar(collection, list, shown, state, val, flt) {
+    const chips = chipsFor(collection, list, state);
+    const attention = list.filter((e) => val.errors.some((x) => x.screen === collection && x.entityId === e.id)).length;
+    const wrap = h("div", { class: "listfilter", dataset: { fb: "filter:" + collection, fbLabel: "Filter " + collection, noNumber: "" } });
+    const row = h("div", { class: "chips", role: "group", "aria-label": "Filter" });
+    for (const c of chips) {
+      const n = c.value === "all" ? list.length : list.filter(c.test).length;
+      row.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(flt.tag === c.value), onclick: () => setFilter(collection, Object.assign({}, flt, { tag: c.value })) }, c.label, h("span", { class: "cnt" }, String(n))));
+    }
+    if (attention) row.append(h("button", { type: "button", class: "filterchip bad", "aria-pressed": String(flt.tag === "attention"), onclick: () => setFilter(collection, Object.assign({}, flt, { tag: "attention" })) }, "Needs attention", h("span", { class: "cnt" }, String(attention))));
+    const search = h("input", { type: "search", value: flt.q || "", placeholder: collection === "feeds" ? "Search feeds, crops, local names…" : "Search…", "aria-label": "Search " + collection });
+    search.addEventListener("input", () => setFilter(collection, Object.assign({}, flt, { q: search.value })));
+    const compact = compactMode(collection, list, state);
+    const viewBtn = h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.set((s) => { s.ui.listView = Object.assign({}, s.ui.listView, { [collection]: compact ? "cards" : "list" }); return s; }) }, compact ? "Show as cards" : "Show as a list");
+    wrap.append(row, h("div", { class: "control" }, search, viewBtn,
+      h("span", { class: "small" }, shown.length === list.length ? `${list.length} in total` : `${shown.length} of ${list.length} shown`)));
+    return wrap;
+  }
+
+  function compactList(collection, shown, state, val) {
+    const cols = collection === "feeds" ? ["Feed", "From", "Part", "Fed"] : collection === "animals" ? ["Group", "Herd", "Head", "Day (h)"] : ["Plot", "Area", "Use", "Grows"];
+    const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, ...cols.map((c) => h("th", null, c)), h("th", null, ""))));
+    const tb = h("tbody");
+    for (const e of shown) {
+      const d = D.decorate(e, TYPE[collection], state);
+      const errs = val.errors.filter((x) => x.screen === collection && x.entityId === e.id).length;
+      const cells = collection === "feeds"
+        ? [h("td", null, d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "New feed", errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+           h("td", null, { grown: (state.plots.find((p) => p.id === e.feed_plot) || {}).plot_name || "grown here", bought: "bought", collected: ICL.t("collected {offfarm}") }[e.feed_origin] || "—"),
+           h("td", null, e.feed_part === "residue" ? "residue" : "main"),
+           h("td", null, e.feed_origin === "grown" ? (e.main_fed_share != null ? e.main_fed_share + "%" : "—") : "—")]
+        : collection === "animals"
+          ? [h("td", null, D.livetypeLabel(d._desc), errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+             h("td", null, (state.herds.find((x) => x.id === e.herd_ref) || {}).herd_name || "—"),
+             h("td", null, e.herd_n != null ? ICL.fmt(e.herd_n, 0) : "—"),
+             h("td", null, `${d.hours_stable || 0}/${d.hours_pen || 0}/${d.hours_onfarm || 0}/${d.hours_offfarm || 0}`)]
+          : [h("td", null, e.plot_name || "New plot", errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+             h("td", null, e.plot_area_ha != null ? ICL.fmt(e.plot_area_ha, 2) + " ha" : "—"),
+             h("td", null, { crops: "Feed or crops", grazing: "Grazing", both: "Crops and grazing" }[e.plot_use] || "—"),
+             h("td", null, state.feeds.filter((f) => f.feed_plot === e.id).length + " feeds")];
+      tb.append(h("tr", null, ...cells, h("td", null, h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, e.id) }, "Edit"))));
+    }
+    t.append(tb);
+    return h("div", { class: "tablewrap card", dataset: { fb: collection + ":list", fbLabel: ICL.common.entityNoun(collection) + " list" } }, t);
+  }
 
   function card(collection, e, state, val, expanded) {
     const etype = TYPE[collection]; const dec = D.decorate(e, etype, state);

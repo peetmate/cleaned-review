@@ -79,3 +79,13 @@ Seven questions, and what changed in the mockup for each.
 **Project vs scenario.** A scenario is one description of one enterprise for one year. A project is the folder that groups related scenarios and the people who may see them; scenarios in a project can be compared with each other. Both are now defined in the welcome glossary and on the Home screen, which previously showed a Projects card with no explanation.
 
 **Verified live:** all six example scenarios compile with 0 errors (Rungwe keeps 2 legitimate warnings) and the herd manure answers reach the package labels — biogas → `Anaer digester, Low leak, HQ stor, LQ tec`, wet pit → `Liquid/Slurry Pit below animals 3 Month`, covered heap → `Solid storage - Covered/compacted`. Editing "Live weight" in an unlocked parameter row records `{from: 350, to: 365}` in the copy; "Edit in the parameter set" from a feed card lands on feed row 11 with the panel open.
+
+### v0.7 follow-ups
+
+**Build stamp in the header.** The header now reads `Scenario Builder · mockup v0.7.0 · 29 Sep 16:46` — semantic version from `package.json` plus the build time to the minute, so you can tell at a glance whether what you are looking at includes the last change. The full stamp (with target) is in the title tooltip and on the welcome screen; on a phone the prefix drops and the version stays.
+
+**Sidebar no longer lists every record.** Listing one child per feed does not survive a real feed list. Entity steps now show a count (`Feeds ×12`), and list children only while there are six or fewer — small scenarios keep the map, large ones get `12 feeds · 2 to fix · filter` linking to the step.
+
+**Filter chips on the list screens.** Feeds, Animals and Plots gained a chip row built from the data itself, so a chip appears only when it matches something: for feeds, origin (grown / bought / collected), main product vs residues, and one chip per plot; for animals, one per herd plus milking and young stock; for plots, the land use. Each chip carries its count, there is a search box matching feed names, crop names and local synonyms, a "Needs attention" chip when something is blocking, and a card/list toggle that switches to a compact table automatically above eight records. Search keeps focus while filtering.
+
+**Topbar crowding fixed.** Between 900 and 1200 px the scenario chips were being squeezed to 77 px because the action buttons never shrink. The scenario row now always sits on its own line.
