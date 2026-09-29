@@ -47,7 +47,7 @@ td:first-child{white-space:nowrap}
 @media (max-width:860px){.doc.active{display:block}.toc{position:static;max-height:none;margin-bottom:12px}article{padding:4px 16px 20px}.theme{margin-left:0}}
 @media print{header,.toc,.filters{display:none}.doc{display:block!important}article{border:0}}
 </style></head><body>
-<header><div class="bar"><h1>iCLEANED UX review &middot; 29 Sep 2026</h1><div class="tabs" role="tablist"><button class="tab" data-target="review" role="tab">UI/UX review</button><button class="tab" data-target="workshop" role="tab">Workshop run sheet</button><button class="tab" data-target="feedback" role="tab">Feedback form</button></div>
+<header><div class="bar"><h1>iCLEANED UX review &middot; 29 Sep 2026</h1><div class="tabs" role="tablist"><button class="tab" data-target="review" role="tab">UI/UX review</button><button class="tab" data-target="workshop" role="tab">Workshop run sheet</button><button class="tab" data-target="feedback" role="tab">Feedback form</button><button class="tab" data-target="benchmarks" role="tab">Design benchmarks</button><button class="tab" data-target="mockup" role="tab">Mockup review and changes</button></div>
 <button class="tab theme" type="button" aria-label="Toggle dark mode">&#9680; Theme</button></div></header>
 <main><section class="doc" id="doc-review" data-doc="review"><nav class="toc"><strong>On this page</strong><ul><li><a href="#review-verdict-5-sentences">Verdict (5 sentences)</a></li><li><a href="#review-findings-table">Findings table</a></li><li><a href="#review-live-walkthrough-log-2026-09-29-chrome-1036-px-window">Live walkthrough log (2026-09-29, Chrome, 1036 px window)</a></li><li><a href="#review-redesign-directions-from-your-notes-cross-checked-against-the-code-and-the-live-walkthrough">Redesign directions (from your notes, cross-checked against the code and the live walkthrough)</a></li><li><a href="#review-detailed-findings">Detailed findings</a></li><li><a href="#review-done-well-max-5">Done well (max 5)</a></li></ul></nav><article><h1>iCLEANED web app: adversarial UI/UX review before the user-testing workshop</h1>
 <ul>
@@ -1805,6 +1805,632 @@ ENVIRONMENT: Browser ____  OS ____  Screen: laptop / tablet / phone
 <li>Do not put participant names, emails or IPs in issues. Use pair IDs only.</li>
 <li>Scenario JSONs attached to issues must not contain identifying farm names. Rename <code>farm_name</code> before attaching.</li>
 </ul>
+</article></section>
+<section class="doc" id="doc-benchmarks" data-doc="benchmarks"><nav class="toc"><strong>On this page</strong><ul><li><a href="#benchmarks-1-app-by-app-table">1. App-by-app table</a></li><li><a href="#benchmarks-2-farm-description-sequences-observed">2. Farm-description sequences observed</a></li><li><a href="#benchmarks-3-synthesis-1-the-10-most-transferable-patterns-for-icleaned">3. Synthesis 1 — the 10 most transferable patterns for iCLEANED</a></li><li><a href="#benchmarks-4-synthesis-2-low-bandwidth-low-literacy-patterns-feast-nuru-icow-farmer-chat-hello-tractor">4. Synthesis 2 — low-bandwidth / low-literacy patterns (FEAST, Nuru, iCow, Farmer.Chat, Hello Tractor)</a></li><li><a href="#benchmarks-5-synthesis-3-how-the-best-tools-handle-quot-unknown-quot-and-defaults">5. Synthesis 3 — how the best tools handle &quot;unknown&quot; and defaults</a></li><li><a href="#benchmarks-6-synthesis-4-multi-farm-multi-user-and-advisor-workflows">6. Synthesis 4 — multi-farm, multi-user and advisor workflows</a></li><li><a href="#benchmarks-7-synthesis-5-how-livestock-ghg-calculators-structure-herd-and-manure-inputs">7. Synthesis 5 — how livestock GHG calculators structure herd and manure inputs</a></li><li><a href="#benchmarks-8-synthesis-6-five-things-not-to-copy">8. Synthesis 6 — five things NOT to copy</a></li><li><a href="#benchmarks-sources">Sources</a></li></ul></nav><article><h1>04 · Design benchmarks: how proven farm / livestock tools structure data entry</h1>
+<p>Purpose: adapt, not invent. This note surveys well-regarded tools that describe farms or livestock systems and extracts the UX patterns worth borrowing for the iCLEANED data-entry redesign (Home/scenarios → Location &amp; climate → Plots → Seasons → Herds &amp; animal groups → Feeds → Manure &amp; inputs → Feeding plan → Check &amp; run → Results).</p>
+<p>Evidence basis: official user guides / manuals were read in full for Cool Farm Tool (livestock), Agrecalc Cloud, GLEAM-i 2.0, CAP'2ER (methodological guide + brochure), COMET-Farm, Farm Carbon Calculator, Bord Bia/Teagasc Carbon Navigator, FEAST data application and EX-ACT quick guidance. Farm-management and farmer-facing apps (AgriWebb, Herdwatch, Breedr, Farmbrite, farmOS, Ruminati, MLA calculator, iCow, Nuru, Plantix, Farmer.Chat, Hello Tractor) were assessed from official product pages, help centres and published evaluations. Anything not directly observed is marked <strong>(inferred)</strong>.</p>
+<hr />
+<h2 id="benchmarks-1-app-by-app-table">1. App-by-app table</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>App (owner)</th>
+<th>Scope described</th>
+<th>Primary users</th>
+<th>Platform</th>
+<th>UX patterns worth borrowing</th>
+<th>Anti-patterns / cautions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Cool Farm Tool – Beef &amp; Dairy</strong> (Cool Farm Alliance)</td>
+<td>Whole herd GHG for one reference period; 7 sections: General, Production/Milk, Herd, Grazing, Feed, Manure, Energy, Transport</td>
+<td>Producers, agronomists, technicians &quot;who work with farmers&quot;</td>
+<td>Web (desktop)</td>
+<td>(a) Herd = one table: 6 fixed age/sex categories × {on-farm avg number, live weight} × {sold, purchased}; dairy live weights auto-filled from breed and editable. (b) Two feed approaches: precise DMI per feed per category, or simple % feed mix for whole herd (must sum to 100). (c) Manure = per category, pick 1..n management types with % shares; if none selected, grazing assumed; grazing-time manure auto-derived from Grazing section. (d) Number + unit dropdown on every quantity; hover &quot;i&quot; contextual help on every question; free-text notes box per section. (e) &quot;Save as&quot; to duplicate an assessment and build what-if scenarios; compare view. (f) Reference period start chosen, end auto-set to +12 months (editable for cycle-based systems).</td>
+<td>Feed crops must be assessed separately in the crop module and saved as feed items – a two-pathway detour that confuses first-time users. No rotational grazing / soil C for grassland. No offline.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Agrecalc Cloud</strong> (SAC Consulting / SRUC)</td>
+<td>Whole-farm + enterprise + product footprint; 3 sections: Land &amp; Crops, Livestock, Energy &amp; Waste</td>
+<td>Farmers, consultants (validators), supply-chain users</td>
+<td>Web, &quot;best on desktop/laptop&quot;</td>
+<td>(a) Report set-up wizard: pick sectors present → add a <em>group</em> per herd/flock → tick livestock classes present → benchmark &quot;enterprise system type&quot; from list. Only the ticked classes appear on later pages. (b) Livestock class list with plain definitions (Cow, Bull, Heifer 0-12/12-24/24-36 mth, Steer…). (c) Livestock pages in order: Numbers &amp; Weights → Purchases, Sales &amp; Deaths → Performance → Manure Management → Purchased Feed → Purchased Bedding → Feed Ration. (d) Manure = % of time per class grazing in-bye / hill / housed in each of 6 systems, red cells until rows total 100 %. (e) Prepopulated typical values (ADG, ration digestibility, CP) usable &quot;in the absence of more specific data&quot;; manure N/P prepopulates from type and is editable. (f) Auto-save on &quot;Next&quot;; no forced order (&quot;we recommend starting with Land &amp; Crops&quot;). (g) &quot;Allocate fuel use&quot; button distributes whole-farm energy to enterprises. (h) Consultant validation as a QC step; multi-herd support.</td>
+<td>~2.5 h first time (Farmers Weekly). Pesticides require the user to pre-adjust area by number of sprays – arithmetic pushed onto the user. Hectare-only areas.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>CAP'2ER</strong> (Idele, France)</td>
+<td>Multicriteria environmental diagnostic for ruminant workshops: GHG, energy, water, air, C storage, biodiversity, nourishing performance, economics</td>
+<td>Trained advisers (1-day L1 / 2-day L2 course), with farmer</td>
+<td>Web</td>
+<td>(a) Two explicit depth levels: <strong>Level 1 = 27 data points, 30 min</strong>, awareness/observatory; <strong>Level 2 = 150 data points, 3 h</strong>, action plan &amp; simulation. (b) Level-1 &quot;forfaits&quot; (fixed defaults) are published per indicator – e.g. one housing type (full straw yard), 180 housing days for dairy heifers, one slurry store type, N excretion per animal category from Nitrates Directive references, 15 % legumes in grassland. (c) 3-step framing: Diagnostic → Action plan → Monitoring (import from other databases, export results, simulate levers, track over time). (d) Positioning against a reference group. (e) Ecocert certification covers <em>data collection by advisers</em> as well as method – consistency of entry is treated as part of the tool.</td>
+<td>Licence + training required; no self-service farmer path. Documentation is French-only.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>GLEAM-i 2.0</strong> (FAO)</td>
+<td>National/sub-national livestock GHG (6 species) via Herd, Feed, Manure modules; Baseline vs Scenario</td>
+<td>Policy planners, project designers, NGOs</td>
+<td>Excel workbook (macros); Shiny web version exists</td>
+<td>(a) Country selection loads <strong>Default</strong> values for every variable; three colour-coded columns: Default (light blue, locked), Baseline (dark blue, editable), Scenario (green, editable). Before edits all three are identical. (b) Herd module: enter reproductive adult numbers by system × herd type; parameters (fertility, mortality, replacement, weights) drive derived cohorts; <strong>total animal numbers update live</strong> in &quot;special cells&quot;. (c) Feed: Summary ration by category + Detailed ration by feedstuff; &quot;Ration percentages overview&quot; turns green at 100 %, red otherwise, yellow if no animals. (d) Manure: % share per IPCC MMS per species/system/herd, same 100 % check. (e) Navigation bar with Previous/Next plus direct module jumps, selected country always shown top-right; short instruction block under the nav on every page. (f) Results: Baseline and Scenario side by side with % change labels; regional averages shown for reference; Tier 1 vs Tier 2 comparison.</td>
+<td>Excel with macros – not portable to low-end laptops/browsers. Country averages are the only defaults (no sub-national).</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>COMET-Farm</strong> (USDA / Colorado State)</td>
+<td>Cropland, animal agriculture, agroforestry, forestry GHG; baseline vs scenario</td>
+<td>US producers, conservation planners</td>
+<td>Web</td>
+<td>(a) <strong>Project Roadmap</strong> pinned to top of every page: icons per accounting activity with 4 states (unavailable/greyed with hover reason, incomplete, selected, complete); report only unlocks when all complete. (b) Fields drawn or uploaded on a map; soils (SSURGO) and weather (PRISM) auto-derived from location; model runs per soil map unit. (c) Per-animal-type accordions (Animal Details → Feed Characteristics → Housing → Manure), each with grey→green completeness tick. (d) Monthly tables for population and live weight with <strong>blue arrows to copy a value across months</strong>. (e) <strong>Feed Calculator</strong>: tick the months a ration applies, pick feedstuffs, enter as-fed kg/head/day, review summary, &quot;Populate Feeds&quot; – converts to DMI/CP/fat/ash. (f) Housing = % time per housing type per month (must = 100 %), and the housing choice triggers only the relevant manure follow-ups; solids/liquids tables warn in red if ≠ 100 %. (g) &quot;Groups&quot; = same category, different diet/housing/manure; capped at 3-5 per category. (h) Copy management to other years/fields; crop-rotation templates; duplicate project.</td>
+<td>US-only location (state/county), imperial units. Deep nesting (housing → separator → solids/liquids) is heavy for smallholder contexts.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Farm Carbon Calculator</strong> (Farm Carbon Toolkit, UK)</td>
+<td>Whole-farm/enterprise footprint; ~9 categories incl. livestock, inputs, sequestration</td>
+<td>Farmers self-entry; advisers</td>
+<td>Web</td>
+<td>(a) Explicit <strong>&quot;Collate your data&quot; step with a downloadable spreadsheet whose order mirrors the online form</strong>. (b) Category list on the left; free navigation but sequential recommended; toggle to mark a section done. (c) Every item added via &quot;+ Add New&quot; → cascading dropdowns; &quot;if not applicable, leave it out&quot;. (d) <strong>Live results panel</strong> on the right updates after every entry (tCO2e, % by item, click segment for detail). (e) Report at 3 detail levels (Summary / Detailed / Full); compare reports; share; PDF/CSV. (f) Livestock: pick animal type, average number over period, what happened to manure; diet optional.</td>
+<td>~2 h plus 2-3 h collation (Farmers Weekly). Nine sections feel long; benchmarking still being improved.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Carbon Navigator</strong> (Bord Bia / Teagasc, Ireland)</td>
+<td>Beef &amp; dairy: 6 efficiency measures, current vs 3-year target, GHG % change and € benefit</td>
+<td>Trained advisers with farmers</td>
+<td>Web (adviser dashboard)</td>
+<td>(a) <strong>Prefill from national databases</strong> (AIM animal movements, ICBF, milk processors) – farmer not asked for stock numbers/ages/breeds. (b) Farmer consents via SMS authorisation code that the adviser enters. (c) Only <em>six</em> inputs per enterprise, each as Current / Target pair; date-picker or typed dd/mmm. (d) Results as bar charts of performance vs peers (orange current, green target), % GHG change and € benefit per measure; totals on top. (e) Advice sheet auto-seeded with pre-scripted options the adviser edits. (f) Excel download and print.</td>
+<td>Depends entirely on national data infrastructure that does not exist in most iCLEANED countries. Adviser-only.</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>FEAST data application</strong> (ILRI)</td>
+<td>Site-level feed diagnosis: focus-group PRA + individual farmer interviews; livestock holdings, feed sources by month, crops, income, prices</td>
+<td>Researchers, extension/NGO facilitators in SSA and S/SE Asia</td>
+<td>Windows desktop, no install (unzip, run .bat), fully offline; export .zlib to global repository</td>
+<td>(a) Strict hierarchy: Project → Site → Focus group → Interview respondent; site fixes country, currency and pasture nutrition defaults that prefill children. (b) Tabbed forms mirroring the paper guide (General, Farm/Household size, Seasons/Rainfall, Feed/Context issues, Agro-economic, Labour, Interview data). (c) <strong>Seasons defined by assigning months; rainfall 0-5 per month; feed availability per month as 0-10 scores across sources that must total 10</strong> – ordinal scoring instead of quantities. (d) Prev/Next buttons cycle through months or categories inside a pop-up so the user never leaves the form. (e) Livestock holding = category → type → headcount + average weight (+ optional breed). (f) Custom crops/feeds/livestock/units allowed but discouraged (&quot;only when necessary&quot;), with required reference and nutritional stats; local units defined by kg equivalence. (g) Reports viewed in-app or via Excel package; site-level or group-level.</td>
+<td>Windows-only; deletion cascades permanently with only a warning; data keyed after the field session, not during.</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>EX-ACT</strong> (FAO)</td>
+<td>Ex-ante project carbon balance, 8 modules incl. Grassland &amp; Livestock; with/without project</td>
+<td>Project designers (IFIs, ministries)</td>
+<td>Excel (no macros)</td>
+<td>(a) Description module first: continent, climate, moisture regime, dominant soil, project duration – these set every Tier 1 default. (b) Repeating colour code across modules: light-blue = enter, brown = variable/unit label, violet = optional Tier 2 override. (c) &quot;Only fill modules your project touches; it is normal for many cells to remain empty.&quot; (d) Results by module, gross and per-hectare, with/without project.</td>
+<td>Spreadsheet navigation; no validation of totals; heavy for non-experts.</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Ruminati</strong> (Australia)</td>
+<td>Farm-level scope 1-3 emissions for beef, sheep, dairy, grain, feedlot; reduction plans; supply-chain sharing</td>
+<td>Producers (free), advisers, corporates (VISION)</td>
+<td>Web app</td>
+<td>(a) Marketing promise <strong>&quot;Your emissions report, done in under 30 minutes&quot;</strong>, positioned against months-long Excel GAF frameworks; designed by an external UX studio &quot;simple and easy for farmers to fill out&quot;. (b) Uses &quot;data you already have&quot;; reduction-plan modelling of what-if changes. (c) Explicit data ownership: data stays private; sharing is opt-in per partner and revocable. (d) In-person onboarding events (&quot;Burgers and Baselining&quot;).</td>
+<td>Public docs do not show screens; inputs list <strong>(inferred)</strong> from press: property size, fertiliser, crop &amp; livestock numbers.</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>MLA Carbon Calculator – Quick Start</strong> (Meat &amp; Livestock Australia)</td>
+<td>Beef/sheep/grain/feedlot/goat GHG baseline and intensity</td>
+<td>Producers</td>
+<td>Web</td>
+<td>(a) <strong>Quick Start mode asks only for average livestock numbers per species; the tool applies the regional average distribution of stock classes</strong> (steers, cows, wethers, ewes). (b) Regional dropdown (&quot;region where most cattle purchased&quot;) plus % purchased. (c) Per-step eLearning lessons keyed to each input page.</td>
+<td>Full mode still requires class-level detail.</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>AgriWebb</strong> (AU/UK/US)</td>
+<td>Livestock record-keeping: mobs, paddocks, movements, treatments, weights</td>
+<td>Commercial ranchers, farm teams</td>
+<td>Mobile (offline-first) + web</td>
+<td>(a) <strong>Offline-first: capture in the paddock, auto-sync when back in range</strong>. (b) Farm map as the home surface; mobs dragged between paddocks; landmarks. (c) Mob-level (group) records as default, individual animal optional. (d) 40+ typed record forms; team management.</td>
+<td>Subscription; heavy for one-off assessments.</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Herdwatch</strong> (Ireland/UK)</td>
+<td>Compliance-ready cattle/sheep/dairy records</td>
+<td>Farmers</td>
+<td>Mobile + web, offline</td>
+<td>(a) Offline in the yard with automatic sync. (b) Herd managed &quot;individually or in groups&quot;. (c) Prefill/submission to government registries (BCMS, ScotEID) removes double entry. (d) Bluetooth EID readers and scale heads; one account, many devices.</td>
+<td>Registry integration is jurisdiction-specific.</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Breedr</strong> (UK/US)</td>
+<td>Individual cattle performance, weights, movements</td>
+<td>Cattle producers</td>
+<td>Mobile, offline capture</td>
+<td>(a) Chute-side flow: weight + EID captured in seconds, app shows ADG since last weigh and up/down trend immediately. (b) Records posted straight to BCMS/ScotEID. (c) Paid tier includes personal onboarding and phone support.</td>
+<td>Individual-animal centric; not suited to head-count descriptions.</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>Farmbrite</strong> (US)</td>
+<td>Whole-farm records incl. livestock, fields, accounting</td>
+<td>Small/medium farms</td>
+<td>Web + mobile</td>
+<td>(a) &quot;Create Animal&quot; needs only name + DOB; everything else optional, &quot;you don't have to add all of it right now&quot;. (b) Bulk animal import from spreadsheet. (c) Three grouping models: smart groups (filter-based), manual groups, and &quot;set groups&quot; for animals never tracked individually (flocks). (d) Import boundaries from KML/CSV.</td>
+<td>Custom fields locked to paid tiers.</td>
+</tr>
+<tr>
+<td>16</td>
+<td><strong>farmOS</strong> (open source)</td>
+<td>Assets (land, animals, groups, equipment) + logs</td>
+<td>Farmers, researchers</td>
+<td>Web (Drupal)</td>
+<td>(a) Draw land assets with polygon/line/point/circle; modify/move/delete vertices; snapping grid. (b) Location hierarchy (parent/child) by drag-and-drop. (c) Group assets contain animal assets → herds as groups. (d) Form fields &quot;grouped into sensible tabs, with a sidebar of meta information&quot;.</td>
+<td>Developer-oriented; generic asset/log model needs configuration.</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>Climate FieldView</strong> (Bayer)</td>
+<td>Field boundaries and agronomic data layers</td>
+<td>Row-crop growers (US)</td>
+<td>Web + iPad + cab</td>
+<td>(a) Add a field by searching address / lat-lon / picking a CLU polygon, then adjust boundary; required minimal metadata (field, client, farm name, approximate area). (b) Bulk import of shapefiles; auto boundary detection in cab.</td>
+<td>Boundaries from cadastral CLUs only exist in the US.</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>iCow</strong> (Kenya)</td>
+<td>Dairy/poultry advisory, gestation calendar, expert search, marketplace</td>
+<td>Smallholders on feature phones</td>
+<td>SMS keywords, USSD (*285#), Android, KaiOS, web</td>
+<td>(a) Register a cow (insemination date) → automatic date-triggered SMS reminders. (b) Keyword SMS (&quot;BLOAT&quot;) returns 10 tips; USSD numbered menus. (c) Same content across SMS/USSD/app/voice so &quot;no farmer… is left behind&quot;. (d) Structured data collection via SMS (body condition, milk yield, calving dates).</td>
+<td>Per-message cost; free text limits; no visual data.</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>PlantVillage Nuru</strong> (Penn State / CGIAR)</td>
+<td>Cassava, maize, potato disease diagnosis in the field</td>
+<td>Smallholders and extension officers (phones distributed to lead farmers)</td>
+<td>Android/iOS, <strong>fully offline on-device model</strong></td>
+<td>(a) Camera-first, real-time detection (&quot;wave your phone in front of a leaf&quot;), no typing. (b) Advice delivered offline in Swahili, French, Twi, Hindi, English; voice command being added for non-literate users. (c) Deployed through extension workers who own the device.</td>
+<td>Reliant on trained ML; not a data-entry tool.</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>Plantix</strong> (PEAT)</td>
+<td>Photo diagnosis + community + input shop</td>
+<td>Smallholders, mainly India</td>
+<td>Android</td>
+<td>(a) 18 languages; photo → diagnosis → treatment in one flow. (b) Community Q&amp;A and video tutorials for low literacy.</td>
+<td>Requires data connection (2G+).</td>
+</tr>
+<tr>
+<td>21</td>
+<td><strong>Farmer.Chat</strong> (Digital Green)</td>
+<td>AI advisory for extension agents</td>
+<td>Extension agents, lead farmers (India, Kenya, Ethiopia)</td>
+<td>WhatsApp / Telegram / web</td>
+<td>(a) Deploy on channels people already have – no app install. (b) Voice notes in + text-to-speech out in six languages; images accepted. (c) Deployed to <em>agents</em>, not farmers, as a human-review layer. (d) 20-30 s video tutorials and starter prompts because older users/women struggled to phrase queries.</td>
+<td>Data cost is the binding constraint, not literacy.</td>
+</tr>
+<tr>
+<td>22</td>
+<td><strong>Hello Tractor</strong> (Nigeria/Kenya)</td>
+<td>Tractor booking</td>
+<td>Smallholders via booking agents</td>
+<td>Android app + agents</td>
+<td>(a) <strong>Booking-agent model</strong>: a trusted local intermediary enters farmer details (location, farm size, date) on the farmer's behalf. (b) Land-measurement tool is the agents' most-used feature.</td>
+<td>Farmer never touches the app – ok for services, but farmers lose visibility.</td>
+</tr>
+</tbody>
+</table>
+<p>Other checked but not tabulated: Alltech E-CO2 (assessor-led 2-3 h farm visit, report within 5 days, benchmark + recommendations – a consultancy model, no self-entry); TechFit (ILRI, workshop scoring matrix companion to FEAST, not software); Sandy/Trinity AgTech (5-step set-up, API links to farm software, field-level – paid, arable-first).</p>
+<hr />
+<h2 id="benchmarks-2-farm-description-sequences-observed">2. Farm-description sequences observed</h2>
+<ul>
+<li><strong>Cool Farm Tool livestock</strong>: General (system type, organic, reference period, name) → Production/Milk (breed → default weights, yield, fat/protein defaults) → Herd table → Grazing (days, h/day, type, quality per category; grassland area + fertiliser) → Feed (DMI per feed per category <em>or</em> % mix) → Manure (% per MMS per category; bedding) → Energy → Transport → results/duplicate.</li>
+<li><strong>Agrecalc</strong>: Farm report (name, year-end, avg temperature default 10 °C, sectors, groups, classes, enterprise type) → Land &amp; Crops (areas, fertiliser, imported manures, transferred manure, pesticides, production &amp; use, crop→livestock allocation, biochar, soil C) → Livestock (numbers &amp; weights → purchases/sales/deaths → performance → manure → purchased feed → bedding → ration) → Energy &amp; Waste → Results (whole-farm, enterprise KPIs, charts, benchmarks).</li>
+<li><strong>GLEAM-i</strong>: Start (name, region, country → defaults loaded) → Herd → Feed → Manure → Results (Baseline vs Scenario).</li>
+<li><strong>COMET-Farm animal ag</strong>: Project → Animal location (state/county) → select animal categories/types (+ groups) → per type: Animal details (monthly head, weight) → Feed (monthly, or Feed Calculator) → Housing (% time/month) → Manure follow-ups → Scenario (optional) → Report.</li>
+<li><strong>FEAST</strong>: Project → Site (country, currency, pasture nutrition defaults, custom feed sources) → Focus group tabs → Individual interview tabs (General, Property/Income, Livestock holding, Crops, Fodder &amp; diet, Livestock sales, Milk, Feed availability by month).</li>
+<li><strong>Carbon Navigator</strong>: select farmer (prefilled) → 5 base facts → six measures Current/Target → Update → chart vs peers → advice sheet → print.</li>
+<li><strong>CAP'2ER</strong>: Diagnostic (L1 27 items / L2 150 items) → positioning vs reference group → action plan → monitoring/simulation.</li>
+</ul>
+<hr />
+<h2 id="benchmarks-3-synthesis-1-the-10-most-transferable-patterns-for-icleaned">3. Synthesis 1 — the 10 most transferable patterns for iCLEANED</h2>
+<ol>
+<li><strong>Two explicit depth levels with published defaults (CAP'2ER L1/L2; MLA Quick Start; GLEAM-i defaults; EX-ACT Tier 1/2).</strong> Offer &quot;Quick (≈30 min, ~25 questions)&quot; and &quot;Detailed&quot; modes. Quick mode fills everything else from region/system defaults and <em>shows the list of assumptions it made</em>. Apply on Home (mode choice per scenario) and surface the assumption list on Check &amp; run.</li>
+<li><strong>Set-up wizard that prunes later screens (Agrecalc report set-up; COMET category selection).</strong> Ask up front which species, systems and plot types exist; only those rows/cards appear in Herds, Feeds, Manure. Apply on Home → Location: &quot;What's on this farm?&quot; checklist.</li>
+<li><strong>Herd as one table of fixed categories with counts and weights, breed-driven defaults (CFT Herd; Agrecalc classes; FEAST livestock holding).</strong> Fixed rows (e.g. lactating cows, dry cows, heifers, calves, bulls, draught) × {number, avg live weight}; pick breed → weights, milk yield, fat % prefill and stay editable. Running total of head and TLU (GLEAM-i &quot;total animal numbers&quot; live cell). Apply on Herds &amp; animal groups.</li>
+<li><strong>Percent-share rows with a live 100 % check, coloured green/red (GLEAM-i ration &amp; MMS; Agrecalc red cells; COMET housing/solids; CFT manure).</strong> Use for manure system shares, diet shares per season, time-on-plot shares. Apply on Manure &amp; inputs and Feeding plan.</li>
+<li><strong>Season × month mapping and per-season ordinal scores (FEAST rainfall 0-5, feed availability 0-10; COMET monthly tables with copy-across arrows).</strong> Seasons defined by clicking months; a diet or grazing pattern entered once and copied to other seasons with one action. Apply on Seasons and Feeding plan.</li>
+<li><strong>Persistent progress roadmap with four states and a locked Run button (COMET roadmap; Agrecalc Next/auto-save; FCC section toggles).</strong> Header shows each iCLEANED section as complete / incomplete / unavailable-with-reason / current; Check &amp; run lists the blockers. Auto-save on Next.</li>
+<li><strong>Location → auto-derived climate/soil, with edit affordance (COMET SSURGO/PRISM; Agrecalc soil C by postcode; EX-ACT climate/moisture/soil choice).</strong> Pin on map or pick admin unit → temperature, rainfall, AEZ, soil class prefilled and marked &quot;from map – edit&quot;. Apply on Location &amp; climate; draw or GPS-walk plots as simple polygons with area auto-computed (farmOS, FieldView, Hello Tractor agents' land tool).</li>
+<li><strong>Live or near-live results panel and side-by-side scenario comparison (FCC live CO2e; GLEAM-i Baseline vs Scenario with % change; CFT &quot;save as&quot; duplicate; Carbon Navigator current vs target).</strong> Duplicate a scenario, change one thing, compare. Apply on Home/scenarios (duplicate) and Results (two-column, % deltas, regional reference band).</li>
+<li><strong>Contextual help on every field plus a printable data-collection form that mirrors the screens (CFT hover &quot;i&quot; and notes box; FCC collation spreadsheet; FEAST printable forms; COMET data-entry spreadsheets).</strong> Ship a one-page paper/PDF checklist in the same order as the UI so an enumerator can interview first and key later, offline. Apply globally; the checklist becomes the FEAST-style field form.</li>
+<li><strong>Advisor-on-behalf-of-farmer with consent and a validation step (Carbon Navigator SMS code; Agrecalc consultant validators; CAP'2ER certified data collection; Hello Tractor booking agents).</strong> Accounts have farms; a &quot;collected by / farmer consent recorded&quot; stamp; an optional reviewer flag before results are shared.</li>
+</ol>
+<h3>3b. Screen-by-screen application map</h3>
+<table>
+<thead>
+<tr>
+<th>iCLEANED screen</th>
+<th>Patterns to apply (source)</th>
+<th>Concrete proposal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home / scenarios</td>
+<td>Farm → scenario hierarchy with duplicate (CFT &quot;save as&quot;, COMET duplicate); Quick vs Detailed (CAP'2ER); roadmap (COMET)</td>
+<td>Card per farm; each scenario card shows mode, completeness %, last saved; &quot;Duplicate as what-if&quot; action; &quot;Collect on paper first&quot; link to the printable form</td>
+</tr>
+<tr>
+<td>Location &amp; climate</td>
+<td>Location → auto climate/soil (COMET, Agrecalc postcode, EX-ACT); admin-unit fallback (Farmer.Chat data-cost lesson)</td>
+<td>Country → district pickers first; optional map pin; derived temperature, rainfall, AEZ, soil shown as &quot;from map — edit&quot; chips</td>
+</tr>
+<tr>
+<td>Plots</td>
+<td>Draw/GPS polygon with area auto-computed (farmOS, FieldView, Hello Tractor); minimal required fields (Farmbrite)</td>
+<td>Add plot needs only name + type + area (typed or drawn); slope/soil default from location; bulk &quot;same as previous plot&quot;</td>
+</tr>
+<tr>
+<td>Seasons</td>
+<td>Months assigned to seasons; ordinal rainfall (FEAST); copy across months (COMET)</td>
+<td>12-month strip; click-drag to assign season; 0-5 rain score per month optional; defaults from AEZ</td>
+</tr>
+<tr>
+<td>Herds &amp; animal groups</td>
+<td>Fixed category table with counts/weights, breed defaults (CFT, Agrecalc, FEAST); live totals (GLEAM-i); groups only when management differs (COMET)</td>
+<td>One table per species; breed → weight/yield defaults; running head + TLU total; &quot;Split group&quot; only if diet/manure differ</td>
+</tr>
+<tr>
+<td>Feeds</td>
+<td>Feed library by category with local names; custom feed discouraged but possible with reference (FEAST, Agrecalc list)</td>
+<td>Search-first picker grouped as forage / crop residue / concentrate / by-product; &quot;add local feed&quot; requires DM % and CP with source; link to plot if home-grown</td>
+</tr>
+<tr>
+<td>Manure &amp; inputs</td>
+<td>% time per MMS per category with 100 % check (CFT, Agrecalc, GLEAM-i); grazing deposition derived (CFT)</td>
+<td>Short MMS list (≤6) as slider rows summing to 100 % per group; fertiliser as product or &quot;N only&quot; pseudo-product (Agrecalc)</td>
+</tr>
+<tr>
+<td>Feeding plan</td>
+<td>Season × group ration as % shares or ordinal availability (GLEAM-i, FEAST); copy to other seasons (COMET arrows)</td>
+<td>Matrix: rows = groups, columns = seasons; cell opens ration editor with green/red total; &quot;copy to all seasons&quot;</td>
+</tr>
+<tr>
+<td>Check &amp; run</td>
+<td>Locked report until complete (COMET); list of defaults in use (CAP'2ER forfaits, GLEAM-i default column)</td>
+<td>Blockers list with deep links; &quot;Assumptions you are carrying&quot; list of fields still on default; run is the only network step</td>
+</tr>
+<tr>
+<td>Results</td>
+<td>Baseline vs scenario with % deltas and regional reference (GLEAM-i); 3 detail levels, PDF/CSV, share (FCC, CFT share code); peers/targets (Carbon Navigator)</td>
+<td>Two-column compare; Summary / Detailed / Full tabs; export PDF for farmer; anonymised share code</td>
+</tr>
+</tbody>
+</table>
+<h2 id="benchmarks-4-synthesis-2-low-bandwidth-low-literacy-patterns-feast-nuru-icow-farmer-chat-hello-tractor">4. Synthesis 2 — low-bandwidth / low-literacy patterns (FEAST, Nuru, iCow, Farmer.Chat, Hello Tractor)</h2>
+<ul>
+<li><strong>Offline-first with deferred sync</strong> (FEAST desktop app with export file; AgriWebb/Herdwatch/Breedr mobile). For a web tool: local storage of the draft, explicit &quot;Saved on this device / synced&quot; indicator, and the model run as the only network step <strong>(inferred design consequence)</strong>.</li>
+<li><strong>Ordinal scores instead of quantities where farmers cannot give numbers</strong> (FEAST 0-5 rainfall, 0-10 feed availability summing to 10, 0-4 issue severity). Use for seasonal feed availability and pasture quality; convert to model quantities behind the scenes with visible defaults.</li>
+<li><strong>Intermediary-centred design</strong>: Nuru phones given to extension officers; Farmer.Chat deployed to agents as a human-review layer; Hello Tractor booking agents. Design iCLEANED for the enumerator/adviser as the hands-on user, with a farmer-facing printable summary.</li>
+<li><strong>Local units and names</strong>: FEAST defines custom units by kg equivalence and marks them &quot;local&quot;; use debe/bundle/bag with a conversion the enumerator sets once per site.</li>
+<li><strong>Language and voice</strong>: Nuru advice offline in Swahili/French/Twi; Farmer.Chat voice-in/TTS-out; iCow parity across SMS/USSD/app. Minimum for iCLEANED: short plain-English labels, icon + label for categories, glossary tooltips; Swahili/French/Amharic/Vietnamese label files as a later step <strong>(inferred)</strong>.</li>
+<li><strong>Keep page weight tiny</strong>: iCow and USSD show the floor; Farmer.Chat found <em>data cost</em>, not literacy, was the binding constraint. Avoid map tiles by default (offer &quot;pick district&quot; first, map second), no heavy chart libraries on entry screens <strong>(inferred)</strong>.</li>
+<li><strong>Short video/prompt onboarding</strong> (Farmer.Chat 20-30 s clips, Plantix tutorials, Ruminati in-person onboarding events).</li>
+</ul>
+<h2 id="benchmarks-5-synthesis-3-how-the-best-tools-handle-quot-unknown-quot-and-defaults">5. Synthesis 3 — how the best tools handle &quot;unknown&quot; and defaults</h2>
+<ul>
+<li><strong>Default is always visible and editable, never blank</strong>: CFT fills breed weights, fat/protein, feed source region; Agrecalc prepopulates ADG, digestibility, CP, manure N/P; GLEAM-i loads a full country default set and colour-codes locked default vs editable baseline; EX-ACT drop-downs of IPCC defaults.</li>
+<li><strong>Defaults are explained and scoped</strong>: CAP'2ER publishes each Level-1 forfait; Agrecalc says &quot;use farmer estimates or industry default values … consultants will assess feasibility&quot;; CFT's guide gives DMI ranges by yield class as sanity anchors.</li>
+<li><strong>Leave-blank rule is explicit</strong>: FCC &quot;if not applicable, leave it out&quot;; EX-ACT &quot;normal for many cells to remain empty&quot;; Agrecalc soil C &quot;leave blank and we use postcode default&quot;. Blank = default, not zero.</li>
+<li><strong>Alternative entry routes for the same fact</strong>: Agrecalc offers &quot;Urea / Other N / Other P&quot; pseudo-products when fertiliser brands are unknown; CFT offers precise DMI or % mix; MLA Quick Start derives class distribution from a single total.</li>
+<li><strong>Derived quantities shown back</strong>: GLEAM-i total animals; CFT grazing-derived grass DMI and pasture manure &quot;already calculated – do not add again&quot;.</li>
+<li>For iCLEANED: every field gets a three-state control – <em>entered</em>, <em>default (source shown)</em>, <em>don't know → use default</em>; the Check &amp; run page lists all fields still on default so the user sees the uncertainty they are carrying <strong>(inferred synthesis)</strong>.</li>
+</ul>
+<h2 id="benchmarks-6-synthesis-4-multi-farm-multi-user-and-advisor-workflows">6. Synthesis 4 — multi-farm, multi-user and advisor workflows</h2>
+<ul>
+<li><strong>Hierarchy</strong>: FEAST Project → Site → Group → Respondent, with site-level facts (country, currency, pasture nutrition) inherited downward; COMET project → fields/animal types with copy-between-fields; CFT one farm per account by default, multi-farm switch for members; Agrecalc farm → reports (years) → enterprises/groups.</li>
+<li><strong>Roles</strong>: Agrecalc farmer / consultant / supply-chain users with consultant validation; Carbon Navigator adviser dashboard listing authorised vs unauthorised clients; Ruminati producer accounts plus corporate VISION dashboards fed only by opt-in sharing.</li>
+<li><strong>Consent and privacy</strong>: Carbon Navigator SMS authorisation code; CFT footprints private by default, shared via share code with farm name optionally removed; Ruminati data revocable at any time.</li>
+<li><strong>Reuse across years/scenarios</strong>: CFT &quot;save as&quot;; COMET duplicate project and copy management; FCC compare reports; Agrecalc &quot;future entries ~1 h&quot; because structure persists.</li>
+<li>For iCLEANED: Organisation → Site (defaults) → Farm → Scenario (year or what-if); collector and farmer fields on each farm; share-code export of anonymised results <strong>(inferred application)</strong>.</li>
+</ul>
+<h2 id="benchmarks-7-synthesis-5-how-livestock-ghg-calculators-structure-herd-and-manure-inputs">7. Synthesis 5 — how livestock GHG calculators structure herd and manure inputs</h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>CFT</th>
+<th>Agrecalc</th>
+<th>CAP'2ER</th>
+<th>GLEAM-i</th>
+<th>COMET-Farm</th>
+<th>Ruminati/MLA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Herd unit</td>
+<td>6 fixed age/sex categories per module</td>
+<td>Class list per group (10 cattle classes) with definitions</td>
+<td>Animal categories with N-excretion forfaits (L1)</td>
+<td>Reproductive adults + parameters → derived cohorts</td>
+<td>Animal types (+ up to 3-5 groups) with monthly head/weight</td>
+<td>Species totals; regional class split (Quick Start)</td>
+</tr>
+<tr>
+<td>Numbers</td>
+<td>Average on-farm + sold + purchased (deaths excluded)</td>
+<td>Average over 12 months; opening/closing weights; purchases, sales, deaths, KO %</td>
+<td>Effectifs par catégorie</td>
+<td>Adult count; fertility/mortality/replacement</td>
+<td>Monthly population</td>
+<td>Annual average</td>
+</tr>
+<tr>
+<td>Weights</td>
+<td>Live weight per category; dairy prefilled from breed</td>
+<td>Opening/closing per class; weaning weight for lambs</td>
+<td>Forfait by category</td>
+<td>Parameter defaults by country</td>
+<td>Monthly average, lbs</td>
+<td>Regional default</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Optional KPIs (age at 1st calving, calving interval, replacement) shown in Performance tab</td>
+<td>Required: age 1st calving, calving %, birth weight, ADG (prepopulated)</td>
+<td>Level 2 only</td>
+<td>Fertility, mortality, weight at slaughter</td>
+<td>Milk fat % monthly</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Feed</td>
+<td>DMI per feed per category or % mix; grazing-derived grass auto-added</td>
+<td>Purchased feed by category/type; ration digestibility &amp; CP prefilled</td>
+<td>Average concentrate per system type (L1)</td>
+<td>Detailed ration % by feedstuff with summary by category</td>
+<td>Feed Calculator: as-fed kg/head/day by month → DMI/CP/fat/ash</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Grazing</td>
+<td>Days + h/day + pasture type + quality per category</td>
+<td>% time grazing in-bye / hill</td>
+<td>Housing days forfait</td>
+<td>Implicit in system type</td>
+<td>% time on pasture/range per month</td>
+<td>Region</td>
+</tr>
+<tr>
+<td>Manure</td>
+<td>% per MMS per category; grazing time already accounted</td>
+<td>% time per MMS per class = 100 %; % exported; transfer to crops by %</td>
+<td>One housing type + one slurry store fixed at L1; spreading method &amp; delay</td>
+<td>% per IPCC MMS per species/system/herd</td>
+<td>Housing → separator → solids/liquids % tables, storage length, temperature</td>
+<td>Simplified</td>
+</tr>
+<tr>
+<td>Check</td>
+<td>–</td>
+<td>Red cells until 100 %</td>
+<td>–</td>
+<td>Green/red/yellow totals</td>
+<td>Red warning at ≠100 %; grey→green accordions</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>Common denominators worth adopting: fixed category rows; average-count semantics stated in the UI (snapshot vs opening/closing average, with both illustrated in CFT's guide); manure as <em>time-share</em> per category across a short IPCC-based list; grazing deposition derived from grazing time rather than asked; performance KPIs optional but displayed.</p>
+<h2 id="benchmarks-8-synthesis-6-five-things-not-to-copy">8. Synthesis 6 — five things NOT to copy</h2>
+<ol>
+<li><strong>Spreadsheet-first delivery</strong> (GLEAM-i, EX-ACT): macros, colour codes as the only affordance, no validation beyond cell colour. Keep colour codes but as a secondary cue with text state.</li>
+<li><strong>Making the user do the model's arithmetic</strong> (Agrecalc pesticide area ÷ sprays; Agrecalc lime annualisation; CFT pre-averaging herd numbers by hand). Ask for the raw fact and compute.</li>
+<li><strong>Mandatory two-pathway detours</strong> (CFT: assess feed crops in the crop module, save as feed item, come back). Keep feeds and plots in one flow; link plot → feed inside the Feeds screen.</li>
+<li><strong>Deep conditional nesting for manure</strong> (COMET housing → separator → solids/liquids → storage length → temperature). iCLEANED's context needs ~6 MMS options and a % time share; put the rest behind &quot;Detailed&quot;.</li>
+<li><strong>Dependence on infrastructure the user does not have</strong> (Carbon Navigator national databases; FieldView CLU polygons; Herdwatch registry sync; Plantix always-on data). Design for paper-first, offline draft, admin-unit fallback before map.</li>
+</ol>
+<p>Also avoid: 9+ equal-weight sections presented as a wall (FCC/Agrecalc first-time 2-2.5 h); permanent cascade delete with a single warning (FEAST); adviser-only access with no farmer-facing summary (Carbon Navigator, Alltech).</p>
+<hr />
+<h2 id="benchmarks-sources">Sources</h2>
+<ul>
+<li>Cool Farm Tool – Livestock (Beef &amp; Dairy) user guide: <a href="https://coolfarmsupport.zohodesk.eu/portal/en/kb/articles/cool-farm-tool-user-guide-livestock-beef-dairy">https://coolfarmsupport.zohodesk.eu/portal/en/kb/articles/cool-farm-tool-user-guide-livestock-beef-dairy</a> ; FAQ: <a href="https://coolfarm.org/frequently-asked-questions/">https://coolfarm.org/frequently-asked-questions/</a></li>
+<li>Agrecalc Cloud User Guide (Dec 2023): <a href="https://www.agrecalc.com/wp-content/uploads/2024/03/Agrecalc-User-Guide_AgrecalcCloud_20231201-with-links.pdf">https://www.agrecalc.com/wp-content/uploads/2024/03/Agrecalc-User-Guide_AgrecalcCloud_20231201-with-links.pdf</a> ; user roles: <a href="https://www.agrecalc.com/home/users/consultant-user/">https://www.agrecalc.com/home/users/consultant-user/</a></li>
+<li>CAP'2ER methodological guide (Idele): <a href="https://www.ferme-laitiere-bas-carbone.fr/medium/W1siZiIsIjIwMTgvMDYvMTMvMWptOW04OHN5bV9ndWlkZV9tX3Rob2RvbG9naXF1ZV9jYXAyZXIucGRmIl1d/guide-m-thodologique-cap2er.pdf?sha=b87e23d906901a87">https://www.ferme-laitiere-bas-carbone.fr/medium/W1siZiIsIjIwMTgvMDYvMTMvMWptOW04OHN5bV9ndWlkZV9tX3Rob2RvbG9naXF1ZV9jYXAyZXIucGRmIl1d/guide-m-thodologique-cap2er.pdf?sha=b87e23d906901a87</a> ; brochure: <a href="https://www.inn-ovin.fr/wp-content/uploads/2019/04/CAP2ER-pour-WEB-1.pdf">https://www.inn-ovin.fr/wp-content/uploads/2019/04/CAP2ER-pour-WEB-1.pdf</a> ; <a href="https://idele.fr/detail-article/cap2err">https://idele.fr/detail-article/cap2err</a></li>
+<li>GLEAM-i 2.0 User Guide rev. 3 (FAO 2017): <a href="https://www.fao.org/fileadmin/user_upload/gleam/docs/GLEAM-i_User_guide_2_Revision_3.pdf">https://www.fao.org/fileadmin/user_upload/gleam/docs/GLEAM-i_User_guide_2_Revision_3.pdf</a> ; web version: <a href="https://foodandagricultureorganization.shinyapps.io/GLEAMV3_Public/">https://foodandagricultureorganization.shinyapps.io/GLEAMV3_Public/</a></li>
+<li>COMET-Farm Manual: <a href="https://comet-farm.com/COMET-Farm_Manual.pdf">https://comet-farm.com/COMET-Farm_Manual.pdf</a> ; Animal Agriculture knowledge base: <a href="https://cometfarm.freshdesk.com/support/solutions/folders/64000135250">https://cometfarm.freshdesk.com/support/solutions/folders/64000135250</a> ; Defining groups: <a href="https://cometfarm.freshdesk.com/support/solutions/articles/64000255619-defining-groups-in-animal-agriculture">https://cometfarm.freshdesk.com/support/solutions/articles/64000255619-defining-groups-in-animal-agriculture</a></li>
+<li>Farm Carbon Calculator how-to guide: <a href="https://farmcarbontoolkit.org.uk/wp-content/uploads/2021/11/How-to-guide-carbon-calculator-Nov-2021.pdf">https://farmcarbontoolkit.org.uk/wp-content/uploads/2021/11/How-to-guide-carbon-calculator-Nov-2021.pdf</a> ; <a href="https://calculator.farmcarbontoolkit.org.uk/">https://calculator.farmcarbontoolkit.org.uk/</a></li>
+<li>Carbon Navigator User Manual (Teagasc/Bord Bia): <a href="https://www.teagasc.ie/media/website/about/our-organisation/Instruction-Carbon-Navigator-V2.pdf">https://www.teagasc.ie/media/website/about/our-organisation/Instruction-Carbon-Navigator-V2.pdf</a> ; <a href="https://www.bordbia.ie/farmers-growers/get-involved/farmer-feedback-report/reducing-your-farms-carbon-footprint/">https://www.bordbia.ie/farmers-growers/get-involved/farmer-feedback-report/reducing-your-farms-carbon-footprint/</a></li>
+<li>FEAST data application user manual (ILRI 2015): <a href="https://hdl.handle.net/10568/66319">https://hdl.handle.net/10568/66319</a> ; <a href="https://www.ilri.org/feed-assessment-tool-feast">https://www.ilri.org/feed-assessment-tool-feast</a> ; repository: <a href="https://feastdata.ilri.org/help">https://feastdata.ilri.org/help</a></li>
+<li>EX-ACT Quick Guidance (FAO): <a href="https://www.fao.org/fileadmin/templates/ex_act/pdf/EX-ACT_quick_guidance.pdf">https://www.fao.org/fileadmin/templates/ex_act/pdf/EX-ACT_quick_guidance.pdf</a></li>
+<li>Ruminati: <a href="https://ruminati.com.au/">https://ruminati.com.au/</a> ; <a href="https://thefarmermagazine.com.au/ruminati-a-farmer-led-carbon-emissions-calculator/">https://thefarmermagazine.com.au/ruminati-a-farmer-led-carbon-emissions-calculator/</a> ; <a href="https://nakatomi.com/work/ruminati">https://nakatomi.com/work/ruminati</a></li>
+<li>MLA Carbon Calculator: <a href="https://carbon-calculator.mla.com.au/">https://carbon-calculator.mla.com.au/</a> ; Quick Start lesson: <a href="https://elearning.mla.com.au/lessons/farm-information/">https://elearning.mla.com.au/lessons/farm-information/</a></li>
+<li>Farmers Weekly comparison of four calculators: <a href="https://www.fwi.co.uk/business/business-management/agricultural-transition/4-popular-carbon-calculators-for-farms-compared">https://www.fwi.co.uk/business/business-management/agricultural-transition/4-popular-carbon-calculators-for-farms-compared</a></li>
+<li>Alltech E-CO2: <a href="https://www.alltech.com/alltech-e-co2">https://www.alltech.com/alltech-e-co2</a> ; <a href="https://alltecheco2-test.azurewebsites.net/ea-environmental-assessments/">https://alltecheco2-test.azurewebsites.net/ea-environmental-assessments/</a></li>
+<li>AgriWebb mobile app: <a href="https://www.agriwebb.com/mobile-app/">https://www.agriwebb.com/mobile-app/</a> ; Herdwatch: <a href="https://herdwatch.com/livestock-apps/">https://herdwatch.com/livestock-apps/</a> ; Breedr: <a href="https://www.breedr.co/livestock-app">https://www.breedr.co/livestock-app</a> ; Farmbrite: <a href="https://help.farmbrite.com/help/getting-started-with-livestock">https://help.farmbrite.com/help/getting-started-with-livestock</a> ; farmOS mapping: <a href="https://farmos.org/guide/mapping/">https://farmos.org/guide/mapping/</a> ; Climate FieldView field set-up: <a href="https://climate.com/en-us/resources/getting-started/fieldview-101-overview/map-your-fields.html">https://climate.com/en-us/resources/getting-started/fieldview-101-overview/map-your-fields.html</a></li>
+<li>iCow: <a href="https://icow.co.ke/icow-history/">https://icow.co.ke/icow-history/</a> ; <a href="https://www.engineeringforchange.org/solutions/product/icow/">https://www.engineeringforchange.org/solutions/product/icow/</a></li>
+<li>PlantVillage Nuru: <a href="https://bigdata.cgiar.org/inspire/inspire-challenge-2017/pest-and-disease-monitoring-by-using-artificial-intelligence/">https://bigdata.cgiar.org/inspire/inspire-challenge-2017/pest-and-disease-monitoring-by-using-artificial-intelligence/</a> ; <a href="https://cipotato.org/blog/smartphone-app-help-farmers-control-potato-sweetpotato-diseases/">https://cipotato.org/blog/smartphone-app-help-farmers-control-potato-sweetpotato-diseases/</a></li>
+<li>Plantix: <a href="https://www.engineeringforchange.org/solutions/product/plantix/">https://www.engineeringforchange.org/solutions/product/plantix/</a></li>
+<li>Farmer.Chat (Digital Green) paper: <a href="https://arxiv.org/html/2409.08916v1">https://arxiv.org/html/2409.08916v1</a></li>
+<li>Hello Tractor: <a href="https://techpoint.africa/feature/hello-tractor-smallholder-farmers-technology/">https://techpoint.africa/feature/hello-tractor-smallholder-farmers-technology/</a> ; <a href="https://www.unsgsa.org/stories/hello-tractor-revolutionizing-farming-and-fueling-economic-empowerment-through-digital-financing-smallholders-kenya">https://www.unsgsa.org/stories/hello-tractor-revolutionizing-farming-and-fueling-economic-empowerment-through-digital-financing-smallholders-kenya</a></li>
+<li>TechFit (ILRI): <a href="https://www.ilri.org/knowledge/publications/techfit-tool-prioritize-feed-technology-interventions">https://www.ilri.org/knowledge/publications/techfit-tool-prioritize-feed-technology-interventions</a></li>
+</ul>
+</article></section>
+<section class="doc" id="doc-mockup" data-doc="mockup"><nav class="toc"><strong>On this page</strong><ul><li><a href="#mockup-verdict">Verdict</a></li><li><a href="#mockup-blockers-all-fixed">Blockers (all fixed)</a></li><li><a href="#mockup-high-fixed-unless-marked">High (fixed unless marked)</a></li><li><a href="#mockup-medium-fixed">Medium (fixed)</a></li><li><a href="#mockup-open-not-fixed-decisions-or-follow-ups">Open (not fixed; decisions or follow-ups)</a></li><li><a href="#mockup-done-well-from-the-reviewers">Done well (from the reviewers)</a></li><li><a href="#mockup-re-verification-live-after-fixes">Re-verification (live, after fixes)</a></li><li><a href="#mockup-v0-7-answers-to-your-questions-2026-09-29">v0.7 — answers to your questions (2026-09-29)</a></li><li><a href="#mockup-batch-upload-v0-7-1">Batch upload (v0.7.1)</a></li><li><a href="#mockup-information-architecture-second-pass-v0-7-2">Information architecture, second pass (v0.7.2)</a></li></ul></nav><article><h1>Scenario Builder mockup: adversarial review and fixes</h1>
+<ul>
+<li><strong>Date:</strong> 2026-09-29</li>
+<li><strong>Subject:</strong> <code>ui_ux/mockup/</code> (build <code>dev-20260929</code>), reviewed by three independent passes: compile/validation correctness against the <code>cleaned</code> v0.7.0 input contract (node harness over ~45 mutated states), live UX walkthrough at 1280 px and phone width, and feedback-layer/runtime-contract/security hygiene against the artifact runtime <code>.d.ts</code> files.</li>
+<li><strong>Outcome:</strong> 93 findings (4 Blocker, 21 High, 47 Medium, 21 Low). All Blockers and Highs and most Mediums are fixed in the same build; the rest are listed under &quot;Open&quot;.</li>
+</ul>
+<h2 id="mockup-verdict">Verdict</h2>
+<p>The redesign's core promise held under attack: compiled JSON has key/shape parity with the app's study-object format (0 missing, 0 extra keys apart from the intentional <code>livestock_mapping</code> and <code>param_set_copy</code> sidecars), unit conversions are exact, herd merges are head-weighted and flagged, every emitted manure/climate/slope/stock-change label is in the package's vocabulary, and the parameter-set copy overlay reaches the compiler. What failed was around the edges: a freshly added animal group broke (default objects stored as values), the dry-matter entry mode did not round-trip, several &quot;silent zero&quot; paths the redesign exists to close still slipped through (residue yield 0, blank rice fields, duplicate feed rows, 0 % N urea), screengrabs always failed (<code>color-mix()</code> in CSS), and keyboard entry lost focus after every value. The render scheduler could also stall for good in a hidden tab. All of these are fixed and re-verified live.</p>
+<h2 id="mockup-blockers-all-fixed">Blockers (all fixed)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Where</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C01</td>
+<td><code>30_dict.js decorate</code></td>
+<td>A new animal group with no hours stored the <code>{value, source}</code> default object as its hours; the card showed <code>[object Object]</code>, validation emitted nonsense, compile sent <code>time_in_stable = 1</code> and dropped manure questions.</td>
+<td>Store <code>d.value</code>; head-weighting falls back to equal weights when no group has a head count yet. Verified: fresh improved cows compile to 0.5/0/0.5/0.</td>
+</tr>
+<tr>
+<td>F-01</td>
+<td><code>styles.css</code></td>
+<td>html2canvas 1.4.1 cannot parse <code>color-mix()</code>; every screengrab failed and the failure toast was overwritten by the save toast.</td>
+<td>All seven <code>color-mix()</code> uses replaced with rgba tokens; &quot;Capturing the screen…&quot; toast while capturing.</td>
+</tr>
+<tr>
+<td>F-02</td>
+<td><code>30_location.js</code></td>
+<td>Location variant B (dropdowns) reset the region to &quot;Region…&quot; on change, so it could never set a location.</td>
+<td>Region handler captures the chosen value before rebuilding options. Verified: Kenya › Kakamega fills Lurambi, Tropical Moist, 1900 mm.</td>
+</tr>
+<tr>
+<td>F-33 / render stall</td>
+<td><code>10_store.js notify</code></td>
+<td>rAF never fires while the pane is hidden or unpainted; the <code>scheduled</code> flag stayed set and every later update was dropped for the life of the page.</td>
+<td>rAF raced with a 40 ms timeout; first to fire renders.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mockup-high-fixed-unless-marked">High (fixed unless marked)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C02 / F-12</td>
+<td>DM-mode diet entry did not round-trip; DM totals always read 100 %.</td>
+<td>The whole row is rebuilt from DM shares, other cells rescaled to fill the remainder, then converted to as-fed; the footer shows the as-fed total.</td>
+</tr>
+<tr>
+<td>C03</td>
+<td>The same feed item could appear twice (main + residue, or two plots), producing duplicate <code>feed_items</code> rows the package mis-pairs.</td>
+<td>Validation error naming the feed.</td>
+</tr>
+<tr>
+<td>C04</td>
+<td>Fields the compiler could not fill (<code>rice_fields</code>, <code>soil_k_value</code>, <code>region</code>) were &quot;blocked&quot; but not errors; Run stayed enabled.</td>
+<td>Every compile-blocked path becomes a Check &amp; run error; rice fields are required for grown rice.</td>
+</tr>
+<tr>
+<td>C05</td>
+<td>Residue feeds with residue yield 0 passed (0 ha silently).</td>
+<td>Blocked with a message naming the feed.</td>
+</tr>
+<tr>
+<td>F-03 / F-04</td>
+<td>Season templates wiped the whole feeding plan silently; Copy/Same-for-all/Clear had no confirmation or toast.</td>
+<td>Two-step confirm when a plan exists; toasts name what happened.</td>
+</tr>
+<tr>
+<td>F-05 / F-06 / F1 / F2</td>
+<td>Focus lost after every committed value (inputs had no ids); dashboard search lost focus per keystroke.</td>
+<td>Focus restored by a stable key (nearest <code>data-fb</code> + control identity + index); search debounced with an id. Verified: focus stays on &quot;In a roofed shed&quot; after change.</td>
+</tr>
+<tr>
+<td>F-07 / F3</td>
+<td>&quot;Reset example data&quot; wiped feedback state; votes/ratings looked unsaved.</td>
+<td><code>reset()</code> preserves <code>fb</code>.</td>
+</tr>
+<tr>
+<td>F-08</td>
+<td>Blank scenario had no way to name itself; Check linked to Home.</td>
+<td>Editable scenario name on About; error links there.</td>
+</tr>
+<tr>
+<td>F-09</td>
+<td>Manure follow-ups rendered above the choices they belong to.</td>
+<td>Radios appended before follow-ups.</td>
+</tr>
+<tr>
+<td>F-10</td>
+<td>&quot;napier&quot; found nothing.</td>
+<td><code>feedSynonyms</code> table (Napier/elephant grass, Rhodes, dairy meal…) searched and shown first.</td>
+</tr>
+<tr>
+<td>F-11</td>
+<td>Three A/B vote widgets pushed content 250–540 px down on every card.</td>
+<td>Collapsed into one &quot;Design alternatives (n)&quot; box on list views only.</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Rating/vote ids built from a <code>null</code> viewer id collided.</td>
+<td>Falls back to the device's anonymous id; ids sanitised to the path grammar.</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>A refused shared write went to a throwaway adapter nothing read.</td>
+<td>One local adapter kept from init; on refusal the page switches to composite (read live / write local) with the banner.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mockup-medium-fixed">Medium (fixed)</h2>
+<p>C06 fertiliser %N range and 0 % blocked · C07 dangling plot/herd references cascade to null and enum values are checked against options · C08 unknown land-use choices fall back and block instead of throwing; compile/validate wrapped in try/catch in render · C09 head/area maxima removed for macro scale · C10 country → IPCC region by whole-name table (9 regions), unknown blocks · C11 intercrop fraction inverted to &quot;share taken by the other crop&quot; · C12 <code>manure_sales_fraction = 0</code> (package double-discounts; matches the app) · C13 bought/collected feeds compile to <code>Main</code> so off-farm land counts; only the DB placeholder crop is <code>Purchased</code> · C14 <code>database_code</code> = the copy's base set, copy recorded in <code>param_set_copy</code> · C15 adult weight taken from the (overlaid) row before falling back · C16 validation labels translated for scale · C17 feeding errors route to the season tab · C19 parity fields (<code>*_ipcc</code>, <code>grassman*</code>, <code>&quot;NULL&quot;</code> strings) match the app · C20 compile/validate read the parameter copy from the passed state · C22 negative rates, out-of-range months, fertiliser rows gated · C23 &quot;left where it drops&quot; forces collected = 0 · C24 unknown livestock/feed codes blocked and skipped in the basket · C25 soil depth default 0.3 m · F-13/F-14 remaining &quot;farm&quot; and raw <code>{token}</code> leaks (herd patterns, validation labels, callouts, boundary text) · F-15 herd pattern change re-derives hours for groups without hand-entered hours (toast) · F-16/F-17 chip menu focuses the right control; &quot;Clear the value&quot; for user values without defaults · F-18 seeded feed origin/plot marked &quot;assumed&quot; · F-19 &quot;Looks right — keep it&quot; on assumed values; month arrays print as names · F-20 world region shown as calculated · F-21 feeding totals row carries <code>data-fb</code> so jump links flash it · F-22 new entities show no red until touched or until Check has been visited · F-23 participant-view banner clears on route change · F-24 phone top bar collapsed to one chip · F-25 placeholder contrast; theme button labelled · F-26/F15 focus rings on chips, rating scale, radios, months · F-27 skip link · F-29 &quot;farms represented&quot; at group scale · F-30 About says &quot;answer the remaining questions&quot; instead of skipping steps · F-31 &quot;from maps&quot; only claimed when a location exists · F-32 fertiliser status from data · F-34 plain labels for land-cover classes · F-35 &quot;animal group&quot; wording · F-36 rounding, version in proposal · F-37 season hint always shown · F-38 close button on the model-input panel · F-39 toast after removal · F6 one in-flight write per document · F7 subscription errors surface a banner · F8 import validates ids and fields, whitelists screenshots, throttles writes · F9 screenshot <code>src</code> must be a base64 image data URL · F10 CSV formula-injection guard · F11 session/name/group persisted separately · F12 localStorage carries the schema version; persisted <code>system</code>/<code>meta</code> merged with fresh defaults · F13 <code>&lt;!doctype html&gt;</code> on the offline file · F14 <code>aria-live</code> removed from the re-rendered screen · F16 highlight overlay <code>touch-action: none</code> and <code>pointercancel</code> · F17 preview not rendered while hidden · F18/F19 build validates types, option predicates, <code>_meta.*</code> names, required field ids; <code>&lt;</code> escaped in inlined JSON · F20 byte-accurate size ladder, 4000-char text cap · F22 saves guarded until the store connects · F25 store banner has its own class.</p>
+<h2 id="mockup-open-not-fixed-decisions-or-follow-ups">Open (not fixed; decisions or follow-ups)</h2>
+<ul>
+<li><strong>C18 / manure labels:</strong> &quot;Burned for fuel&quot; is the Table 10.17 label; 10.21/10.22 use &quot;…or as waste&quot; and hold the string <code>&quot;NA&quot;</code>. Kept 10.17; file a package data issue.</li>
+<li><strong>C11 intercrop direction and C12 manure sales double-discount</strong> need confirmation from the package maintainers; both are documented in the compiler.</li>
+<li><strong>F-28 offline dependencies:</strong> Google Fonts and html2canvas still load from CDNs; the offline file falls back to system fonts and text-only capture without network. Vendoring html2canvas into the offline build is the next step.</li>
+<li><strong>F-36 Goats → IPCC &quot;Sheep&quot; class</strong> is DB data, not a mockup bug.</li>
+<li><strong>F21 participant-view variant restore</strong>, <strong>F24 focus return after screengrab</strong>, <strong>F27 object URL revoke</strong>, <strong>F28 composite merge preferring remote</strong>, <strong>F29 README note on network dependencies</strong>: cosmetic, deferred.</li>
+<li>Keyboard: Tab through the full sidebar before the form is mitigated by the skip link only.</li>
+</ul>
+<h2 id="mockup-done-well-from-the-reviewers">Done well (from the reviewers)</h2>
+<p>Provenance chips with actionable menus and one legend everywhere; parameter-set copy workflow with per-cell &quot;was … · revert&quot;; plain-language manure choices with the exact IPCC mapping visible; keyboard behaviour of the comment panel (Enter opens, Tab wraps, Escape returns focus); purchased inputs in the user's units with a live kg N readout; comma-decimal normalisation with a toast.</p>
+<h2 id="mockup-re-verification-live-after-fixes">Re-verification (live, after fixes)</h2>
+<p>Fresh improved-cow group → <code>time_in_stable 0.5</code>, <code>time_in_onfarm_grazing 0.5</code>, manure system &quot;Solid storage&quot; · hours input keeps focus after change · DM entry of 50 shows 50 with the as-fed footer total · &quot;napier&quot; finds &quot;Napier grass · Pennisetum purpureum&quot; · Location variant B sets Kakamega/Lurambi with map defaults · national scale reads &quot;About this national herd&quot;, &quot;Grazing on private land / on communal or open land&quot; · reset keeps the feedback store connected · demo scenario: 0 errors, 0 warnings, 10 assumptions, 45 parameter-set values · Germany → WESTERN EUROPE · no console errors · no <code>color-mix</code> in the built file.</p>
+<h2 id="mockup-v0-7-answers-to-your-questions-2026-09-29">v0.7 — answers to your questions (2026-09-29)</h2>
+<p>Seven questions, and what changed in the mockup for each.</p>
+<p><strong>1. Can the animals be entered with the herd?</strong> Yes, and now that is the main route. The herd card carries an &quot;Animal groups in this herd&quot; table (group, head, the four day hours, Edit) and an <strong>+ Add an animal group</strong> button that opens the species → group picker inside the herd, so you never have to pick a herd from a dropdown. Step 7 (Animals) stays as the overview and the per-group editor.</p>
+<p><strong>2. Should manure management be on the herd, not the animal?</strong> Agreed, and it moved. Manure handling and the collected share are answered once per herd (<code>hmanure_stable</code>, <code>hmanure_pen</code>, <code>hmanure_onfarm</code>, <code>hmanure_offfarm</code>, <code>hmanure_kept_share</code>), because handling follows the place the animals are kept, not the animal category. Each animal group inherits them, shows what it inherited with a &quot;⇣ from the herd&quot; chip and a link to change it for the whole herd, and can still override in a folder called &quot;Manure for this group only&quot; — a calf pen handled differently is real, but it is the exception. The compiler is unchanged in shape: it still writes <code>manureman_*</code> and <code>manure_in_*</code> per <code>livetype_desc</code>, resolving herd → group override, and still merges by head count when one animal type appears in two herds.</p>
+<p><strong>3. Feeding plan linked to the herd.</strong> The feeding plan is now herd-first: a <strong>Herd</strong> tab row above the <strong>Season</strong> tabs, with a group count and an error badge per herd, plus &quot;All herds together&quot;. &quot;Copy from <previous season>&quot; and &quot;Clear&quot; act on the herd you are in, not the whole scenario.</p>
+<p><strong>4. Multiple herds — one plan each?</strong> Yes. The screen states it: <em>&quot;2 herds × 2 seasons = 4 grids&quot;</em>, and every group's column must reach 100% in each. Two of the example scenarios (Rungwe commercial, Tanzania national) have two herds so this is testable in the workshop.</p>
+<p><strong>5. If fertiliser is entered on the feeds, what is the Fertiliser section for?</strong> Only for what is <em>in</em> the bag. Rates and placement stay on the feed cards; this screen asks the nitrogen percentage once per product, because the model works in kilograms of N and two crops using the same product share one number. The screen now says so, lists which feeds use each product with their rates and a &quot;change&quot; link, and shows the resulting kg N per hectare. It appears only when a product is actually used.</p>
+<p><strong>6. Show the selected parameter above the tables, unlockable and editable.</strong> Clicking any row in a parameter table opens it above the table as its own transposed table: plain label, unit, value in this set, shipped value, and per-cell Revert. It is locked by default (🔒) with <strong>Unlock to edit</strong>; on a shipped set the button is &quot;Make my own copy to edit&quot; instead. Column names are now plain language with units (<code>cp_lactmilk</code> → &quot;Crude protein per kg of milk&quot;), and values that belong to other species are parked in a folder instead of padding the table with zeros.</p>
+<p><strong>7. Feed nutritional parameters: a folder you can unlock.</strong> Each feed card has a &quot;Nutritional parameters&quot; folder showing dry matter, energy, protein and the two nitrogen contents read-only with their source chips. It offers the choice explicitly, because this is the part that needed deciding: <strong>Unlock for this scenario only</strong> (an override on this feed in this scenario, parameter set untouched) or <strong>Edit in the parameter set</strong> / <strong>Edit the crop row</strong> (jumps to the parameters screen with that row selected and unlocked, changing every scenario that uses your copy of the set). The folder spells out the difference, so nobody edits a shared default when they meant to fix one scenario.</p>
+<p><strong>Where are the results shown?</strong> On the Results screen (<code>#results</code>), which in the real app receives the model output. The mockup does not run the model, and now says so at the top of that screen, with a link to Check &amp; run for exactly what would be sent. It also shows the size of what you described — animals, hectares, annual milk, herds, feeds, seasons — labelled as inputs added up rather than results, so a wrong scale is caught before running. What belongs on the screen is deliberately left open for the workshop.</p>
+<p><strong>Project vs scenario.</strong> A scenario is one description of one enterprise for one year. A project is the folder that groups related scenarios and the people who may see them; scenarios in a project can be compared with each other. Both are now defined in the welcome glossary and on the Home screen, which previously showed a Projects card with no explanation.</p>
+<p><strong>Verified live:</strong> all six example scenarios compile with 0 errors (Rungwe keeps 2 legitimate warnings) and the herd manure answers reach the package labels — biogas → <code>Anaer digester, Low leak, HQ stor, LQ tec</code>, wet pit → <code>Liquid/Slurry Pit below animals 3 Month</code>, covered heap → <code>Solid storage - Covered/compacted</code>. Editing &quot;Live weight&quot; in an unlocked parameter row records <code>{from: 350, to: 365}</code> in the copy; &quot;Edit in the parameter set&quot; from a feed card lands on feed row 11 with the panel open.</p>
+<h3>v0.7 follow-ups</h3>
+<p><strong>Build stamp in the header.</strong> The header now reads <code>Scenario Builder · mockup v0.7.0 · 29 Sep 16:46</code> — semantic version from <code>package.json</code> plus the build time to the minute, so you can tell at a glance whether what you are looking at includes the last change. The full stamp (with target) is in the title tooltip and on the welcome screen; on a phone the prefix drops and the version stays.</p>
+<p><strong>Sidebar no longer lists every record.</strong> Listing one child per feed does not survive a real feed list. Entity steps now show a count (<code>Feeds ×12</code>), and list children only while there are six or fewer — small scenarios keep the map, large ones get <code>12 feeds · 2 to fix · filter</code> linking to the step.</p>
+<p><strong>Filter chips on the list screens.</strong> Feeds, Animals and Plots gained a chip row built from the data itself, so a chip appears only when it matches something: for feeds, origin (grown / bought / collected), main product vs residues, and one chip per plot; for animals, one per herd plus milking and young stock; for plots, the land use. Each chip carries its count, there is a search box matching feed names, crop names and local synonyms, a &quot;Needs attention&quot; chip when something is blocking, and a card/list toggle that switches to a compact table automatically above eight records. Search keeps focus while filtering.</p>
+<p><strong>Topbar crowding fixed.</strong> Between 900 and 1200 px the scenario chips were being squeezed to 77 px because the action buttons never shrink. The scenario row now always sits on its own line.</p>
+<h2 id="mockup-batch-upload-v0-7-1">Batch upload (v0.7.1)</h2>
+<p>A separate <strong>Batch</strong> tab in the sidebar, for descriptions that already exist — a household survey, a project's monitoring sheet, a district inventory — rather than typing each enterprise into the wizard.</p>
+<p><strong>The file contract.</strong> One table per thing you are describing, joined on <code>enterprise_id</code>: <code>enterprises, seasons, plots, herds, animals, feeds, diet</code>. Either a <code>.xlsx</code> workbook with one sheet per table, one <code>.csv</code> per table (uploaded one at a time and merged), or a single <code>.json</code>. Columns hold <strong>names, not codes</strong> — &quot;Napier grass&quot;, &quot;Cows, local breed&quot; — because that is what a field officer's spreadsheet holds; an unknown name is reported, never guessed. Templates download from the screen (JSON, and one CSV per table). The xlsx reader (SheetJS) loads from the CDN only when a workbook is actually dropped, and says to use CSV if it cannot.</p>
+<p><strong>QAQC.</strong> Every enterprise is built into a scenario and run through the same validator and compiler as a typed one, so a batch that passes would pass field by field. Problems come in two layers: file-level ones naming the sheet and column (<code>animals.hours_*: &quot;Cows, local breed&quot;: the day adds up to 27 hours, not 24</code>; <code>feeds.feed: &quot;Napier (local variety)&quot; is not a feed in this parameter set</code>) and the model-level ones the wizard already knows. The table shows one row per enterprise with animals, land, status and an expandable problem list, filter chips (All / Blocked / Check / Ready), and &quot;Open in the builder&quot;, which loads that one enterprise into the wizard while leaving the batch intact.</p>
+<p><strong>Visualise.</strong> Batch totals plus ranked distributions of animals per enterprise, land per enterprise, milk per animal and animals per hectare, each with median, mean and extremes. Labelled as inputs added up, not model results — their job is to expose the unit mistakes a batch hides: litres a day typed as litres a year, hectares as acres, a herd entered once per animal. After a run this is where the same enterprises would be ranked by emissions per kilogram of milk.</p>
+<p><strong>Download.</strong> QAQC report as CSV with one row per problem (sheet, column, message) so it can go straight back to whoever filled the sheet; compiled model input as JSON, either ready-only or everything, one study object per enterprise with its assumed values; and the file as read.</p>
+<p><strong>Sample batch.</strong> A button builds 12 enterprises from the example scenarios with ±15 % jitter and three deliberately broken rows (a 27-hour day, a diet column at 85 %, a feed name not in the parameter set), so the QAQC table has something real to show in the workshop. Verified: 7 ready, 2 with the legitimate Rungwe warnings, 3 blocked, each naming the right sheet and column.</p>
+<h2 id="mockup-information-architecture-second-pass-v0-7-2">Information architecture, second pass (v0.7.2)</h2>
+<p>Four changes from your reading of the structure. The wizard is now <strong>10 steps, not 13</strong>.</p>
+<p><strong>&quot;What we count&quot; left the wizard.</strong> It was a page of explanation sitting in a sequence of data-entry steps, and it made the wizard look longer than it is. It is now background material, reachable from the sidebar's reference group, from the welcome screen and from the FAQ, with no step number and no place in Next/Back.</p>
+<p><strong>&quot;About this farm&quot; is renamed.</strong> On the web, <em>About</em> means who we are and how to contact us, so using it for the system description was a false signal. The step is now <strong>&quot;Your livestock system&quot;</strong> (sidebar: &quot;Your system&quot;) — &quot;a few questions about what you keep and how, so we only ask what applies to you&quot;.</p>
+<p><strong>Help, FAQ and contact now exist.</strong> A new reference page with twelve questions answered (what it calculates; scenario vs project; what belongs inside the boundary; whether every field is needed; why results come out zero; where defaults come from and what you may change; a feed not in the list; units; the comma decimal; batch; who can see your data; how to report a problem), a &quot;stuck right now&quot; box, links to the background pages, and a reporting table that routes an app problem to CIAT/icleaned, a wrong result or a wrong default to CIAT/cleaned, and anything workshop-related to the in-page Comment button. It carries no email address — the team's channel is filled in by whoever runs the session. Reachable from &quot;Help &amp; FAQ&quot; in the top bar and the sidebar, and it shows the build stamp to quote in a report.</p>
+<p><strong>Location, seasons and land are one step.</strong> Step 2 is now &quot;Place, climate, seasons and land&quot;: where the animals are, the climate and soil from maps, then the seasons, then the land. Seasons and plots keep their own detail screens for month strips and per-plot answers, and hang under the step in the sidebar instead of taking step numbers of their own.</p>
+<p><strong>Seasons are proposed from the rainy months, which answers the naming problem.</strong> You already tick the months with rain in a normal year. The app reads the contiguous runs of those months and offers named seasons — &quot;Rainy season (Nov–Apr) · Dry season (May–Oct)&quot;, or &quot;Long rains / Short rains / Dry season&quot; where there are two wet runs — with one button to accept and inline renaming afterwards. The suggestion disappears once the seasons match it, however they are named and in whatever order they are listed, and taking it warns first when it would clear an existing feeding plan. Verified on the Kenyan template: nine rainy months became &quot;Rainy season (Mar–Nov)&quot; and &quot;Dry season (Dec–Feb)&quot;, 365 days placed.</p>
+<p>Also fixed in passing: the feeding plan showed as &quot;not started&quot; in the sidebar even when fully entered, because the diet lives in <code>allocation</code>, which is not provenance-tracked.</p>
 </article></section></main><script>
 const tabs=[...document.querySelectorAll(".tab")],docs=[...document.querySelectorAll(".doc")];
 function show(k){tabs.forEach(t=>t.setAttribute("aria-selected",t.dataset.target===k));docs.forEach(d=>d.classList.toggle("active",d.dataset.doc===k));try{localStorage.setItem("uiux-tab",k)}catch(e){}}
