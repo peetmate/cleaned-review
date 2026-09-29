@@ -1,0 +1,527 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Proposed fixes: test log</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>Proposed fixes: test log</h1>
+<ul>
+<li><strong>Date:</strong> 2026-09-29</li>
+<li><strong>Package:</strong> <code>cleaned</code> v0.7.0 (<code>staging</code> @ <code>800d53a</code>)</li>
+<li><strong>Status:</strong> proposals only. The repository was not edited, branched or merged.</li>
+</ul>
+<h2>How the fixes were tested</h2>
+<p><code>fixes/proposed_fixes.R</code> defines each fix as exact find-and-replace edits. Each edit must match exactly once, so a fix fails loudly if the source has moved on.</p>
+<p><code>fixes/run_all.sh</code> runs <code>fixes/run_one.R</code> for 11 configurations:</p>
+<ul>
+<li>baseline (no fixes)</li>
+<li>each fix alone (F01 to F09)</li>
+<li>all fixes together (ALL)</li>
+</ul>
+<p>Each configuration does the following in a fresh R process:</p>
+<ol>
+<li>Copies the package source (<code>../cleaned_review_src</code>, the v0.7.0 checkout) to a temporary folder.</li>
+<li>Applies the fix or fixes to that copy.</li>
+<li>Writes the change as a diff to <code>fixes/results/&lt;id&gt;.diff</code>.</li>
+<li>Loads the copy with <code>pkgload::load_all()</code>.</li>
+<li>Runs the 24 tests in <code>fixes/tests/</code>:
+<ul>
+<li>8 controls</li>
+<li>13 finding tests</li>
+<li>2 guards for the fixes themselves</li>
+<li>1 skipped test, whose source I couldn't verify</li>
+</ul>
+</li>
+<li>For the baseline and ALL configurations, runs the two iCLEANED example studies the same way the app does.</li>
+</ol>
+<h2>Result</h2>
+<p>Each fix turns only its own finding tests green, and every control passes in all 11 configurations. No fix breaks another test. With all fixes, 23 tests pass and 1 is skipped. The full matrix is in <code>fixes/results/test_matrix.csv</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>base</th>
+<th>F01</th>
+<th>F02</th>
+<th>F03</th>
+<th>F04</th>
+<th>F05</th>
+<th>F06</th>
+<th>F07</th>
+<th>F08</th>
+<th>F09</th>
+<th>ALL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01 control NEm (Eq. 10.3)</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>01 intake per Eq. 10.14–10.16</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>01 guard: intake finite on a low-DE diet</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>02 control N intake (Eq. 10.32)</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>02 N retention (Eq. 10.33)</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>02 N excretion (Eq. 10.31A)</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>03 control Eq. 2.25</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>03 no change on steady-state land</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>03 guard: land-use change per Eq. 2.25</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>04 control Table 2.5 factors</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>04 burning CO2e = CH4 + N2O</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>05 control biomass output shape</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>05 tree carbon added to SOC</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>06 control normal feed has land</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>06 zero yield flagged</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>07 control out4 = rate × area</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>07 leaching = rate × area</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>07 leaching coefficient</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+<td>⏭</td>
+</tr>
+<tr>
+<td>08 control explicit argument</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>08 <code>n_balance()</code> signals the lookup</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>08 <code>ghg_emission()</code> signals the lookup</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>09 <code>feed_quality()</code> runs on the example</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>09 <code>energy_requirement()</code> runs on the example</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>09 example DM in %</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h2>The fixes</h2>
+<p>The Status column says whether a fix can go in as it is or needs the authors to agree the method first. Ready means the code change is correct and only affects what the finding describes.</p>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Fix</th>
+<th>Files</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>F01</strong></td>
+<td>Convert net energy to intake with IPCC REM/REG (2019 Eq. 10.14–10.16). Energy-based DMI = GE/18.45 for cattle, buffalo, sheep and goats. Pigs are unchanged.</td>
+<td><code>R/energy_requirement.R</code> (annual NE split into REM and REG groups; seasonal DMI)</td>
+<td><strong>Author decision</strong></td>
+<td>(1) DE is derived from the package's ME with its own ME/DE = 0.81. (2) DE is floored at <strong>45%</strong> for REM/REG: IPCC 2019 p. 10.21 gives the common ruminant DE ranges as starting at 45%. The package warns below that. Without the floor, the example diet (35–40% DE) gave negative intakes and one of 57,831 kg DM. The guard test catches this. (3) It changes every livestock output.</td>
+</tr>
+<tr>
+<td><strong>F02</strong></td>
+<td>N retention in kg N/head/day (Eq. 10.33), and N excretion = (N intake − retention × herd) × 365 (Eq. 10.31A)</td>
+<td><code>R/ghg_emission.R:226, 233</code></td>
+<td>Ready for cattle</td>
+<td>Sheep and goats reuse the cattle equation, 10.33; IPCC gives it for cattle, so confirm for small ruminants. The pig pathway is unchanged.</td>
+</tr>
+<tr>
+<td><strong>F03</strong></td>
+<td>Soil carbon changes only when land use or management changes (2006 Eq. 2.25). Adds optional inputs <code>cropland_system_previous</code>, <code>cropland_tillage_previous</code>, <code>cropland_orgmatter_previous</code>, <code>grassland_management_previous</code> and <code>grassland_implevel_previous</code>; if they're absent, the change is 0.</td>
+<td><code>R/soc.R</code> (3 stock-change blocks)</td>
+<td><strong>Author decision</strong></td>
+<td>The measured stock is treated as SOC₀, and SOCref = SOC₀/F₀. The alternative is IPCC Table 2.3 SOCref by climate and soil. The app would need fields for the previous state to show real land-use change. The stock size/units question (about 10×) is not addressed.</td>
+</tr>
+<tr>
+<td><strong>F04</strong></td>
+<td>Burning CO2e = CH4 × GWP + N2O × GWP, read by column name</td>
+<td><code>R/merge_outputs.R:810-812</code></td>
+<td>Ready</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>F05</strong></td>
+<td>Read tree carbon from <code>biomass$c_increase_soc</code></td>
+<td><code>R/soc.R:234</code></td>
+<td>Ready</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>F06</strong></td>
+<td>Warn when a feed with DM demand has no finite land area</td>
+<td><code>R/land_requirement.R</code></td>
+<td>Ready</td>
+<td>Warns only; the result is unchanged. Whether purchased feeds should count off-farm land is a separate method decision.</td>
+</tr>
+<tr>
+<td><strong>F07</strong></td>
+<td>Leaching = per-ha rate × <code>area_total</code>, using per-ha organic N</td>
+<td><code>R/nitrogen_balance.R:249-251</code></td>
+<td>Ready (area only)</td>
+<td>The coefficient <code>0.021*(P-3.9)</code> is left unchanged. The NUTMON form is reported as <code>0.021*P-3.9</code>, but I haven't verified it against Smaling et al. (1993).</td>
+</tr>
+<tr>
+<td><strong>F08</strong></td>
+<td>Warn when <code>energy_required</code> or <code>feed_basket_quality</code> is taken from the caller</td>
+<td><code>R/nitrogen_balance.R:36</code>, <code>R/ghg_emission.R:47</code></td>
+<td>Ready as a warning</td>
+<td><strong>iCLEANED relies on this lookup:</strong> it sets <code>environment(n_balance) &lt;- environment()</code> and omits the argument. Replace the lookup with <code>stop()</code> only after the app passes both inputs explicitly.</td>
+</tr>
+<tr>
+<td><strong>F09</strong></td>
+<td>Make the shipped <code>example_input.json</code> match the input contract: add <code>crop_name</code> and the renamed livestock columns; DM in %, with concentrate DM set to an assumed 87%</td>
+<td><code>inst/extdata/example_input.json</code></td>
+<td>Ready</td>
+<td>The diff is large because <code>write_json</code> reformats the whole file.</td>
+</tr>
+</tbody>
+</table>
+<h2>Effect in iCLEANED (the app's two example studies, all fixes)</h2>
+<p>The per-source table is in <code>08_demo.md</code>. On-farm totals, including the soil carbon change:</p>
+<table>
+<thead>
+<tr>
+<th>Study</th>
+<th>Current, kg CO2e/yr</th>
+<th>Fixed, kg CO2e/yr</th>
+<th>Main drivers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Study_1</td>
+<td>9,628</td>
+<td>8,045</td>
+<td>False soil carbon loss removed (−4,505). Enteric CH4 +60% (4,388 → 6,998) because intake is now per IPCC. Cow intake goes from 1.9% to 3.1% of body weight.</td>
+</tr>
+<tr>
+<td>Study_2</td>
+<td>67,322</td>
+<td>21,660</td>
+<td>False soil carbon loss removed (−32,397). Burning 13,834 → 578. Intake unchanged because it's limited by crude protein, not energy.</td>
+</tr>
+</tbody>
+</table>
+<p>Messages the app would now receive:</p>
+<ul>
+<li>Study_1: concentrate with DM demand but 0 ha.</li>
+<li>Study_2: diet DE of 39–40% is below the IPCC range.</li>
+<li>Both: deprecation warnings for the hidden input lookup.</li>
+</ul>
+<h2>Not fixed here (High findings still open)</h2>
+<ul>
+<li><strong>Intake has no upper limit.</strong> Intake = max(energy, CP), so the Study_2 cow still eats <strong>8.4% of body weight</strong>. The authors need to decide how to cap intake, for example by rumen fill or an NDF limit, or flag CP-limited diets (LV H-01, LU-02).</li>
+<li><strong>Manure CH4 is 0:</strong> manure-system labels don't match the MCF table (CL F07).</li>
+<li><strong>Water</strong> is about 10× too low: mm·ha is labelled as m³ (LU W-01).</li>
+<li><strong>N2O pathways</strong> that are never aggregated, and the mix of 2006 and 2019 N2O factors (CL F05, F06, F09).</li>
+<li>The remaining High findings: see <code>00_summary.md</code>.</li>
+</ul>
+<h2>To reproduce</h2>
+<pre><code class="language-bash">cd fixes
+./run_all.sh ../../cleaned_review_src ../../icleaned_review_src
+Rscript -e 'knitr::knit(&quot;demo.Rmd&quot;, &quot;../08_demo.md&quot;)'
+</code></pre>
+<p>This needs <code>openxlsx</code>, <code>callr</code>, <code>knitr</code>, <code>testthat</code> and <code>pkgload</code>. <code>run_all.sh</code> rebuilds <code>fixes/results/</code> and <code>fixes/cleaned_fixed_copy/</code>, which is a plain folder, not a git checkout.</p>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

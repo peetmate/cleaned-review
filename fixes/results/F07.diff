@@ -1,0 +1,16 @@
+diff -ru a/R/nitrogen_balance.R b/R/nitrogen_balance.R
+--- a/R/nitrogen_balance.R	2026-09-29 10:31:58
++++ b/R/nitrogen_balance.R	2026-09-29 10:31:58
+@@ -246,9 +246,9 @@
+ 
+   n_balance_all <- n_balance_all %>%
+     dplyr::mutate(
+-      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.021 * (annual_precipitation - 3.9) / 100),
+-      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.014 * annual_precipitation + 0.71) / 100,
+-      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.0071 * annual_precipitation + 5.4) / 100,
++      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.021 * (annual_precipitation - 3.9) / 100) * area_total,
++      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.014 * annual_precipitation + 0.71) / 100 * area_total,
++      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.0071 * annual_precipitation + 5.4) / 100 * area_total,
+       out3 = ifelse(soil_clay < 35, out3a, ifelse(soil_clay >= 55, out3c, out3b)),
+       out4 = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) *
+         (-9.4 + 0.13 * soil_clay + 0.01 * annual_precipitation) / 100 * area_total,

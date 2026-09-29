@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>7. N leaching isn't multiplied by area</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="../index.html">Home</a><a href="../00_summary.html">summary</a><a href="../01_climate_ghg.html">climate ghg</a><a href="../02_livestock.html">livestock</a><a href="../03_landuse.html">landuse</a><a href="../04_package_code.html">package code</a><a href="../05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="../06_critical_tests.html">critical tests</a><a href="../07_fix_log.html">fix log</a><a href="../08_demo.html">demo</a><a href="../issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>7. N leaching isn't multiplied by area</h1>
+<p>Leaching (<code>out3</code>, <code>R/nitrogen_balance.R:249-253</code>) is calculated per hectare but added to farm totals, and it uses the farm-total organic N. Gaseous loss (<code>out4</code>), on the next line, is multiplied by <code>area_total</code>.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Feed</th>
+<th align="left">Area (ha)</th>
+<th align="left">Current leaching (kg N)</th>
+<th align="left">Fixed leaching (kg N)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Naturally occuring pasture - green fodder</td>
+<td align="left">109.05</td>
+<td align="left">2.6</td>
+<td align="left">3.1</td>
+</tr>
+<tr>
+<td align="left">Pennisetum purpureum - forage</td>
+<td align="left">1.80</td>
+<td align="left">2.6</td>
+<td align="left">0.1</td>
+</tr>
+</tbody>
+</table>
+<p>The fix leaves the leaching coefficient <code>0.021 * (P - 3.9)</code> unchanged, because I couldn't verify the published form (see the fix log).</p>
+<pre class="diff"><code>--- a/R/nitrogen_balance.R	2026-09-29 10:31:58
++++ b/R/nitrogen_balance.R	2026-09-29 10:31:58
+@@ -246,9 +246,9 @@
+ 
+   n_balance_all &lt;- n_balance_all %&gt;%
+     dplyr::mutate(
+-      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.021 * (annual_precipitation - 3.9) / 100),
+-      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.014 * annual_precipitation + 0.71) / 100,
+-      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.0071 * annual_precipitation + 5.4) / 100,
++      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.021 * (annual_precipitation - 3.9) / 100) * area_total,
++      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.014 * annual_precipitation + 0.71) / 100 * area_total,
++      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.0071 * annual_precipitation + 5.4) / 100 * area_total,
+       out3 = ifelse(soil_clay &lt; 35, out3a, ifelse(soil_clay &gt;= 55, out3c, out3b)),
+       out4 = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) *
+         (-9.4 + 0.13 * soil_clay + 0.01 * annual_precipitation) / 100 * area_total,
+</code></pre>
+<div class="box"><strong>Reproduce this</strong><br><code>Rscript reproduce_critical_issues.R 7</code> using <a href="../reproduce/reproduce_critical_issues.R" download>reproduce_critical_issues.R</a> (installs what it needs into its own library and <code>cleaned</code> @ 800d53a). Add <code>CLEANED_FIXES=proposed_fixes.R</code> with <a href="../fixes/proposed_fixes.R" download>proposed_fixes.R</a> for the fixed column.<br>Test: <a href="../fixes/tests/test-critical-07-n-leaching-area.R">tests/test-critical-07<e2><80><a6></a> <c2><b7> Proposed change: <a href="../fixes/results/F07.diff">F07.diff</a> <c2><b7> <a href="https://github.com/CIAT/cleaned/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20N%20leaching%20isn%27t%20multiplied%20by%20area">Open an issue in CIAT/cleaned</a></div><div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>2. N excretion: N retention used with the wrong units</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="../index.html">Home</a><a href="../00_summary.html">summary</a><a href="../01_climate_ghg.html">climate ghg</a><a href="../02_livestock.html">livestock</a><a href="../03_landuse.html">landuse</a><a href="../04_package_code.html">package code</a><a href="../05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="../06_critical_tests.html">critical tests</a><a href="../07_fix_log.html">fix log</a><a href="../08_demo.html">demo</a><a href="../issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>2. N excretion: N retention used with the wrong units</h1>
+<p>IPCC 2019 Eq. 10.33 (p. 10.85) gives N retained in milk and weight gain in <strong>kg N per animal per day</strong>. On the same page, IPCC says cattle excretion then uses Eq. 10.31A: Nex = (N intake − N retention) × 365.</p>
+<p>The package divides milk retention by 365 twice (<code>R/ghg_emission.R:226</code>). It then uses the result as a <em>fraction</em> of intake (<code>:233</code>).</p>
+<table>
+<thead>
+<tr>
+<th align="left">Animal</th>
+<th align="right">IPCC retention (kg N/d)</th>
+<th align="right">Current retention</th>
+<th align="right">Fixed retention</th>
+<th align="right">Current Nex (kg N/yr)</th>
+<th align="right">IPCC Nex, same intake</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="right">0.0582</td>
+<td align="right">0.0002</td>
+<td align="right">0.0582</td>
+<td align="right">89.4</td>
+<td align="right">68.2</td>
+</tr>
+<tr>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="right">0.0098</td>
+<td align="right">0.0141</td>
+<td align="right">0.0098</td>
+<td align="right">49.7</td>
+<td align="right">43.3</td>
+</tr>
+<tr>
+<td align="left">Cattle - Calves</td>
+<td align="right">0.0115</td>
+<td align="right">0.0141</td>
+<td align="right">0.0115</td>
+<td align="right">12.8</td>
+<td align="right">8.8</td>
+</tr>
+</tbody>
+</table>
+<p>For the dairy cow, the package's N retention is about 365× too small, so almost all intake N is counted as excreted. That overstates manure N2O and the nitrogen balance. The last column applies IPCC Eq. 10.31A to the package's own N intake, so it isolates the retention error from the intake error in section 1. With the fix, the package matches it exactly (test 02).</p>
+<pre class="diff"><code>--- a/R/ghg_emission.R	2026-09-29 10:30:51
++++ b/R/ghg_emission.R	2026-09-29 10:30:51
+@@ -223,14 +223,17 @@
+                                                  ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(40,80),0.024,
+                                                         ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(80,120),0.021,
+                                                                ifelse(livetype_desc== &quot;Pigs - dry sows/boars&quot;,0.021,0))))))),
+-           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),ifelse(annual_growth == 0,(annual_milk*(protein_milkcontent/100))/6.38/no_days,((annual_milk*(protein_milkcontent/100))/6.38)+(((annual_growth*(268-(7.03*er_growth/annual_growth)))/1000)/6.25))/no_days,#equation 10.33
++           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),((annual_milk/no_days)*(protein_milkcontent/100))/6.38+ifelse(annual_growth &gt; 0,(((annual_growth/no_days)*(268-(7.03*er_growth/(annual_growth/no_days))))/1000)/6.25,0),#equation 10.33, kg N/head/day
+                                ifelse(livetype_desc==&quot;Pigs - lactating/pregnant sows&quot;,n_gain+n_weaned, #equation 10.33A
+                                       ifelse(livetype_desc== &quot;Pigs - growers&quot; | livetype_desc== &quot;Pigs - dry sows/boars&quot;,(annual_growth*n_gain),0)))) #equation 10.33C
+ 
+ 
+   #Nitrogen excretion rates
+   n_excretion &lt;- n_retention1%&gt;%
+-    mutate(n_excretion_rate = n_intake*(1-n_retained)*no_days) #equation 10.31
++    # n_intake is a herd total (ge_intake carries herd_composition); n_retained is per head
++    mutate(n_excretion_rate = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),
++                                     (n_intake-(n_retained*herd_composition))*no_days, #equation 10.31A
++                                     n_intake*(1-n_retained)*no_days)) #equation 10.31
+ 
+   #################################################################################################################################
+   #Direct N2O emissions
+</code></pre>
+<div class="box"><strong>Reproduce this</strong><br><code>Rscript reproduce_critical_issues.R 2</code> using <a href="../reproduce/reproduce_critical_issues.R" download>reproduce_critical_issues.R</a> (installs what it needs into its own library and <code>cleaned</code> @ 800d53a). Add <code>CLEANED_FIXES=proposed_fixes.R</code> with <a href="../fixes/proposed_fixes.R" download>proposed_fixes.R</a> for the fixed column.<br>Test: <a href="../fixes/tests/test-critical-02-n-excretion.R">tests/test-critical-02<e2><80><a6></a> <c2><b7> Proposed change: <a href="../fixes/results/F02.diff">F02.diff</a> <c2><b7> <a href="https://github.com/CIAT/cleaned/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20N%20excretion%3A%20N%20retention%20used%20with%20the%20wrong%20units">Open an issue in CIAT/cleaned</a></div><div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

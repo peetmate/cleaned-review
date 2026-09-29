@@ -1,0 +1,24 @@
+diff -ru a/R/ghg_emission.R b/R/ghg_emission.R
+--- a/R/ghg_emission.R	2026-09-29 10:32:12
++++ b/R/ghg_emission.R	2026-09-29 10:32:12
+@@ -44,6 +44,8 @@
+   annual_energy <- energy_required[["annual_results"]]
+ 
+   if (is.null(feed_basket_quality)) {
++    warning("ghg_emission(): feed_basket_quality was not supplied and was taken from the calling environment. ",
++            "Pass it explicitly; this lookup will be removed.", call. = FALSE)
+     feed_basket_quality <- get("feed_basket_quality", envir = parent.frame(), inherits = TRUE)
+   }
+ 
+diff -ru a/R/nitrogen_balance.R b/R/nitrogen_balance.R
+--- a/R/nitrogen_balance.R	2026-09-29 10:32:12
++++ b/R/nitrogen_balance.R	2026-09-29 10:32:12
+@@ -33,6 +33,8 @@
+   }
+ 
+   if (is.null(energy_required)) {
++    warning("n_balance(): energy_required was not supplied and was taken from the calling environment. ",
++            "Pass it explicitly; this lookup will be removed.", call. = FALSE)
+     energy_required <- get("energy_required", envir = parent.frame(), inherits = TRUE)
+   }
+ 

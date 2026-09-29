@@ -1,0 +1,627 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>cleaned v0.7.0: critical issues, demonstrated</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned v0.7.0: critical issues, demonstrated</h1>
+<p>This page shows each critical issue in the <code>cleaned</code> R package (v0.7.0, <code>staging</code> @ <code>800d53a</code>), which the iCLEANED app uses for its calculations. For each issue it compares three things:</p>
+<ul>
+<li><strong>Current:</strong> the package as it is today.</li>
+<li><strong>Fixed:</strong> a temporary copy of the package with the proposed fix applied. The repository itself is not changed.</li>
+<li><strong>IPCC:</strong> an independent calculation written from the IPCC source text, citing the equation and page.</li>
+</ul>
+<p>Every number is produced when this page is built, from the code shown. The full fix log is in <code>07_fix_log.md</code>.</p>
+<h2>1. Feed intake: net energy treated as metabolisable energy</h2>
+<p>The IPCC equations give an animal's energy requirement as <strong>net energy</strong> (NE). Feed supplies <strong>metabolisable energy</strong> (ME), and only part of it becomes net energy. IPCC 2019 Eq. 10.14–10.16 (Vol 4 Ch 10, pp. 10.29–10.30) converts between them with the efficiency ratios REM and REG. The package skips that step (<code>R/energy_requirement.R:170</code>), so it underestimates how much an animal eats. Enteric CH4, manure, land and N are all calculated from that intake.</p>
+<p>The test diet gives every feed 9.5 MJ ME/kg DM, which is about 64% digestible.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Animal</th>
+<th align="right">IPCC kg DM/day</th>
+<th align="right">Current kg DM/day</th>
+<th align="right">Fixed kg DM/day</th>
+<th align="right">Current / IPCC</th>
+<th align="right">Fixed / IPCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Cattle - Calves</td>
+<td align="right">2.2</td>
+<td align="right">1.2</td>
+<td align="right">2.2</td>
+<td align="right">0.55</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="right">5.0</td>
+<td align="right">2.9</td>
+<td align="right">5.0</td>
+<td align="right">0.57</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="right">13.9</td>
+<td align="right">8.7</td>
+<td align="right">13.9</td>
+<td align="right">0.63</td>
+<td align="right">1.00</td>
+</tr>
+</tbody>
+</table>
+<p>Currently the package gives these animals only 55–63% of the IPCC intake when energy is the limiting factor. The fix applies Eq. 10.14–10.16 to cattle, buffalo, sheep and goats, and warns if the diet is too poor for the equations to be valid.</p>
+<pre class="diff"><code>--- a/R/energy_requirement.R	2026-09-29 10:30:38
++++ b/R/energy_requirement.R	2026-09-29 10:30:38
+@@ -138,6 +138,9 @@
+   #Compute annual energy and protein required
+   annual_requirement &lt;- lactation_cp%&gt;%
+     mutate(energy_required_annually=(er_maintenance+er_activity+er_growth+er_lactation+er_pregnancy+er_work+er_wool)*no_days*herd_composition,
++           # IPCC 2019 Eq. 10.16 splits NE into terms divided by REM and by REG
++           ne_rem_annually=(er_maintenance+er_activity+er_lactation+er_pregnancy+er_work)*no_days*herd_composition,
++           ne_reg_annually=(er_growth+er_wool)*no_days*herd_composition,
+            protein_required_annually =((cp_maintenance*no_days)+
+                                          ifelse(!is.finite(((cp_lys_pregnancy/(no_days*birth_interval))*no_days)),0,((cp_lys_pregnancy/(no_days*birth_interval))*no_days))+
+                                          ifelse(!is.finite(((cp_lactation/(no_days*birth_interval))*no_days)),0,((cp_lactation/(no_days*birth_interval))*no_days))+
+@@ -167,8 +170,16 @@
+              energy_required_by_season = energy_required_annually*(sl/no_days),#compute energy require by season
+              protein_required_by_season = protein_required_annually*(sl/no_days))%&gt;% #compute protein require by season
+       left_join(s_feed_basket_quality, by = &quot;livestock_category_code&quot;)%&gt;%
+-      mutate(fresh_intake_required_e = energy_required_by_season/average_me,
+-             dmi_required_e = fresh_intake_required_e*average_dm/100,
++      mutate(de_pct = ((average_me*100/average_dm)/0.81)/18.45*100, #DE as % of GE, package ME/DE = 0.81
++             # IPCC 2019 p. 10.21: common ruminant DE ranges start at 45%; below that REG
++             # (Eq. 10.15) approaches 0 and intake diverges, so 45% is used as a floor.
++             de_eq = pmax(de_pct, 45),
++             rem = 1.123-(4.092e-3*de_eq)+(1.126e-5*de_eq^2)-(25.4/de_eq), #IPCC 2019 equation 10.14
++             reg = 1.164-(5.16e-3*de_eq)+(1.308e-5*de_eq^2)-(37.4/de_eq), #IPCC 2019 equation 10.15
++             ipcc_ruminant = grepl(&quot;^(Cattle|Buffalo|Sheep|Goats)&quot;, livestock_category_name),
++             ge_required_by_season = ((ne_rem_annually*sl/no_days)/rem+(ne_reg_annually*sl/no_days)/reg)/(de_eq/100), #IPCC 2019 equation 10.16
++             dmi_required_e = ifelse(ipcc_ruminant, ge_required_by_season/18.45, (energy_required_by_season/average_me)*average_dm/100),
++             fresh_intake_required_e = dmi_required_e*100/average_dm,
+              fresh_intake_required_cp = protein_required_by_season/(average_cp/100),
+              dmi_required_cp = fresh_intake_required_cp*average_dm/100,
+... (14 more lines in results/F01.diff)
+</code></pre>
+<h2>2. N excretion: N retention used with the wrong units</h2>
+<p>IPCC 2019 Eq. 10.33 (p. 10.85) gives N retained in milk and weight gain in <strong>kg N per animal per day</strong>. On the same page, IPCC says cattle excretion then uses Eq. 10.31A: Nex = (N intake − N retention) × 365.</p>
+<p>The package divides milk retention by 365 twice (<code>R/ghg_emission.R:226</code>). It then uses the result as a <em>fraction</em> of intake (<code>:233</code>).</p>
+<table>
+<thead>
+<tr>
+<th align="left">Animal</th>
+<th align="right">IPCC retention (kg N/d)</th>
+<th align="right">Current retention</th>
+<th align="right">Fixed retention</th>
+<th align="right">Current Nex (kg N/yr)</th>
+<th align="right">IPCC Nex, same intake</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="right">0.0582</td>
+<td align="right">0.0002</td>
+<td align="right">0.0582</td>
+<td align="right">89.4</td>
+<td align="right">68.2</td>
+</tr>
+<tr>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="right">0.0098</td>
+<td align="right">0.0141</td>
+<td align="right">0.0098</td>
+<td align="right">49.7</td>
+<td align="right">43.3</td>
+</tr>
+<tr>
+<td align="left">Cattle - Calves</td>
+<td align="right">0.0115</td>
+<td align="right">0.0141</td>
+<td align="right">0.0115</td>
+<td align="right">12.8</td>
+<td align="right">8.8</td>
+</tr>
+</tbody>
+</table>
+<p>For the dairy cow, the package's N retention is about 365× too small, so almost all intake N is counted as excreted. That overstates manure N2O and the nitrogen balance. The last column applies IPCC Eq. 10.31A to the package's own N intake, so it isolates the retention error from the intake error in section 1. With the fix, the package matches it exactly (test 02).</p>
+<pre class="diff"><code>--- a/R/ghg_emission.R	2026-09-29 10:30:51
++++ b/R/ghg_emission.R	2026-09-29 10:30:51
+@@ -223,14 +223,17 @@
+                                                  ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(40,80),0.024,
+                                                         ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(80,120),0.021,
+                                                                ifelse(livetype_desc== &quot;Pigs - dry sows/boars&quot;,0.021,0))))))),
+-           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),ifelse(annual_growth == 0,(annual_milk*(protein_milkcontent/100))/6.38/no_days,((annual_milk*(protein_milkcontent/100))/6.38)+(((annual_growth*(268-(7.03*er_growth/annual_growth)))/1000)/6.25))/no_days,#equation 10.33
++           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),((annual_milk/no_days)*(protein_milkcontent/100))/6.38+ifelse(annual_growth &gt; 0,(((annual_growth/no_days)*(268-(7.03*er_growth/(annual_growth/no_days))))/1000)/6.25,0),#equation 10.33, kg N/head/day
+                                ifelse(livetype_desc==&quot;Pigs - lactating/pregnant sows&quot;,n_gain+n_weaned, #equation 10.33A
+                                       ifelse(livetype_desc== &quot;Pigs - growers&quot; | livetype_desc== &quot;Pigs - dry sows/boars&quot;,(annual_growth*n_gain),0)))) #equation 10.33C
+ 
+ 
+   #Nitrogen excretion rates
+   n_excretion &lt;- n_retention1%&gt;%
+-    mutate(n_excretion_rate = n_intake*(1-n_retained)*no_days) #equation 10.31
++    # n_intake is a herd total (ge_intake carries herd_composition); n_retained is per head
++    mutate(n_excretion_rate = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),
++                                     (n_intake-(n_retained*herd_composition))*no_days, #equation 10.31A
++                                     n_intake*(1-n_retained)*no_days)) #equation 10.31
+ 
+   #################################################################################################################################
+   #Direct N2O emissions
+</code></pre>
+<h2>3. Soil carbon: a permanent loss on land that hasn't changed</h2>
+<p>IPCC 2006 Eq. 2.25 (Vol 4 Ch 2, p. 2.30) calculates soil carbon change from a <em>change</em> in land use or management between two points in time: ΔC = (SOC₀ − SOC₍₀₋T₎)/D. The package applies the stock-change factors to the measured stock every year (<code>R/soc.R:125-132</code>). So any cropland whose factors are below 1 shows a carbon loss every year, even if nothing has changed.</p>
+<table>
+<thead>
+<tr>
+<th align="left">1 ha, unchanged cropland</th>
+<th align="right">IPCC</th>
+<th align="right">Current</th>
+<th align="right">Fixed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">t C per year</td>
+<td align="right">0.00</td>
+<td align="right">-7.02</td>
+<td align="right">0.00</td>
+</tr>
+</tbody>
+</table>
+<p>The fix adds optional <code>*_previous</code> inputs for the previous land use and management. If they aren't given, the change is 0, as Eq. 2.25 requires. This changes the method, so the authors need to agree it (see the fix log).</p>
+<pre class="diff"><code>--- a/R/soc.R	2026-09-29 10:31:04
++++ b/R/soc.R	2026-09-29 10:31:04
+@@ -33,6 +33,12 @@
+ #' @export
+ 
+ soil_organic_carbon &lt;- function(para, stock_change_para, land_required, biomass) {
++
++  # Previous land use / management key; defaults to the current one (no change).
++  soc_prev_key &lt;- function(para, key) {
++    k &lt;- para[[paste0(key, &quot;_previous&quot;)]]
++    if (is.null(k) || length(k) == 0 || is.na(k) || !nzchar(k)) para[[key]] else k
++  }
+   
+   co2_conversion_factor &lt;- 44 / 12
+   
+@@ -122,12 +128,27 @@
+         para[[&quot;cropland_orgmatter&quot;]],
+         &quot;cropland_orgmatter&quot;
+       ),
++      prev_factor_land_use = lookup_soc_factor(
++        crop_landuse_tbl,
++        soc_prev_key(para, &quot;cropland_system&quot;),
++        &quot;cropland_system&quot;
++      ),
++      prev_factor_management = lookup_soc_factor(
++        crop_tillage_tbl,
++        soc_prev_key(para, &quot;cropland_tillage&quot;),
++        &quot;cropland_tillage&quot;
++      ),
++      prev_factor_input = lookup_soc_factor(
+... (90 more lines in results/F03.diff)
+</code></pre>
+<h2>4. Residue burning: about 24× too high</h2>
+<p>The package's burning total adds the CO2 from burning, and multiplies NOx by the N2O warming factor (GWP) (<code>R/merge_outputs.R:810-812</code>). IPCC 2006 Vol 4 Ch 2 (p. 2.41) counts only non-CO2 gases for burning on cropland and grassland, because the CO2 is taken back up when the crop regrows. NOx has no GWP.</p>
+<table>
+<thead>
+<tr>
+<th align="left">1 t DM residue burnt</th>
+<th align="right">IPCC</th>
+<th align="right">Current</th>
+<th align="right">Fixed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">kg CO2e</td>
+<td align="right">75.3</td>
+<td align="right">1,802.5</td>
+<td align="right">75.3</td>
+</tr>
+</tbody>
+</table>
+<pre class="diff"><code>--- a/R/merge_outputs.R	2026-09-29 10:31:17
++++ b/R/merge_outputs.R	2026-09-29 10:31:17
+@@ -807,9 +807,11 @@
+ 
+   burning &lt;- 0
+   if (nrow(ghg_burn) &gt; 0 &amp;&amp; ncol(ghg_burn) &gt;= 5 &amp;&amp; &quot;ghg_gas&quot; %in% names(ghg_burn)) {
+-    burning &lt;- sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CO2&quot;, 5]) +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CH4&quot;, 5]) * methane +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;Nox&quot;, 5]) * N2O
++    # IPCC 2006 Vol 4 Ch 2 p. 2.41: residue-burning CO2 is re-absorbed and not counted.
++    # NOx has no GWP. Read the amount by name, not by column position.
++    burn_amount &lt;- ghg_burn$amount_of_ghg_emission_from_fire
++    burning &lt;- sum_num(burn_amount[ghg_burn$ghg_gas == &quot;CH4&quot;]) * methane +
++      sum_num(burn_amount[ghg_burn$ghg_gas == &quot;N2O&quot;]) * N2O
+   }
+   burning_per_ha_kg_co2_e &lt;- safe_zero_div(burning, area_required_on_farm_ha)
+   burning_kg_co2_e_per_kg_fpcm &lt;- safe_zero_div(burning, total_milk_produced_kg_fpcm_per_year)
+@@ -1326,4 +1328,4 @@
+   )
+ 
+   c(app_output, batch_output[setdiff(names(batch_output), names(app_output))])
+-}
++}
+</code></pre>
+<h2>5. Tree carbon never reaches soil carbon</h2>
+<p><code>biomass_calculation()</code> returns a data frame with a <code>c_increase_soc</code> column. <code>soil_organic_carbon()</code> looks for an element called <code>trees_non_feed_biomass</code> inside it (<code>R/soc.R:234</code>), which doesn't exist. So tree carbon always contributes 0.</p>
+<table>
+<thead>
+<tr>
+<th align="right">Tree carbon added</th>
+<th align="left">Current change in SOC total</th>
+<th align="left">Fixed change in SOC total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">2.5</td>
+<td align="left">0.00</td>
+<td align="left">2.50</td>
+</tr>
+</tbody>
+</table>
+<pre class="diff"><code>--- a/R/soc.R	2026-09-29 10:31:31
++++ b/R/soc.R	2026-09-29 10:31:31
+@@ -231,7 +231,7 @@
+   
+   annual_change_carbon_stocks_trees_non_feed &lt;- data.frame(type = &quot;trees_non_feed&quot;) %&gt;%
+     dplyr::mutate(
+-      biomass = sum(biomass[[&quot;trees_non_feed_biomass&quot;]]$c_increase_soc),
++      biomass = sum(biomass$c_increase_soc, na.rm = TRUE),
+       below_ground = biomass,
+       annual_change_carbon_stocks = below_ground
+     )
+@@ -248,4 +248,4 @@
+   )
+   
+   return(results)
+-}
++}
+</code></pre>
+<h2>6. Feeds silently get 0 ha</h2>
+<p>When a feed's yield or removal fraction is 0, the area calculation divides by zero. The package then replaces the resulting infinite or missing value with 0 ha (<code>R/land_requirement.R:120-121</code>), without any message. iCLEANED pre-fills removal as 0 for new feeds, so this happens often. The demo below sets the pasture's yield to 0.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Version</th>
+<th align="left">Pasture DM demand (kg)</th>
+<th align="left">Pasture area (ha)</th>
+<th align="left">Message to the user</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Current</td>
+<td align="left">14,231</td>
+<td align="left">0.00</td>
+<td align="left">(no message)</td>
+</tr>
+<tr>
+<td align="left">Fixed</td>
+<td align="left">15,631</td>
+<td align="left">0.00</td>
+<td align="left">land_requirement(): Naturally occuring pasture - green fodder has 2253 kg DM demand but zero yield or removal; its area is set to 0 ha.</td>
+</tr>
+</tbody>
+</table>
+<p>The proposed fix doesn't change the result. It warns the user, so the app can show the problem. DM demand differs between the two rows because fix 1 corrects intake. How much land purchased feeds should count for is a separate question, left to the authors.</p>
+<pre class="diff"><code>--- a/R/land_requirement.R	2026-09-29 10:31:44
++++ b/R/land_requirement.R	2026-09-29 10:31:44
+@@ -28,6 +28,15 @@
+ 
+ land_requirement &lt;- function(feed_basket_quality, energy_required, para){
+ 
++  warn_zero_land &lt;- function(df) {
++    bad &lt;- df$feed_item_dm &gt; 0 &amp; !is.finite(df$area_total)
++    if (any(bad, na.rm = TRUE)) {
++      warning(sprintf(&quot;land_requirement(): %s has %.0f kg DM demand but zero yield or removal; its area is set to 0 ha.&quot;,
++                      paste(unique(df$feed[bad]), collapse = &quot;, &quot;), sum(df$feed_item_dm[bad])), call. = FALSE)
++    }
++    df
++  }
++
+   livestock_category_code &lt;- unique(feed_basket_quality$livestock_category_code)
+ 
+   livestock_requirements &lt;- list()
+@@ -117,6 +126,7 @@
+                  farm_dm = (feed_item_dm - rough_of_dm - conc_of_dm - conc_ip_dm),
+                  grasses_dm = ifelse(feed_item_selected$category == &quot;grass&quot;, feed_item_dm, 0),
+                  tree_legume_dm = ifelse(feed_item_selected$category == &quot;tree crop&quot; | feed_item_selected$category == &quot;tree legume&quot;, feed_item_dm, 0)) %&gt;%
++          warn_zero_land() %&gt;%
+           dplyr::mutate_if(is.numeric, list(~na_if(.,Inf))) %&gt;%
+           replace(is.na(.), 0)
+ 
+</code></pre>
+<h2>7. N leaching isn't multiplied by area</h2>
+<p>Leaching (<code>out3</code>, <code>R/nitrogen_balance.R:249-253</code>) is calculated per hectare but added to farm totals, and it uses the farm-total organic N. Gaseous loss (<code>out4</code>), on the next line, is multiplied by <code>area_total</code>.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Feed</th>
+<th align="left">Area (ha)</th>
+<th align="left">Current leaching (kg N)</th>
+<th align="left">Fixed leaching (kg N)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Naturally occuring pasture - green fodder</td>
+<td align="left">109.05</td>
+<td align="left">2.6</td>
+<td align="left">3.1</td>
+</tr>
+<tr>
+<td align="left">Pennisetum purpureum - forage</td>
+<td align="left">1.80</td>
+<td align="left">2.6</td>
+<td align="left">0.1</td>
+</tr>
+</tbody>
+</table>
+<p>The fix leaves the leaching coefficient <code>0.021 * (P - 3.9)</code> unchanged, because I couldn't verify the published form (see the fix log).</p>
+<pre class="diff"><code>--- a/R/nitrogen_balance.R	2026-09-29 10:31:58
++++ b/R/nitrogen_balance.R	2026-09-29 10:31:58
+@@ -246,9 +246,9 @@
+ 
+   n_balance_all &lt;- n_balance_all %&gt;%
+     dplyr::mutate(
+-      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.021 * (annual_precipitation - 3.9) / 100),
+-      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.014 * annual_precipitation + 0.71) / 100,
+-      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (0.0071 * annual_precipitation + 5.4) / 100,
++      out3a = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.021 * (annual_precipitation - 3.9) / 100) * area_total,
++      out3b = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.014 * annual_precipitation + 0.71) / 100 * area_total,
++      out3c = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) * (0.0071 * annual_precipitation + 5.4) / 100 * area_total,
+       out3 = ifelse(soil_clay &lt; 35, out3a, ifelse(soil_clay &gt;= 55, out3c, out3b)),
+       out4 = (n_mineralized_kg_ha_year + fertilizer_rate + organic_n_kg_per_ha) *
+         (-9.4 + 0.13 * soil_clay + 0.01 * annual_precipitation) / 100 * area_total,
+</code></pre>
+<h2>8. Missing inputs taken from the caller</h2>
+<p>When <code>energy_required</code> is left out, <code>n_balance()</code> looks for an object with that name in whatever code called it (<code>R/nitrogen_balance.R:36</code>); <code>ghg_emission()</code> does the same for <code>feed_basket_quality</code>. If another scenario's object is lying around under that name, the function uses it without saying anything. iCLEANED relies on this lookup, so the fix warns for now instead of stopping.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Version</th>
+<th align="left">n_balance() without energy_required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Current</td>
+<td align="left">(no message; used the caller's object)</td>
+</tr>
+<tr>
+<td align="left">Fixed</td>
+<td align="left">n_balance(): energy_required was not supplied and was taken from the calling environment. Pass it explicitly; this lookup will be removed.</td>
+</tr>
+</tbody>
+</table>
+<h2>9. The shipped example doesn't run</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Version</th>
+<th align="left">inst/extdata/example_input.json</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Current</td>
+<td align="left">error: Can't select columns that don't exist.</td>
+</tr>
+<tr>
+<td align="left">Fixed</td>
+<td align="left">runs</td>
+</tr>
+</tbody>
+</table>
+<h2>What this means in iCLEANED</h2>
+<p>These are the two example studies shipped with the app (<code>data/shared_folder/study_objects</code>), run the same way the app runs them, with the current package and with all fixes.</p>
+<p>Table: On-farm GHG, kg CO2e per year (soil carbon: a loss is shown as a positive emission)</p>
+<table>
+<thead>
+<tr>
+<th align="left">Study</th>
+<th align="left">Source</th>
+<th align="right">Current</th>
+<th align="right">Fixed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Enteric fermentation-Methane</td>
+<td align="right">4,388</td>
+<td align="right">6,998</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Manure-Methane</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Manure-Direct N2O</td>
+<td align="right">498</td>
+<td align="right">706</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Manure-Indirect N2O</td>
+<td align="right">183</td>
+<td align="right">256</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Soil-Direct N2O</td>
+<td align="right">15</td>
+<td align="right">24</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Soil-Indirect N2O</td>
+<td align="right">2</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Burning</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Production fertilizer</td>
+<td align="right">37</td>
+<td align="right">58</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Soil carbon change (kg CO2/yr)</td>
+<td align="right">4,505</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">On-farm total incl. soil carbon</td>
+<td align="right">9,628</td>
+<td align="right">8,045</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Enteric fermentation-Methane</td>
+<td align="right">15,296</td>
+<td align="right">15,296</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Manure-Methane</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Manure-Direct N2O</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Manure-Indirect N2O</td>
+<td align="right">34</td>
+<td align="right">26</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Soil-Direct N2O</td>
+<td align="right">4,027</td>
+<td align="right">4,027</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Soil-Indirect N2O</td>
+<td align="right">385</td>
+<td align="right">385</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Burning</td>
+<td align="right">13,834</td>
+<td align="right">578</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Production fertilizer</td>
+<td align="right">1,348</td>
+<td align="right">1,348</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Soil carbon change (kg CO2/yr)</td>
+<td align="right">32,397</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">On-farm total incl. soil carbon</td>
+<td align="right">67,322</td>
+<td align="right">21,660</td>
+</tr>
+</tbody>
+</table>
+<p>Table: IPCC: intake should be about 2-3% of body weight, and can exceed 4% in high-producing dairy cows (2019 Vol 4 Ch 10, p. 10.30)</p>
+<table>
+<thead>
+<tr>
+<th align="left">Study</th>
+<th align="left">Animal</th>
+<th align="left">Intake, % of body weight (current)</th>
+<th align="left">(fixed)</th>
+<th align="left">Limiting (current)</th>
+<th align="left">(fixed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="left">1.9</td>
+<td align="left">3.1</td>
+<td align="left">CP</td>
+<td align="left">ENERGY</td>
+</tr>
+<tr>
+<td align="left">Study_1</td>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="left">1.3</td>
+<td align="left">2.0</td>
+<td align="left">CP</td>
+<td align="left">ENERGY</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="left">8.4</td>
+<td align="left">8.4</td>
+<td align="left">CP</td>
+<td align="left">CP</td>
+</tr>
+<tr>
+<td align="left">Study_2</td>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="left">5.9</td>
+<td align="left">5.9</td>
+<td align="left">CP</td>
+<td align="left">CP</td>
+</tr>
+</tbody>
+</table>
+<p>Messages the app would receive with the fixes:</p>
+<ul>
+<li><strong>Study_1:</strong> land_requirement(): Concentrate (commercial) has ... kg DM demand but zero yield or removal; its area is set to 0 ha.; n_balance(): energy_required was not supplied and was taken from the calling environment. Pass it explicitly; this lookup will be removed.; ghg_emission(): feed_basket_quality was not supplied and was taken from the calling environment. Pass it explicitly; this lookup will be removed.</li>
+<li><strong>Study_2:</strong> energy_requirement(): diet DE of 40% in season wet is below the IPCC common range (45%); intake for Cattle - Cows (improved), Cattle - Steers/heifers (improved) is calculated at 45% DE.; energy_requirement(): diet DE of 39% in season dry is below the IPCC common range (45%); intake for Cattle - Cows (improved), Cattle - Steers/heifers (improved) is calculated at 45% DE.; n_balance(): energy_required was not supplied and was taken from the calling environment. Pass it explicitly; this lookup will be removed.; ghg_emission(): feed_basket_quality was not supplied and was taken from the calling environment. Pass it explicitly; this lookup will be removed.</li>
+</ul>
+<h3>Not fixed by these proposals</h3>
+<ul>
+<li><strong>Intake has no upper limit.</strong> Intake is the larger of the energy-based and protein-based values, so a diet low in protein can push it to impossible levels. The Study_2 cow still eats more than 8% of body weight. This needs a cap on intake from rumen fill, or a flag for such diets (Livestock review H-01, Land-use review LU-02).</li>
+<li><strong>Manure CH4 is 0.</strong> The manure-system labels don't match the keys in the IPCC emission-factor table (Climate review F07).</li>
+<li><strong>The water unit.</strong> Water is calculated in mm·ha but labelled m³, so it is about 10× too low (Land-use review W-01).</li>
+<li>The rest of the High findings are in <code>00_summary.md</code>.</li>
+</ul>
+<hr />
+<p>Built with <code>knitr::knit(&quot;demo.Rmd&quot;, &quot;../08_demo.md&quot;)</code> from <code>cleaned_review/fixes/</code>, after running <code>./run_all.sh</code>.</p>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

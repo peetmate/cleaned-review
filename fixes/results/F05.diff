@@ -1,0 +1,19 @@
+diff -ru a/R/soc.R b/R/soc.R
+--- a/R/soc.R	2026-09-29 10:31:31
++++ b/R/soc.R	2026-09-29 10:31:31
+@@ -231,7 +231,7 @@
+   
+   annual_change_carbon_stocks_trees_non_feed <- data.frame(type = "trees_non_feed") %>%
+     dplyr::mutate(
+-      biomass = sum(biomass[["trees_non_feed_biomass"]]$c_increase_soc),
++      biomass = sum(biomass$c_increase_soc, na.rm = TRUE),
+       below_ground = biomass,
+       annual_change_carbon_stocks = below_ground
+     )
+@@ -248,4 +248,4 @@
+   )
+   
+   return(results)
+-}
+\ No newline at end of file
++}

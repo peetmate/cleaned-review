@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>6. Feeds silently get 0 ha</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="../index.html">Home</a><a href="../00_summary.html">summary</a><a href="../01_climate_ghg.html">climate ghg</a><a href="../02_livestock.html">livestock</a><a href="../03_landuse.html">landuse</a><a href="../04_package_code.html">package code</a><a href="../05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="../06_critical_tests.html">critical tests</a><a href="../07_fix_log.html">fix log</a><a href="../08_demo.html">demo</a><a href="../issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>6. Feeds silently get 0 ha</h1>
+<p>When a feed's yield or removal fraction is 0, the area calculation divides by zero. The package then replaces the resulting infinite or missing value with 0 ha (<code>R/land_requirement.R:120-121</code>), without any message. iCLEANED pre-fills removal as 0 for new feeds, so this happens often. The demo below sets the pasture's yield to 0.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Version</th>
+<th align="left">Pasture DM demand (kg)</th>
+<th align="left">Pasture area (ha)</th>
+<th align="left">Message to the user</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Current</td>
+<td align="left">14,231</td>
+<td align="left">0.00</td>
+<td align="left">(no message)</td>
+</tr>
+<tr>
+<td align="left">Fixed</td>
+<td align="left">15,631</td>
+<td align="left">0.00</td>
+<td align="left">land_requirement(): Naturally occuring pasture - green fodder has 2253 kg DM demand but zero yield or removal; its area is set to 0 ha.</td>
+</tr>
+</tbody>
+</table>
+<p>The proposed fix doesn't change the result. It warns the user, so the app can show the problem. DM demand differs between the two rows because fix 1 corrects intake. How much land purchased feeds should count for is a separate question, left to the authors.</p>
+<pre class="diff"><code>--- a/R/land_requirement.R	2026-09-29 10:31:44
++++ b/R/land_requirement.R	2026-09-29 10:31:44
+@@ -28,6 +28,15 @@
+ 
+ land_requirement &lt;- function(feed_basket_quality, energy_required, para){
+ 
++  warn_zero_land &lt;- function(df) {
++    bad &lt;- df$feed_item_dm &gt; 0 &amp; !is.finite(df$area_total)
++    if (any(bad, na.rm = TRUE)) {
++      warning(sprintf(&quot;land_requirement(): %s has %.0f kg DM demand but zero yield or removal; its area is set to 0 ha.&quot;,
++                      paste(unique(df$feed[bad]), collapse = &quot;, &quot;), sum(df$feed_item_dm[bad])), call. = FALSE)
++    }
++    df
++  }
++
+   livestock_category_code &lt;- unique(feed_basket_quality$livestock_category_code)
+ 
+   livestock_requirements &lt;- list()
+@@ -117,6 +126,7 @@
+                  farm_dm = (feed_item_dm - rough_of_dm - conc_of_dm - conc_ip_dm),
+                  grasses_dm = ifelse(feed_item_selected$category == &quot;grass&quot;, feed_item_dm, 0),
+                  tree_legume_dm = ifelse(feed_item_selected$category == &quot;tree crop&quot; | feed_item_selected$category == &quot;tree legume&quot;, feed_item_dm, 0)) %&gt;%
++          warn_zero_land() %&gt;%
+           dplyr::mutate_if(is.numeric, list(~na_if(.,Inf))) %&gt;%
+           replace(is.na(.), 0)
+ 
+</code></pre>
+<div class="box"><strong>Reproduce this</strong><br><code>Rscript reproduce_critical_issues.R 6</code> using <a href="../reproduce/reproduce_critical_issues.R" download>reproduce_critical_issues.R</a> (installs what it needs into its own library and <code>cleaned</code> @ 800d53a). Add <code>CLEANED_FIXES=proposed_fixes.R</code> with <a href="../fixes/proposed_fixes.R" download>proposed_fixes.R</a> for the fixed column.<br>Test: <a href="../fixes/tests/test-critical-06-land-silent-zero.R">tests/test-critical-06<e2><80><a6></a> <c2><b7> Proposed change: <a href="../fixes/results/F06.diff">F06.diff</a> <c2><b7> <a href="https://github.com/CIAT/cleaned/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20Feeds%20silently%20get%200%20ha">Open an issue in CIAT/cleaned</a></div><div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

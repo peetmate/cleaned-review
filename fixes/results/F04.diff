@@ -1,0 +1,25 @@
+diff -ru a/R/merge_outputs.R b/R/merge_outputs.R
+--- a/R/merge_outputs.R	2026-09-29 10:31:17
++++ b/R/merge_outputs.R	2026-09-29 10:31:17
+@@ -807,9 +807,11 @@
+ 
+   burning <- 0
+   if (nrow(ghg_burn) > 0 && ncol(ghg_burn) >= 5 && "ghg_gas" %in% names(ghg_burn)) {
+-    burning <- sum_num(ghg_burn[ghg_burn$ghg_gas == "CO2", 5]) +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == "CH4", 5]) * methane +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == "Nox", 5]) * N2O
++    # IPCC 2006 Vol 4 Ch 2 p. 2.41: residue-burning CO2 is re-absorbed and not counted.
++    # NOx has no GWP. Read the amount by name, not by column position.
++    burn_amount <- ghg_burn$amount_of_ghg_emission_from_fire
++    burning <- sum_num(burn_amount[ghg_burn$ghg_gas == "CH4"]) * methane +
++      sum_num(burn_amount[ghg_burn$ghg_gas == "N2O"]) * N2O
+   }
+   burning_per_ha_kg_co2_e <- safe_zero_div(burning, area_required_on_farm_ha)
+   burning_kg_co2_e_per_kg_fpcm <- safe_zero_div(burning, total_milk_produced_kg_fpcm_per_year)
+@@ -1326,4 +1328,4 @@
+   )
+ 
+   c(app_output, batch_output[setdiff(names(batch_output), names(app_output))])
+-}
+\ No newline at end of file
++}

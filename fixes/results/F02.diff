@@ -1,0 +1,23 @@
+diff -ru a/R/ghg_emission.R b/R/ghg_emission.R
+--- a/R/ghg_emission.R	2026-09-29 10:30:51
++++ b/R/ghg_emission.R	2026-09-29 10:30:51
+@@ -223,14 +223,17 @@
+                                                  ifelse(livetype_desc== "Pigs - growers" & body_weight %gel% c(40,80),0.024,
+                                                         ifelse(livetype_desc== "Pigs - growers" & body_weight %gel% c(80,120),0.021,
+                                                                ifelse(livetype_desc== "Pigs - dry sows/boars",0.021,0))))))),
+-           n_retained = ifelse(!grepl("Pigs",livetype_desc),ifelse(annual_growth == 0,(annual_milk*(protein_milkcontent/100))/6.38/no_days,((annual_milk*(protein_milkcontent/100))/6.38)+(((annual_growth*(268-(7.03*er_growth/annual_growth)))/1000)/6.25))/no_days,#equation 10.33
++           n_retained = ifelse(!grepl("Pigs",livetype_desc),((annual_milk/no_days)*(protein_milkcontent/100))/6.38+ifelse(annual_growth > 0,(((annual_growth/no_days)*(268-(7.03*er_growth/(annual_growth/no_days))))/1000)/6.25,0),#equation 10.33, kg N/head/day
+                                ifelse(livetype_desc=="Pigs - lactating/pregnant sows",n_gain+n_weaned, #equation 10.33A
+                                       ifelse(livetype_desc== "Pigs - growers" | livetype_desc== "Pigs - dry sows/boars",(annual_growth*n_gain),0)))) #equation 10.33C
+ 
+ 
+   #Nitrogen excretion rates
+   n_excretion <- n_retention1%>%
+-    mutate(n_excretion_rate = n_intake*(1-n_retained)*no_days) #equation 10.31
++    # n_intake is a herd total (ge_intake carries herd_composition); n_retained is per head
++    mutate(n_excretion_rate = ifelse(!grepl("Pigs",livetype_desc),
++                                     (n_intake-(n_retained*herd_composition))*no_days, #equation 10.31A
++                                     n_intake*(1-n_retained)*no_days)) #equation 10.31
+ 
+   #################################################################################################################################
+   #Direct N2O emissions

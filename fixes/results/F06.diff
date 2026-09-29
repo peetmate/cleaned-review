@@ -1,0 +1,27 @@
+diff -ru a/R/land_requirement.R b/R/land_requirement.R
+--- a/R/land_requirement.R	2026-09-29 10:31:44
++++ b/R/land_requirement.R	2026-09-29 10:31:44
+@@ -28,6 +28,15 @@
+ 
+ land_requirement <- function(feed_basket_quality, energy_required, para){
+ 
++  warn_zero_land <- function(df) {
++    bad <- df$feed_item_dm > 0 & !is.finite(df$area_total)
++    if (any(bad, na.rm = TRUE)) {
++      warning(sprintf("land_requirement(): %s has %.0f kg DM demand but zero yield or removal; its area is set to 0 ha.",
++                      paste(unique(df$feed[bad]), collapse = ", "), sum(df$feed_item_dm[bad])), call. = FALSE)
++    }
++    df
++  }
++
+   livestock_category_code <- unique(feed_basket_quality$livestock_category_code)
+ 
+   livestock_requirements <- list()
+@@ -117,6 +126,7 @@
+                  farm_dm = (feed_item_dm - rough_of_dm - conc_of_dm - conc_ip_dm),
+                  grasses_dm = ifelse(feed_item_selected$category == "grass", feed_item_dm, 0),
+                  tree_legume_dm = ifelse(feed_item_selected$category == "tree crop" | feed_item_selected$category == "tree legume", feed_item_dm, 0)) %>%
++          warn_zero_land() %>%
+           dplyr::mutate_if(is.numeric, list(~na_if(.,Inf))) %>%
+           replace(is.na(.), 0)
+ 

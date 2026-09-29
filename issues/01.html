@@ -1,0 +1,89 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>1. Feed intake: net energy treated as metabolisable energy</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="../index.html">Home</a><a href="../00_summary.html">summary</a><a href="../01_climate_ghg.html">climate ghg</a><a href="../02_livestock.html">livestock</a><a href="../03_landuse.html">landuse</a><a href="../04_package_code.html">package code</a><a href="../05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="../06_critical_tests.html">critical tests</a><a href="../07_fix_log.html">fix log</a><a href="../08_demo.html">demo</a><a href="../issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>1. Feed intake: net energy treated as metabolisable energy</h1>
+<p>The IPCC equations give an animal's energy requirement as <strong>net energy</strong> (NE). Feed supplies <strong>metabolisable energy</strong> (ME), and only part of it becomes net energy. IPCC 2019 Eq. 10.14–10.16 (Vol 4 Ch 10, pp. 10.29–10.30) converts between them with the efficiency ratios REM and REG. The package skips that step (<code>R/energy_requirement.R:170</code>), so it underestimates how much an animal eats. Enteric CH4, manure, land and N are all calculated from that intake.</p>
+<p>The test diet gives every feed 9.5 MJ ME/kg DM, which is about 64% digestible.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Animal</th>
+<th align="right">IPCC kg DM/day</th>
+<th align="right">Current kg DM/day</th>
+<th align="right">Fixed kg DM/day</th>
+<th align="right">Current / IPCC</th>
+<th align="right">Fixed / IPCC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Cattle - Calves</td>
+<td align="right">2.2</td>
+<td align="right">1.2</td>
+<td align="right">2.2</td>
+<td align="right">0.55</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td align="left">Cattle - Steers/heifers (improved)</td>
+<td align="right">5.0</td>
+<td align="right">2.9</td>
+<td align="right">5.0</td>
+<td align="right">0.57</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td align="left">Cattle - Cows (improved)</td>
+<td align="right">13.9</td>
+<td align="right">8.7</td>
+<td align="right">13.9</td>
+<td align="right">0.63</td>
+<td align="right">1.00</td>
+</tr>
+</tbody>
+</table>
+<p>Currently the package gives these animals only 55–63% of the IPCC intake when energy is the limiting factor. The fix applies Eq. 10.14–10.16 to cattle, buffalo, sheep and goats, and warns if the diet is too poor for the equations to be valid.</p>
+<pre class="diff"><code>--- a/R/energy_requirement.R	2026-09-29 10:30:38
++++ b/R/energy_requirement.R	2026-09-29 10:30:38
+@@ -138,6 +138,9 @@
+   #Compute annual energy and protein required
+   annual_requirement &lt;- lactation_cp%&gt;%
+     mutate(energy_required_annually=(er_maintenance+er_activity+er_growth+er_lactation+er_pregnancy+er_work+er_wool)*no_days*herd_composition,
++           # IPCC 2019 Eq. 10.16 splits NE into terms divided by REM and by REG
++           ne_rem_annually=(er_maintenance+er_activity+er_lactation+er_pregnancy+er_work)*no_days*herd_composition,
++           ne_reg_annually=(er_growth+er_wool)*no_days*herd_composition,
+            protein_required_annually =((cp_maintenance*no_days)+
+                                          ifelse(!is.finite(((cp_lys_pregnancy/(no_days*birth_interval))*no_days)),0,((cp_lys_pregnancy/(no_days*birth_interval))*no_days))+
+                                          ifelse(!is.finite(((cp_lactation/(no_days*birth_interval))*no_days)),0,((cp_lactation/(no_days*birth_interval))*no_days))+
+@@ -167,8 +170,16 @@
+              energy_required_by_season = energy_required_annually*(sl/no_days),#compute energy require by season
+              protein_required_by_season = protein_required_annually*(sl/no_days))%&gt;% #compute protein require by season
+       left_join(s_feed_basket_quality, by = &quot;livestock_category_code&quot;)%&gt;%
+-      mutate(fresh_intake_required_e = energy_required_by_season/average_me,
+-             dmi_required_e = fresh_intake_required_e*average_dm/100,
++      mutate(de_pct = ((average_me*100/average_dm)/0.81)/18.45*100, #DE as % of GE, package ME/DE = 0.81
++             # IPCC 2019 p. 10.21: common ruminant DE ranges start at 45%; below that REG
++             # (Eq. 10.15) approaches 0 and intake diverges, so 45% is used as a floor.
++             de_eq = pmax(de_pct, 45),
++             rem = 1.123-(4.092e-3*de_eq)+(1.126e-5*de_eq^2)-(25.4/de_eq), #IPCC 2019 equation 10.14
++             reg = 1.164-(5.16e-3*de_eq)+(1.308e-5*de_eq^2)-(37.4/de_eq), #IPCC 2019 equation 10.15
++             ipcc_ruminant = grepl(&quot;^(Cattle|Buffalo|Sheep|Goats)&quot;, livestock_category_name),
++             ge_required_by_season = ((ne_rem_annually*sl/no_days)/rem+(ne_reg_annually*sl/no_days)/reg)/(de_eq/100), #IPCC 2019 equation 10.16
++             dmi_required_e = ifelse(ipcc_ruminant, ge_required_by_season/18.45, (energy_required_by_season/average_me)*average_dm/100),
++             fresh_intake_required_e = dmi_required_e*100/average_dm,
+              fresh_intake_required_cp = protein_required_by_season/(average_cp/100),
+              dmi_required_cp = fresh_intake_required_cp*average_dm/100,
+... (14 more lines in results/F01.diff)
+</code></pre>
+<div class="box"><strong>Reproduce this</strong><br><code>Rscript reproduce_critical_issues.R 1</code> using <a href="../reproduce/reproduce_critical_issues.R" download>reproduce_critical_issues.R</a> (installs what it needs into its own library and <code>cleaned</code> @ 800d53a). Add <code>CLEANED_FIXES=proposed_fixes.R</code> with <a href="../fixes/proposed_fixes.R" download>proposed_fixes.R</a> for the fixed column.<br>Test: <a href="../fixes/tests/test-critical-01-energy-ne-vs-me.R">tests/test-critical-01<e2><80><a6></a> <c2><b7> Proposed change: <a href="../fixes/results/F01.diff">F01.diff</a> <c2><b7> <a href="https://github.com/CIAT/cleaned/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20Feed%20intake%3A%20net%20energy%20treated%20as%20metabolisable%20energy">Open an issue in CIAT/cleaned</a></div><div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

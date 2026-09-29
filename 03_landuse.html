@@ -1,0 +1,613 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>03 - Land use, water, soil, N and SOC review of `cleaned` v0.7.0</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>03 - Land use, water, soil, N and SOC review of <code>cleaned</code> v0.7.0</h1>
+<p>Reviewer role: sustainable land-use and agro-environmental modeller (adversarial review)
+Source reviewed (read-only): <code>CIAT/cleaned</code> @ 800d53a (v0.7.0)
+Scope: <code>land_requirement.R</code>, <code>land_productivity.R</code>, <code>biomass_calculation.R</code>, <code>water_requirement.R</code>, <code>soil_health.R</code>, <code>soc.R</code>, <code>nitrogen_balance.R</code>, <code>compare_scenario.R</code>, <code>differences.R</code>, <code>merge_outputs.R</code>, <code>inst/extdata/*.json</code>, vignettes, README.</p>
+<h2>Verdict</h2>
+<p>The land, water, erosion, N-balance and SOC modules should not be used for quantitative ex-ante claims yet. The land footprint silently drops feeds (any Inf/NaN area becomes 0), so up to 74% of the ration's dry matter got no land in a test run. It is also inflated by up to about 70% because feed demand is set to the larger of the energy-based and protein-based DMI. The N balance adds per-hectare terms to farm totals, has a scalar <code>ifelse</code> bug that throws away grazing-manure N, silently ignores fertiliser types missing from the fertiliser table, and calls outputs/inputs including losses &quot;NUE&quot;. Water is reported in mm·ha labelled as m³ (10x too low), with no green/blue split and no season length. SOC applies IPCC factors to a measured stock of arbitrary depth, so any baseline shows a permanent loss, and tree-SOC is always zero. There is no uncertainty treatment. The scenario % changes flip sign for negative baselines and report 0% for undefined ones.</p>
+<h2>How numbers were checked</h2>
+<ul>
+<li>The documented README run fails on the shipped <code>inst/extdata/example_input.json</code>. It also fails on <code>data/qt_example.json</code> and on <code>data(mufindi)</code>, because <code>crop_name</code> is missing (see D-01).</li>
+<li>I ran the pipeline from source with Rscript (dplyr/tidyr/jsonlite; nothing installed) after a minimal patch in a scratch copy:
+<ul>
+<li>added <code>crop_name</code></li>
+<li>derived <code>dry_yield</code>/<code>residue_dry_yield</code> from <code>fresh_yield</code>, <code>harvest_index</code> and <code>water_content</code> using the commented formula at <code>land_requirement.R:84-88</code></li>
+<li>aliased <code>fat_milkcontent</code>, <code>cp_lys_*</code> and <code>n_manure_content</code></li>
+<li>set <code>percentage_n</code> = 34 where it was missing</li>
+</ul>
+</li>
+<li>Runs: &quot;EX&quot; = <code>example_input.json</code> (Muheza) and &quot;QT&quot; = <code>data/qt_example.json</code>. The numbers quoted below come from these runs.</li>
+</ul>
+<h2>Findings table</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>severity</th>
+<th>verdict</th>
+<th>file:line</th>
+<th>issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LU-01</td>
+<td>Critical</td>
+<td>CONFIRMED</td>
+<td>land_requirement.R:99-102, 120-121</td>
+<td>Division by zero (removal=0, yield=0, source_type not Main/Residue) gives Inf/NaN, which is then set to 0 ha. Feeds silently get no land (74% of DM in QT).</td>
+</tr>
+<tr>
+<td>LU-02</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>energy_requirement.R:174; land_requirement.R:93</td>
+<td>Land is driven by <code>dmi_s = max(DMI_energy, DMI_CP)</code>. CP-limited diets inflate DM demand and land by 27-69% in the examples.</td>
+</tr>
+<tr>
+<td>LU-03</td>
+<td>Medium</td>
+<td>PLAUSIBLE</td>
+<td>land_requirement.R:103-107</td>
+<td>Residue land uses undocumented mass allocation. Main items take 100% of crop land even when their residue is also fed, so there is a double-count risk. No economic allocation.</td>
+</tr>
+<tr>
+<td>LU-04</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>land_requirement.R:108-110; water_requirement.R:53-55; nitrogen_balance.R:269-298; merge_outputs.R:602-604</td>
+<td>Off-farm/imported status is inferred from the substrings &quot;OFR&quot;/&quot;OFC&quot;/&quot;IP&quot; in feed names. Off-farm land is then scored with on-farm soil and climate.</td>
+</tr>
+<tr>
+<td>LU-05</td>
+<td>Low</td>
+<td>PLAUSIBLE</td>
+<td>land_requirement.R:100-102</td>
+<td>Area is cut by <code>intercrop*intercrop_fraction</code> with no documented meaning.</td>
+</tr>
+<tr>
+<td>LU-06</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>differences.R:211-214; compare_scenario.R:328-342; differences.R:195 vs merge_outputs.R:530</td>
+<td>&quot;ha/kg&quot; indicators are really ha/t (x1000). Milk, meat and protein each get 100% of the land (no co-product allocation). AME uses 2100 vs 2500 kcal in different places.</td>
+</tr>
+<tr>
+<td>N-01</td>
+<td>Critical</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:249-256</td>
+<td>Leaching <code>out3</code> is a per-ha rate that is never multiplied by area. It also adds total organic N (<code>in2</code>) into a per-ha pool, and is then summed with farm-total terms in <code>nout</code>.</td>
+</tr>
+<tr>
+<td>N-02</td>
+<td>High</td>
+<td>PLAUSIBLE</td>
+<td>nitrogen_balance.R:249</td>
+<td>Leaching coefficient written as <code>0.021*(P-3.9)</code>. The De Willigen/NUTMON form is <code>0.021*P - 3.9</code>, so leaching is about 3.8 percentage points too high (+22% at 1000 mm, +84% at 400 mm).</td>
+</tr>
+<tr>
+<td>N-03</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:234-238</td>
+<td><code>ifelse(denom &gt; 0, vector, 0)</code> returns only the first element. Grazing-manure N is replaced by feed 1's value for every feed (126.6 kg N lost in QT).</td>
+</tr>
+<tr>
+<td>N-04</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:80-121; example_input.json <code>fertilizer</code></td>
+<td>A fertiliser missing from <code>para$fertilizer</code>, or with no <code>percentage_n</code>, silently gives 0 N. QT's 400 kg urea/ha becomes 0 N, while GHG manufacturing emissions still count it.</td>
+</tr>
+<tr>
+<td>N-05</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:148-155</td>
+<td>All collected-manure N and purchased organic N is given to every feed x <code>fraction_as_fertilizer</code>, with no normalisation. N is multiplied by the number of feeds (200% in QT).</td>
+</tr>
+<tr>
+<td>N-06</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:257, 285-294</td>
+<td>&quot;NUE&quot; = nout/nin, where nout includes leaching, gaseous and erosion losses. The mining (&gt;0.9) and leaching (&lt;0.5) classes are meaningless (EX NUE = 24 and 54).</td>
+</tr>
+<tr>
+<td>N-07</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:164 vs 184</td>
+<td><code>soil_n</code> is used on two bases 10x apart. The soil N stock (and so mineralisation) is 10x low if <code>soil_n</code> is in g/kg, which is the basis erosion N (<code>out5</code>) assumes.</td>
+</tr>
+<tr>
+<td>N-08</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>nitrogen_balance.R:174, 253-254</td>
+<td>Non-symbiotic fixation <code>2+(P-1350)*0.005</code> is negative when P &lt; 950 mm. Gaseous loss can go negative at low clay and low rain. Neither is clamped.</td>
+</tr>
+<tr>
+<td>N-09</td>
+<td>Medium</td>
+<td>PLAUSIBLE</td>
+<td>nitrogen_balance.R:143-148; ghg_emission.R:373-375</td>
+<td>The N balance uses excreted N with no storage losses (not consistent with the GHG manure-N chain). The GHG module uses fertiliser N as off-farm residue N.</td>
+</tr>
+<tr>
+<td>SE-01</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>soil_health.R:35-58, 73; nitrogen_balance.R:179-182</td>
+<td>LS is NA when <code>slope_desc</code> is empty/unknown or <code>slope_length</code> is NA. The NA is later dropped with <code>na.rm</code>, so erosion and erosion-N become 0. EX: all <code>slope_desc</code> = &quot;&quot; gives zero erosion.</td>
+</tr>
+<tr>
+<td>SE-02</td>
+<td>High</td>
+<td>PLAUSIBLE</td>
+<td>soil_health.R:26-27</td>
+<td>R = 0.55*(P/rain_length) - 4.7 has no source. It gives about 98-160, roughly 5-10x below common SSA erosivity relations. The units of K are unstated.</td>
+</tr>
+<tr>
+<td>SE-03</td>
+<td>Medium</td>
+<td>PLAUSIBLE</td>
+<td>soil_health.R:34-58; example inputs <code>slope_p_factor</code></td>
+<td>The LS lookup has no source, units or length basis, and uses very wide slope classes. P = 0.11 (terracing level) is the de facto default.</td>
+</tr>
+<tr>
+<td>SE-04</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>merge_outputs.R:620, 649-665</td>
+<td><code>erosion_t_soil_year</code> is built in the order total, OFR, OFC, IP, farm but labelled total, on-farm, OFR, OFC, IP. Rows are shifted, and per-ha values use the wrong area.</td>
+</tr>
+<tr>
+<td>SE-05</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>merge_outputs.R:628-634; differences.R:231</td>
+<td><code>balance_N_kg_N_ha</code> sums per-ha values across feeds. The headline N balance uses the whole-crop balance in one output and the feed-only balance in another.</td>
+</tr>
+<tr>
+<td>W-01</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>water_requirement.R:48-49, 57, 74-81; differences.R:352-376</td>
+<td>ET in mm x area in ha is reported as &quot;m3&quot; and &quot;m3/ha&quot; (1 mm·ha = 10 m³), so values are 10x too low.</td>
+</tr>
+<tr>
+<td>W-02</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>water_requirement.R:33-49</td>
+<td>Annual ET0 x mean Kc is applied over 365 days for every crop. No growing season, effective rainfall, irrigation, green/blue split or drinking water. The <code>wfp_green/blue/grey</code> and livestock <code>water_requirement</code> inputs are unused.</td>
+</tr>
+<tr>
+<td>W-03</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>water_requirement.R:49-51, 74</td>
+<td>Residue water is allocated twice (already-allocated <code>area_feed</code> x feed share again). <code>total_water_use</code> does not equal the sum of <code>feed_water_use</code> (QT test: 307 vs 1460 mm/ha).</td>
+</tr>
+<tr>
+<td>W-04</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>water_requirement.R:56</td>
+<td><code>kc_water_use_on_farm</code> subtracts roughages and IP but not OFC concentrates.</td>
+</tr>
+<tr>
+<td>W-05</td>
+<td>Low</td>
+<td>CONFIRMED</td>
+<td>water_requirement.R:46</td>
+<td>Kc is the plain mean of the three stages, not a stage-duration-weighted mean (FAO-56).</td>
+</tr>
+<tr>
+<td>S-01</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>soc.R:234; biomass_calculation.R:141-144</td>
+<td><code>biomass[[&quot;trees_non_feed_biomass&quot;]]</code> is NULL (biomass is a plain data frame), so tree-SOC is always 0.</td>
+</tr>
+<tr>
+<td>S-02</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>soc.R:103-133</td>
+<td>IPCC F factors are applied to the measured field SOC as if it were SOCref. Long-term, steady-state cropland therefore shows a permanent loss (QT: -17 t C/ha/yr).</td>
+</tr>
+<tr>
+<td>S-03</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>soc.R:73-74; input-contract.Rmd:53</td>
+<td><code>soil_depth</code> is implicitly in metres, with no 0-30 cm basis and no validation. EX (depth 2) gives 832 t C/ha; QT (BD = 6) gives 1440 t C/ha.</td>
+</tr>
+<tr>
+<td>S-04</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>stock_change_parameters.json <code>grassland.management.&quot;Medium&quot;: 1.5</code></td>
+<td>This management factor is not in IPCC. It gives +50% SOC over 20 years (about +1 t C/ha/yr on the fixed 40 t C).</td>
+</tr>
+<tr>
+<td>S-05</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>soc.R:106-107, 141-142, 175-176</td>
+<td>&quot;Cropland&quot; area includes off-farm and imported concentrate land at farm SOC. Grassland SOC is fixed at 40 t C and ignores <code>field_soc</code>. Tree-legume land gets no SOC.</td>
+</tr>
+<tr>
+<td>S-06</td>
+<td>Low</td>
+<td>CONFIRMED</td>
+<td>output-contract.Rmd:258-262 vs soc.R:245-248</td>
+<td>The docs promise <code>field_soc</code> and per-land-use changes; the function returns only 2 totals.</td>
+</tr>
+<tr>
+<td>C-01</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>compare_scenario.R:49-150 (all % blocks)</td>
+<td>% change = (S-B)/B. It flips sign for negative baselines (N balance, SOC) and gives 0% when B = 0.</td>
+</tr>
+<tr>
+<td>C-02</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>differences.R:39-40; water_requirement.R:76-81; merge_outputs.R:703-704</td>
+<td>Zero denominators give 0 intensities (for example 0 m³ or 0 kg CO2e per kg meat when there is no meat) instead of NA.</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>all modules (absence)</td>
+<td>Everything is deterministic. There is no uncertainty, sensitivity or range output, although results hinge on unobserved inputs (yield, HI, removal, Kc, R, LS, P, soil N).</td>
+</tr>
+<tr>
+<td>D-01</td>
+<td>High</td>
+<td>CONFIRMED</td>
+<td>README.md &quot;Standard Model Run&quot;; inst/extdata/example_input.json</td>
+<td>The shipped example and README workflow fail (missing <code>crop_name</code>, <code>dry_yield</code>, <code>residue_dry_yield</code>, <code>percentage_n</code>, <code>fat_milkcontent</code>, <code>cp_lys_*</code>, <code>n_manure_content</code>). The derived yields are computed outside the package.</td>
+</tr>
+<tr>
+<td>D-02</td>
+<td>Medium</td>
+<td>CONFIRMED</td>
+<td>input-contract.Rmd:42-53, 146; example_input.json</td>
+<td>Units are given only as the &quot;package basis&quot;. <code>dm_content</code> is a fraction (0.3) in EX but a percent (89) in QT and in the README. No range checks (BD = 6, depth = 2).</td>
+</tr>
+</tbody>
+</table>
+<p>Counts: Critical 2, High 18, Medium 13, Low 3 (36 in total).</p>
+<hr />
+<h2>Detailed findings</h2>
+<h3>Land requirement</h3>
+<p><strong>LU-01 - Silent zero land for feeds (Critical, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>area_total = feed_item_dm/(crop_yield*crop_removal) ...</code> for source_type &quot;Main&quot;, and <code>feed_item_dm/(cr_yield*crop_residue_removal)</code> for &quot;Residue&quot;. Any other source_type gets <code>0</code> (L99-102).</li>
+<li>Then <code>mutate_if(is.numeric, list(~na_if(.,Inf))) %&gt;% replace(is.na(.), 0)</code> (L120-121).</li>
+<li>QT run: cowpea (Main, <code>main_product_removal=0</code>, 7,480 kg DM) and rice straw (Residue, <code>residue_dry_yield=0</code>, 7,203 kg DM) both get 0 ha. That is 74% of the 19,765 kg DM ration. Only oats get land (0.169 ha).</li>
+<li>EX run: maize stover (<code>residue_removal=0</code>, 2,043 kg DM, 12% of DM) gets 0 ha. <code>&quot;Concentrate (commercial)&quot;</code> has source_type &quot;Purchased&quot;, so it always gets 0 ha.</li>
+<li>The zero area then flows into erosion, N, water, SOC and GHG, and into every per-ha and per-kg indicator.</li>
+</ul>
+</li>
+<li><strong>Expected:</strong> fed DM must map to land or to an explicit &quot;no land attributed / purchased with external footprint&quot; category. A zero removal fraction for a fed item is logically inconsistent and should be an error.</li>
+<li><strong>Impact:</strong> land and all area-scaled impacts are biased downward by an unknown, input-dependent amount (up to about 75% in the test). Scenarios that change a feed's removal fraction from 0 look like large land &quot;savings&quot;.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Validate: stop if <code>feed_item_dm &gt; 0</code> and the denominator is ≤ 0.</li>
+<li>Handle &quot;Purchased&quot; explicitly, with a default yield or an external land footprint factor.</li>
+<li>Report the unallocated DM.</li>
+</ul>
+</li>
+</ul>
+<p><strong>LU-02 - Land driven by the larger of energy- and CP-based DMI (High, CONFIRMED mechanism)</strong></p>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>dmi_s = ifelse(dmi_required_cp&gt;dmi_required_e, dmi_required_cp, dmi_required_e)</code> (energy_requirement.R:174), then <code>feed_item_dm = fraction_dry_matter*dmi_s</code> (land_requirement.R:93).</li>
+<li>Every season and category in EX and QT is CP-limiting.</li>
+<li>EX improved cow, S1: 2,794 vs 1,654 kg DM (+69%). Annual DMI is 9,714 kg, or 26.6 kg/d (4.4% of 600 kg BW). The energy-based 15.6 kg/d is realistic for 3,660 kg milk.</li>
+<li>QT: +2% to +35%.</li>
+</ul>
+</li>
+<li><strong>Expected:</strong> land should follow actual or feasible intake (energy-based DMI capped by intake capacity). A CP deficit should be reported as a deficit, not converted into extra feed.</li>
+<li><strong>Impact:</strong> land, water, N and erosion are overstated by up to about 70% on low-CP diets. Diet improvements that raise CP look like large land savings.</li>
+<li><strong>Fix:</strong> use energy DMI for land, cap by an intake-capacity check (for example about 2.5-3.5% BW for cattle), and output the CP gap separately.</li>
+</ul>
+<p><strong>LU-03 - Allocation of crop land between food and residue feed (Medium, PLAUSIBLE)</strong></p>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>For residues, <code>area_feed = area_total * cr_yield*res_removal/(crop_yield*crop_removal + cr_yield*res_removal)</code> (L103-107). This is DM-mass allocation.</li>
+<li>Main items: <code>crop_residue_removal</code> is forced to 0 (L97-98), so a grain or fodder item takes 100% of its crop's area.</li>
+<li>If both &quot;maize grain&quot; (Main) and &quot;maize stover&quot; (Residue) are fed, the two areas are computed independently from different DM demands and never reconciled.</li>
+<li>QT test with rice straw <code>residue_dry_yield=5</code>: straw gets 21% of 1.8 ha.</li>
+</ul>
+</li>
+<li><strong>Expected:</strong> a documented allocation choice. FAO LEAP feed guidelines use economic allocation by default, which typically gives stover a much smaller share than mass allocation. Also a single crop-level area when several co-products of one crop are fed.</li>
+<li><strong>Impact:</strong> residue land share is likely overstated several-fold relative to economic allocation (my inference; depends on prices). There is a double-count risk for crops whose grain and residue are both fed.</li>
+<li><strong>Fix:</strong> make the allocation method a parameter (mass/economic/none), and compute crop area once per crop with co-product shares.</li>
+<li><strong>Refutation attempt:</strong> mass allocation is a defensible choice, but it is undocumented and non-configurable, so the finding stands.</li>
+</ul>
+<p><strong>LU-04 - Feed-source classification by name substring (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>str_detect(feed, &quot;OFR&quot;)</code>, <code>&quot;OFC&quot;</code>, <code>&quot;IP&quot;</code> in land_requirement.R:108-116 and repeated in the water, N, merge and GHG code. A name like &quot;…PIPER…&quot; or &quot;SHIP…&quot; would be classed as imported.</li>
+<li>Off-farm and imported land is assessed with the farm's own <code>annual_prec</code>, <code>soil_*</code>, R, K, <code>et</code>, <code>cropland_system</code> and so on (soil_health.R:26-27; water_requirement.R:33; soc.R:106).</li>
+<li><strong>Fix:</strong> add an explicit <code>feed_origin</code> field. Use separate (or default regional) soil and climate parameters for off-farm land, or report off-farm land as area only.</li>
+</ul>
+<p><strong>LU-05 - Intercropping reduction (Low, PLAUSIBLE)</strong></p>
+<ul>
+<li><code>area*(1 - intercrop*intercrop_fraction)</code> (L100-102). Whether yields are sole-crop or intercrop yields, and whether the &quot;saved&quot; land belongs to the companion crop, is undocumented.</li>
+<li>A land-equivalent-ratio approach would be more transparent.</li>
+</ul>
+<p><strong>LU-06 - Land intensity metrics (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>total_land_requirement_ha_per_kg_fpcm &lt;- safe_div(ha, kg)*1000</code> (differences.R:211) is ha per tonne, but it is plotted as &quot;ha/kg&quot; (compare_scenario.R:328-342).</li>
+<li>The same total land is divided separately by milk, by meat and by protein, so there is no co-product allocation. Per-kg-meat and per-kg-milk footprints both carry 100% of the land. The same applies to water, N, erosion and GHG.</li>
+<li><code>land_productivity()</code> computes no land productivity at all. It returns livestock outputs.</li>
+<li>AME days use 2100 kcal (differences.R:195-196) but 2500 kcal in merge_outputs.R:530.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Relabel the unit, or report m²/kg.</li>
+<li>Add biophysical or economic milk/meat allocation (IDF 2015 for dairy).</li>
+<li>Use one AME constant.</li>
+</ul>
+</li>
+</ul>
+<h3>Nitrogen balance</h3>
+<p><strong>N-01 - Leaching term mixes per-ha and total units (Critical, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>out3a/b/c = (n_mineralized_kg_ha_year + fertilizer_rate + in2) * (...)/100</code> (L249-252).</li>
+<li><code>n_mineralized</code> and <code>fertilizer_rate</code> are kg/ha, but <code>in2 = organic_n_kg_total</code> is kg per farm (L245).</li>
+<li><code>out3</code> is never multiplied by <code>area_total</code>, yet <code>nout = out1+out2+out3+out4+out5</code> adds it to farm totals (L256).</li>
+<li>By contrast, <code>out4</code> uses <code>organic_n_kg_per_ha</code> and <code>* area_total</code> (L253-254).</li>
+<li>EX: <code>out3 = 2.55</code> kg for every feed, including zero-area feeds.</li>
+<li>QT oats (0.169 ha): <code>out3 = 46.4</code> kg total, where the correct value is about 0.169 x the per-ha rate using the per-ha manure.</li>
+</ul>
+</li>
+<li><strong>Expected:</strong> <code>out3 = (Nmin + Nfert + Norg_per_ha) x frac x area_total</code>, as <code>out4</code> already does.</li>
+<li><strong>Impact:</strong> leaching is underestimated by a factor equal to the area when area &gt; 1 ha, and overestimated when area &lt; 1 ha. The bias flows into <code>nbalance</code>, &quot;NUE&quot;, the leaching area and the per-ha summaries.</li>
+<li><strong>Fix:</strong> use <code>organic_n_kg_per_ha</code> and multiply by <code>area_total</code>.</li>
+</ul>
+<p><strong>N-02 - Leaching regression mis-parenthesised (High, PLAUSIBLE)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>0.021 * (annual_precipitation - 3.9)</code> (L249), while the other clay classes use the form <code>a*P + b</code> (<code>0.014*P + 0.71</code>, <code>0.0071*P + 5.4</code>).</li>
+<li><strong>Expected:</strong> De Willigen (2000), as used in the NUTMON toolbox, gives <code>0.021*P - 3.9</code> (%) for clay &lt; 35%.</li>
+<li><strong>Impact:</strong> leaching fraction is +3.8 percentage points too high: 20.9% vs 17.1% at 1000 mm, and 8.3% vs 4.5% at 400 mm.</li>
+<li><strong>Caveat:</strong> verdict is PLAUSIBLE because I checked against the published form from memory. The pattern of the other two clay classes strongly supports it.</li>
+</ul>
+<p><strong>N-03 - Scalar <code>ifelse</code> discards grazing-manure N (High, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>animal_manure_grazing = ifelse(denom &gt; 0, sum_n_content_manure_grazing*(...)/denom, 0)</code> (L234-238). <code>denom</code> is a scalar, so <code>ifelse</code> returns only element 1 of the vector, recycled to every row. Checked: <code>ifelse(5082&gt;0, c(0,126.6,0), 0)</code> returns <code>0</code>.</li>
+<li>QT: 126.6 kg of grazing-manure N becomes 0 for all feeds. If feed 1 had had a non-zero value, that value would have been copied to every feed (over-count instead).</li>
+<li>The allocation key itself (harvested DM, including off-farm and imported feeds) is also questionable: grazing manure falls on grazed land, not on purchased-concentrate land.</li>
+<li><strong>Fix:</strong> use <code>if (denom &gt; 0) ... else 0</code> (vector form), and allocate grazing manure only to on-farm grazed areas.</li>
+</ul>
+<p><strong>N-04 - Missing fertiliser types or N content silently give 0 N (High, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>ifelse(feed_selected$urea == 0, 0, as.numeric(para$fertilizer[which(desc==&quot;Urea&quot;),]$percentage_n)/100)</code>, then <code>!is.finite(...)</code> becomes 0 (L116-120). If &quot;Urea&quot; is not in <code>para$fertilizer</code>, or <code>percentage_n</code> is absent (as in <code>example_input.json</code>, whose fertiliser row has no <code>percentage_n</code>), the N input is 0.</li>
+<li>QT: 400 kg urea/ha on oats gives <code>in1 = 0.85</code> kg total (only N-solutions counted). Adding a Urea row gives <code>in1 = 32.0</code> kg, so about 184 kg N/ha was ignored.</li>
+<li>ghg_emission.R:517-535 still counts the urea mass in fertiliser manufacturing emissions, while soil N2O (which uses <code>fertilizer_rate</code> from n_balance) does not.</li>
+<li><strong>Fix:</strong> use a fixed internal N-content table (urea 46%, AN 33-34%, AS 21%, DAP 18%, etc.) with user override, and stop on unknown types.</li>
+</ul>
+<p><strong>N-05 - Manure and purchased organic N multiplied across feeds (High, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>animal_manure_collected &lt;- n_content_manure_collected * manure_fraction</code> and <code>organic_n_imported &lt;- manure_fraction*(purchased_...)</code> inside the per-feed loop (L148-155). There is no division by the sum of fractions and no area weighting.</li>
+<li>QT: 82.66 kg N is given to both oats and rice (<code>fraction_as_fertilizer = 1</code> each), so 200% of the available manure N is applied. <code>organic_n_kg_per_ha = 488</code> kg N/ha on oats.</li>
+<li><strong>Fix:</strong> normalise <code>fraction_as_fertilizer</code> to sum to ≤ 1 across feeds (with a warning), and optionally distribute by area.</li>
+</ul>
+<p><strong>N-06 - &quot;NUE&quot; is not NUE (High, CONFIRMED)</strong></p>
+<ul>
+<li><strong>Evidence:</strong> <code>nue = nout/nin</code> (L257), where <code>nout</code> includes leaching, gaseous loss and erosion. Mining is <code>nue &gt; 0.9</code> and leaching is <code>nue &lt; 0.5</code> (L285-294).</li>
+<li>EX: NUE 24.2 and 54.4, so the pasture is classed as &quot;mining&quot;. Higher leaching raises this &quot;NUE&quot;, which pushes a plot toward &quot;mining&quot;, the opposite of the intended signal.</li>
+<li><strong>Expected:</strong> NUE = N in harvested products / N inputs (EU Nitrogen Expert Panel, 2015). The 0.5/0.9 thresholds come from that framework and only make sense with that numerator.</li>
+<li><strong>Fix:</strong> <code>nue = (out1+out2)/nin</code>, and keep the balance separate.</li>
+</ul>
+<p><strong>N-07 - Two bases for <code>soil_n</code> (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>ntot_kg_ha_20cm = soil_n*20*soil_bulk*10</code> (L164). If <code>soil_n</code> is in g/kg, the correct stock is <code>soil_n*0.2 m*1e4 m²*BD</code> = <code>2000*BD*soil_n</code> kg/ha, so the code is 10x low. If it is in %, the code is 100x low.</li>
+<li><code>out5 = soil_loss_plot(t)*soil_n*1.5</code> (L184) is kg N only if <code>soil_n</code> is in g/kg.</li>
+<li>EX: mineralisation 15.6 kg N/ha/yr vs 156 on the g/kg basis. Mineralised N feeds both the leaching and gaseous pools, so both are likely underestimated.</li>
+<li>Units are undocumented (input-contract.Rmd:49: &quot;package basis&quot;).</li>
+</ul>
+<p><strong>N-08 - Negative inputs and losses (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>in4a = 2 + (P-1350)*0.005</code> (Smaling-type relation) is &lt; 0 for P &lt; 950 mm, which covers much of semi-arid SSA.</li>
+<li><code>out4</code> fraction <code>-9.4 + 0.13*clay + 0.01*P</code> is &lt; 0 for, for example, clay 20% and P 600 mm.</li>
+<li><strong>Fix:</strong> <code>pmax(0, …)</code>.</li>
+</ul>
+<p><strong>N-09 - Cross-module N consistency (Medium, PLAUSIBLE)</strong></p>
+<ul>
+<li>The N balance applies excreted N in collected manure (<code>n_content_manure_collected</code>) with no housing or storage losses. The GHG module models NH3 and N2O losses from the same manure, so the same N is both lost and fully applied.</li>
+<li>ghg_emission.R:374-375 sets <code>conc_of_n_from_crop_residue_managed_soil &lt;- sum(nitrogen_balance$conc_of_min_fert_n)</code>: fertiliser N is used as residue N.</li>
+<li>L373 reads <code>nitrogen_balance$rough_of_n_from_crop_residue</code>, which does not exist, so it returns 0.</li>
+<li>Main-product N removal uses <code>main_n</code> as a fraction of DM, while <code>n_fixing</code> uses <code>0.5 x shoot N</code> (no roots, with a fixed %Ndfa). Both are undocumented.</li>
+</ul>
+<h3>Soil erosion</h3>
+<p><strong>SE-01 - Erosion silently zero when slope inputs are missing (High, CONFIRMED)</strong></p>
+<ul>
+<li>The nested <code>ifelse</code> returns <code>NA_real_</code> for any unmatched class (L58), so <code>soil_loss_ha_year</code> is NA.</li>
+<li><code>n_balance</code> then uses <code>sum(..., na.rm=TRUE)</code>, which gives 0 (nitrogen_balance.R:179-182), and summaries do the same.</li>
+<li>EX: every feed has <code>slope_desc: &quot;&quot;</code>, so LS = NA and erosion = 0 with no warning. QT has <code>slope_length 0</code>, which is accepted as the class &quot;≤1&quot;.</li>
+<li><strong>Fix:</strong> validate <code>slope_desc</code> against the allowed set, and stop or warn on NA.</li>
+</ul>
+<p><strong>SE-02 - Rainfall erosivity formula (High, PLAUSIBLE)</strong></p>
+<ul>
+<li><code>R = 0.55*(annual_prec/rain_length) - 4.7</code> (L26) has no reference, and <code>rain_length</code> has no unit (6 and 5 in the examples, apparently months). This gives R = 98 (EX) and 160 (QT).</li>
+<li>Widely used SSA relations give far larger values:
+<ul>
+<li>Roose (1977): R ≈ 0.5·P in US units, often converted as about 0.5·P·1.73 in SI, i.e. about 970 at 1119 mm.</li>
+<li>Hurni (1985, Ethiopia): R = 0.562·P - 8.12, i.e. about 620.</li>
+</ul>
+</li>
+<li>Unless K is on a matching non-SI basis, soil loss is likely underestimated 5-10x.</li>
+<li>K = 0.19-0.25 in the examples looks like US-customary K (SI K is typically 0.01-0.07 t·h·MJ⁻¹·mm⁻¹).</li>
+<li><strong>Verdict PLAUSIBLE:</strong> the bias could partly cancel through unit mixing, but that cannot be verified because units are undocumented.</li>
+<li><strong>Fix:</strong> cite the formula, state the SI units for R and K, and consider regional R options.</li>
+</ul>
+<p><strong>SE-03 - LS table and P default (Medium, PLAUSIBLE)</strong></p>
+<ul>
+<li>The LS lookup (L34-58) has no source and no unit for slope length (metres? 1-30 looks too short for field slopes), and uses four very wide steepness classes (&quot;Hilly 5-20%&quot; covers a 4x range in S).</li>
+<li><code>slope_p_factor = 0.11</code> appears for every feed in both examples, including pasture and purchased concentrate. That value corresponds to well-maintained terraces; P = 1 for no practice. Erosion is about 9x lower than without conservation practices.</li>
+<li><strong>Fix:</strong> use a continuous LS (for example Wischmeier-Smith or Moore-Burch), document units, and default P to 1.</li>
+</ul>
+<p><strong>SE-04 - Erosion summary rows shifted (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>sources = c(&quot;total&quot;,&quot;on-farm&quot;,&quot;rough of&quot;,&quot;conc of&quot;,&quot;conc ip&quot;)</code> (merge_outputs.R:620).</li>
+<li><code>erosion_t_soil_year = c(soil_loss_plot, rough_of_soil_loss, conc_of_soil_loss, conc_ip_soil_loss, farm_soil_loss)</code> (L649-655).</li>
+<li>So the &quot;on-farm&quot; row shows off-farm roughage erosion, and so on. <code>erosion_t_soil_ha</code> then divides those shifted values by the mislabelled areas (L659-665).</li>
+<li><strong>Fix:</strong> reorder so farm comes second.</li>
+</ul>
+<p><strong>SE-05 - Per-ha N summary summed across feeds (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>balance_N_kg_N_ha = sum_col(nitrogen_balance, &quot;nbalance_feed_only_kg_n_ha&quot;)</code> (merge_outputs.R:628-634) adds kg/ha values across feeds. It should be the total divided by the area.</li>
+<li>differences.R:231 uses <code>nbalance_kg_n_total</code> (whole crop, including the food share), while merge_outputs uses the feed-only balance. The two headline N balances differ in scope.</li>
+</ul>
+<h3>Water</h3>
+<p><strong>W-01 - mm·ha reported as m³ (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>ET = kc_frac*et</code> (mm) and <code>water_use = ET*sum(area_feed)</code> (L48-49). <code>kc_water_use_m3_per_ha = feed_water_use/area_feed</code> (L57) is therefore just Kc·ET0 in mm. EX pasture shows 815 &quot;m³/ha&quot; = 0.6 x 1359 mm.</li>
+<li>1 mm over 1 ha = 10 m³, so every reported water volume and intensity (<code>total_water_use</code>, <code>water_use_fpcm</code>, <code>_meat</code>, <code>_protein</code>, and <code>total_water_use_m3*</code> in differences.R) is 10x too low.</li>
+<li>EX <code>water_use_fpcm</code> = 0.235 &quot;m³/kg&quot; should be 2.35 m³/kg under the model's own assumptions.</li>
+<li><strong>Fix:</strong> multiply by 10.</li>
+</ul>
+<p><strong>W-02 - ET method incomplete (High, CONFIRMED)</strong></p>
+<ul>
+<li>ET0 (<code>para$et</code>, annual) x the mean of Kc_ini/mid/late is applied as if every crop transpires all year. There is no crop season length, even though <code>cultivation_period</code> exists in QT feed items.</li>
+<li>No effective rainfall, no irrigation or blue-water term, no green/blue/grey separation. The <code>wfp_green/blue/grey</code> fields in <code>feed_items</code> are ignored.</li>
+<li>Livestock drinking and servicing water (<code>livestock$water_requirement</code>) is ignored, even though the function is called <code>water_requirement</code>.</li>
+<li>For annual crops (about 120-150 d) ET is overestimated about 2-3x. This partly offsets W-01, which is not a correction.</li>
+<li><code>fraction_of_precipitation_used_for_feed_production = ET/annual_prec</code> is an area-weighted crop ET/P ratio, not a share of farm rainfall.</li>
+<li><strong>Fix:</strong> use CROPWAT-style stage-length-weighted Kc x ET0 over the season, split into green water (min of ETc and Peff) and blue water, and add drinking water.</li>
+</ul>
+<p><strong>W-03 - Double allocation for residues (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>water_use</code> is already computed on <code>area_feed</code> (the allocated share). Then <code>feed_water_use = water_use*(1 - area_non_feed/area_total)</code> (L50-51) applies the share a second time.</li>
+<li>QT test (rice straw with 21% share): 307 vs the expected 1460 mm/ha.</li>
+<li><code>total_water_use = ET*sum(area_feed)</code> (L74) does not include the second allocation, so the per-feed and total water outputs disagree.</li>
+</ul>
+<p><strong>W-04 - OFC included in on-farm water (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>kc_water_use_on_farm = feed_water_use - roughages - ip_concentrates</code> (L56) omits <code>kc_water_use_of_concentrates</code>.</li>
+</ul>
+<p><strong>W-05 - Plain-mean Kc (Low, CONFIRMED)</strong></p>
+<ul>
+<li><code>(kc_initial + kc_midseason + kc_late)/3</code> (L46). FAO-56 weights each Kc by stage length.</li>
+</ul>
+<h3>Soil organic carbon and biomass</h3>
+<p><strong>S-01 - Tree SOC always zero (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>biomass_calculation()</code> returns a plain tibble (L141-144). <code>soil_organic_carbon()</code> reads <code>biomass[[&quot;trees_non_feed_biomass&quot;]]$c_increase_soc</code> (soc.R:234), which is NULL, so the sum is 0. Verified in both runs.</li>
+<li><code>differences.R</code> adds <code>biomass$co2_increase</code> (above-ground only), so the 25% below-ground/soil increment is dropped everywhere.</li>
+</ul>
+<p><strong>S-02 - Permanent SOC loss for steady-state land (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>((SOC*FLU*FMG*FI) - SOC)/20 * area</code> (soc.R:125-132), where SOC is the measured field stock.</li>
+<li>IPCC Tier 1 computes SOC0 and SOC(0-T) from SOCref x F for the current and previous management, and ΔC = (SOC0 - SOC(0-T))/D. Land under the same management for more than 20 years has ΔC = 0.</li>
+<li>The code instead reports an annual loss for every baseline as if native land had been converted within the last 20 years. It also applies the factors to a measured stock that already reflects current management, which double-counts the effect.</li>
+<li>QT: -2.93 t C/yr on 0.169 ha, i.e. -17 t C/ha/yr. That is physically implausible.</li>
+<li>Scenario differences are partly meaningful (ΔF x SOC/20) only when areas are equal.</li>
+<li><strong>Fix:</strong> take baseline management as the prior state and scenario management as the current state (or explicit land-use-change inputs), and use SOCref from IPCC Table 2.3 or the measured 0-30 cm stock as SOC(0-T).</li>
+</ul>
+<p><strong>S-03 - Depth and units (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>soil_amount = 1e6*(soil_depth/100)*soil_bulk</code> = 1e4·depth·BD. This is t/ha only if depth is in <strong>metres</strong>.</li>
+<li>EX <code>soil_depth = 2</code> gives 2 m and 832 t C/ha. QT <code>soil_bulk = 6</code> is impossible but accepted, giving 1440 t C/ha.</li>
+<li>IPCC factors are defined for 0-30 cm. At 2 m depth the flux is inflated about 3-7x.</li>
+<li><strong>Fix:</strong> fix the depth at 0.3 m (or document cm and convert), and range-check BD (0.8-1.8 g/cm³) and <code>soil_c</code>.</li>
+</ul>
+<p><strong>S-04 - Non-IPCC grassland factor (High, CONFIRMED)</strong></p>
+<ul>
+<li><code>stock_change_parameters.json</code> has <code>grassland.management.&quot;Medium&quot;: 1.5</code>. IPCC 2006 Vol 4 Table 6.2 has nominally managed 1.0, moderately degraded 0.95-0.97, severely degraded 0.7 and improved 1.14-1.17. There is no 1.5.</li>
+<li>Selecting &quot;Medium&quot; gives +50%, i.e. (40 x 0.5)/20 = +1 t C/ha/yr.</li>
+<li>The cropland factors match IPCC 2006 Table 5.5. The 2019 Refinement revised several of them; which version to use is an author decision.</li>
+</ul>
+<p><strong>S-05 - Land categories (Medium, CONFIRMED)</strong></p>
+<ul>
+<li>Cropland area = <code>sum(area_feed) - grasses - tree_legume</code> (L106-107). This includes off-farm and imported concentrate land at farm SOC and farm management.</li>
+<li>Grassland uses a fixed 40 t C/ha (L142, L176), not <code>field_soc</code> or IPCC SOCref.</li>
+<li>Tree-legume and tree-crop land is excluded from every SOC pool.</li>
+<li>Organic soils are hard-coded to 0 (L210-216).</li>
+</ul>
+<p><strong>S-06 - Doc mismatch (Low, CONFIRMED)</strong></p>
+<ul>
+<li>output-contract.Rmd:258-262 lists <code>field_soc</code> and per-land-use rows. The function returns only <code>total_annual_change_carbon_soils</code> and <code>total_change_co2_soils</code>.</li>
+</ul>
+<h3>Scenario comparison and uncertainty</h3>
+<p><strong>C-01 - % change arithmetic (High, CONFIRMED)</strong></p>
+<ul>
+<li>Every indicator uses <code>ifelse(!is.finite((S-B)/B*100), 0, (S-B)/B*100)</code> (compare_scenario.R:49-150).</li>
+<li>A baseline N balance of -100 improving to -50 is reported as -50%, which reads as &quot;worse&quot;.</li>
+<li>A baseline of 0 (common for SOC, erosion or meat after LU-01/SE-01) gives 0%.</li>
+<li><strong>Fix:</strong> report absolute differences, use <code>(S-B)/|B|</code>, and return NA when B = 0.</li>
+</ul>
+<p><strong>C-02 - Zero-denominator intensities (Medium, CONFIRMED)</strong></p>
+<ul>
+<li><code>safe_div(..., default = 0)</code> (differences.R:39) and <code>ifelse(!is.finite(...), 0, ...)</code> (water_requirement.R:76-81) turn undefined intensities into 0. A dairy-only farm then shows &quot;0 m³/kg meat&quot; and &quot;0 t CO2e/kg meat&quot;.</li>
+</ul>
+<p><strong>C-03 - No uncertainty or sensitivity (High, CONFIRMED by absence)</strong></p>
+<ul>
+<li>No module carries ranges, Monte Carlo, or one-at-a-time sensitivity.</li>
+<li>Results depend strongly on unobserved or default inputs: yield and HI (land varies inversely), removal fractions (division, LU-01), Kc, R/LS/P (multiplicative), <code>soil_n</code> and BD (N-07, S-03).</li>
+<li>The comparison view presents single-point % changes with no indication of the noise floor.</li>
+<li><strong>Fix:</strong> at minimum, ship a sensitivity wrapper over key parameters (±20-50%) and show ranges in <code>compare_scenario</code>.</li>
+</ul>
+<h3>Documentation</h3>
+<p><strong>D-01 - Shipped examples do not run (High, CONFIRMED)</strong></p>
+<ul>
+<li>The README &quot;Standard Model Run&quot; fails on <code>inst/extdata/example_input.json</code>, <code>data/qt_example.json</code> and <code>data(mufindi)</code> at <code>unnest(cols = c(crop_name))</code>.</li>
+<li>After adding <code>crop_name</code>, it also needs <code>dry_yield</code>, <code>residue_dry_yield</code> (EX), <code>percentage_n</code> (EX), <code>fat_milkcontent</code>, <code>cp_lys_pregnancy</code>, <code>cp_lys_growth</code>, <code>n_manure_content</code>, <code>lw_gain_piglets</code> and <code>proportion_growth_piglets_milk</code>.</li>
+<li>The key agronomic derivations (dry yield, residue yield, residue DM) live outside the package; the code at <code>land_requirement.R:84-88</code> that did this is commented out. Those derivations therefore cannot be reviewed or tested.</li>
+<li>The commented formula uses the <em>feed's</em> <code>dm_content</code> for the main product's DM, which is wrong for residue items.</li>
+</ul>
+<p><strong>D-02 - Units unstated or inconsistent (Medium, CONFIRMED)</strong></p>
+<ul>
+<li>input-contract.Rmd:42-53 gives <code>soil_n</code>, <code>soil_c</code>, <code>soil_depth</code>, <code>et</code>, <code>rain_length</code> and <code>slope_length</code> only on the &quot;package basis&quot;.</li>
+<li><code>dm_content</code> is 0.3 (a fraction) in EX but 89 (a percent) in QT, and the README says percent.</li>
+<li>There are no range checks.</li>
+</ul>
+<hr />
+<h2>Done well</h2>
+<ul>
+<li>The IPCC 2006 cropland stock-change factors (FLU/FMG/FI) in <code>stock_change_parameters.json</code> are transcribed correctly and are looked up by explicit key, with a clear error on a missing key (soc.R:39-71).</li>
+<li>The NUTMON/De Willigen structure is recognisable: deposition <code>0.14·√P</code>, clay-dependent leaching classes, and the gaseous-loss regression. The N balance also separates off-farm and on-farm sources.</li>
+<li>Land is disaggregated by source (on-farm, off-farm roughage, off-farm concentrate, imported), which is the right structure for footprint shifting, even though the classification is fragile.</li>
+<li>FPCM correction (0.337 + 0.116F + 0.06P) is applied consistently in the productivity and water modules.</li>
+<li>The DBH-based tree biomass allometry and the C-to-CO2 conversions are dimensionally consistent (kg to t via /1000, 0.48 C fraction, 44/12).</li>
+</ul>
+<h2>Open questions for authors</h2>
+<ol>
+<li>What are the intended units of <code>soil_n</code>, <code>soil_c</code>, <code>soil_depth</code>, <code>soil_k_value</code>, <code>rain_length</code>, <code>slope_length</code> and <code>et</code>, and what is the source of the R formula and the LS table?</li>
+<li>Where (app or batch) are <code>dry_yield</code>, <code>residue_dry_yield</code> and <code>crop_name</code> derived, and can that code be moved into the package and tested?</li>
+<li>Is mass allocation of crop land to residues a deliberate choice? Would you accept economic allocation (FAO LEAP) as an option?</li>
+<li>Should land and feed demand follow energy-limited intake rather than max(energy, CP)?</li>
+<li>Is SOC change meant to be baseline-to-scenario (management change) or native-to-current? Is the grassland &quot;Medium&quot; = 1.5 factor intentional?</li>
+<li>What should a zero removal fraction on a fed item mean? And how should &quot;Purchased&quot; feeds get a land and water footprint?</li>
+<li>Is any validation dataset (for example NUTMON farm studies or measured erosion plots in East Africa) available to benchmark the N balance and erosion magnitudes?</li>
+<li>Should milk and meat footprints be allocated (IDF 2015 or economic) rather than each carrying 100% of the impacts?</li>
+</ol>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

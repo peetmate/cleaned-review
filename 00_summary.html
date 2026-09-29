@@ -1,0 +1,260 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>cleaned package: adversarial review summary</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned package: adversarial review summary</h1>
+<ul>
+<li><strong>Date:</strong> 2026-09-29</li>
+<li><strong>Package reviewed:</strong> <code>cleaned</code> v0.7.0 (CIAT/cleaned <code>staging</code> @ <code>800d53a</code>)</li>
+<li><strong>App:</strong> iCLEANED (CIAT/icleaned @ <code>fb8498c</code>)</li>
+<li><strong>Status:</strong> local only; not committed to any shared branch and not pushed</li>
+</ul>
+<h2>Verdict</h2>
+<p>The package runs, and its Tier 2 structure follows IPCC. But several defects change headline results by tens of percent, and some by an order of magnitude:</p>
+<ul>
+<li><strong>Intake engine:</strong> net energy is divided by metabolisable-energy density, and intake takes the larger of energy and protein demand with no cap.</li>
+<li><strong>N excretion:</strong> retention is used with the wrong units.</li>
+<li><strong>Soil carbon:</strong> it shows a permanent loss on unchanged land, and tree carbon is always 0.</li>
+<li><strong>Burning:</strong> it is about 24× too high.</li>
+<li><strong>Land and N:</strong> zero yields silently become 0 ha, and leaching is not scaled by area.</li>
+<li><strong>Water:</strong> it is about 10× too low.</li>
+</ul>
+<p>Nine of these were confirmed by unit tests against the IPCC source text (06). Most of them reach the live iCLEANED app (05). Until they are fixed, absolute footprints should not be reported. Enteric CH4 differences between scenarios are the most defensible output.</p>
+<h2>Reports</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Scope</th>
+<th>Critical</th>
+<th>High</th>
+<th>Medium</th>
+<th>Low</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01_climate_ghg.md</td>
+<td>IPCC GHG, SOC, N2O, GWP</td>
+<td>3</td>
+<td>7</td>
+<td>9</td>
+<td>4</td>
+</tr>
+<tr>
+<td>02_livestock.md</td>
+<td>Energy, intake, herd, N, feed library</td>
+<td>2</td>
+<td>5</td>
+<td>9</td>
+<td>8</td>
+</tr>
+<tr>
+<td>03_landuse.md</td>
+<td>Land, water, erosion, N balance, scenarios</td>
+<td>2</td>
+<td>18</td>
+<td>13</td>
+<td>3</td>
+</tr>
+<tr>
+<td>04_package_code.md</td>
+<td>R CMD check, design, bugs, tests, docs</td>
+<td>4</td>
+<td>8</td>
+<td>15</td>
+<td>5</td>
+</tr>
+<tr>
+<td>05_app_relevance_and_workshop.md</td>
+<td>Findings vs the deployed app, guide vs code, workshop plan</td>
+<td>39 Critical/High deduplicated: 28 affect the app, 7 are guarded by the app, 1 unclear, 3 have no runtime effect; 6 new issues</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>06_critical_tests.md</td>
+<td>Unit tests vs IPCC, with citations</td>
+<td>9 findings tested: 8 fully confirmed, 1 partly confirmed (coefficient check skipped); controls pass</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>07_fix_log.md</td>
+<td>Proposed fixes, tested on a temporary copy</td>
+<td>Each fix turns only its own tests green, with no regressions; all fixes: 23 pass, 1 skipped</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>08_demo.md</td>
+<td>Current vs fixed vs IPCC, plus iCLEANED study impact</td>
+<td>Built by knitting <code>fixes/demo.Rmd</code></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>R CMD check <code>--as-cran</code> gives 4 WARNINGs and 4 NOTEs, so CI (<code>error_on = &quot;warning&quot;</code>) fails by design. The only existing test file contains no expectations.</p>
+<h2>Critical findings, deduplicated</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Finding</th>
+<th>Review ids</th>
+<th>Unit test (06)</th>
+<th>Reaches app (05)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Net-energy requirements ÷ ME density, with no REM/REG conversion (IPCC Eq. 10.14–10.16)</td>
+<td>CL F02, LV C-01</td>
+<td>FAIL: DMI 0.55–0.63× IPCC</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>2</td>
+<td>N retention in kg N/day, used as a fraction and divided by 365 twice (Eq. 10.31A/10.33)</td>
+<td>LV C-02, H-04; CL F04; PK F07</td>
+<td>FAIL: cow Nex +31%</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>3</td>
+<td>SOC stock-change factors applied every year to the measured stock (Eq. 2.25)</td>
+<td>CL F01, LU S-02</td>
+<td>FAIL: −7 t C/ha/yr on unchanged land</td>
+<td>Yes, the largest effect: −4.5 t CO2/yr vs 5.1 t emissions in Study_1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Burning counts biogenic CO2 and applies the N2O GWP to NOx</td>
+<td>CL F03, PK F06</td>
+<td>FAIL: 24×</td>
+<td>Yes: 40% of Study_2's total</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Tree SOC is always 0 (list/data-frame mismatch)</td>
+<td>PK F02, LU S-01</td>
+<td>FAIL</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Divide-by-zero results silently set to 0 ha</td>
+<td>LU-01, PK F04</td>
+<td>FAIL</td>
+<td>Yes; the app's default removal = 0 triggers it</td>
+</tr>
+<tr>
+<td>7</td>
+<td>N leaching is a per-ha value added to farm totals</td>
+<td>LU N-01</td>
+<td>FAIL: 2.6 vs 278 kg N</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Main inputs fetched from the caller's environment (<code>get(..., parent.frame())</code>)</td>
+<td>PK F03</td>
+<td>FAIL ×2</td>
+<td>Guarded: the app passes arguments explicitly</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Shipped example inputs don't run</td>
+<td>PK F01, LU D-01, LV H-03</td>
+<td>FAIL ×3</td>
+<td>Guarded: the app writes the correct column names</td>
+</tr>
+</tbody>
+</table>
+<h2>Highest-impact High findings</h2>
+<ul>
+<li>DMI = max(energy, CP) with no intake cap, so CP-poor diets inflate DMI, land, CH4 and N. A Study_2 cow eats 8.4% of body weight. (LV H-01, LU-02)</li>
+<li>Manure-system labels don't match the MCF table, so manure CH4 becomes NA and is summed as 0. The app's default label triggers this. (CL F07)</li>
+<li>Soils use 2006 N2O factors while manure uses 2019 values, and several N2O pathways are never aggregated. (CL F05, F06, F09)</li>
+<li>Water is in mm·ha but labelled m³, so it is 10× too low, and there's no green/blue split. (LU W-01, W-02)</li>
+<li>Fertiliser types missing from the table give 0 N, while manufacturing emissions still count them. (LU N-04, CL F10)</li>
+<li>Scenario % change flips sign when the baseline is negative. (LU C-01)</li>
+<li>The feed library has errors: Brachiaria CP equals ME, 995 ILRI rows have ME and IVDMD swapped. (LV M-07)</li>
+</ul>
+<h2>Deployed version</h2>
+<p>This corrects what I said earlier in the session. The app most likely runs v0.7.0-equivalent code: fork head <code>4ae5505</code>, which has the same <code>R/</code> and <code>inst/</code> as <code>staging</code> (about 65% likely). The alternative is the <code>renv.lock</code> pin <code>4c44dc9</code> (about 30%).</p>
+<ul>
+<li><code>global.R</code>'s fallback to <code>cleaned_v0.6.0</code> is ruled out: that version crashes on the studies the current app saves.</li>
+<li>Workshop test <strong>T0</strong> in 05 settles which version is live. If Study_1's GHG total reads 5.12 t, it's v0.7.0; if it reads 196, it's 4c44.</li>
+<li>On 4c44, the Compare-tab GHG totals are wrong by 1–3 orders of magnitude.</li>
+</ul>
+<h2>For the workshop</h2>
+<p>05 §6 has a 15-scenario test plan with expected ranges, and §7 has 16 warnings for facilitators. Minimum messages to participants:</p>
+<ol>
+<li>Test usability and the direction of change, not absolute numbers.</li>
+<li>Ignore the soil carbon and burning figures.</li>
+<li>Set a removal fraction for every feed; purchased feeds get no land.</li>
+<li>Fill in mature body weight, and weaning and 1-year weights for sheep and goats.</li>
+<li>Soil depth is in metres, and water figures are 10× too low.</li>
+<li>Run T0 before the session.</li>
+</ol>
+<h2>Suggested fix order</h2>
+<ol>
+<li><strong>Fixes that are one line or a few lines each:</strong>
+<ul>
+<li>tree SOC lookup (<code>soc.R:234</code>)</li>
+<li>burning aggregation (<code>merge_outputs.R:810-812</code>)</li>
+<li>leaching <code>* area_total</code> (<code>nitrogen_balance.R:249</code>)</li>
+<li>N retention units (<code>ghg_emission.R:226,233</code>)</li>
+<li>manure-label normalisation</li>
+</ul>
+</li>
+<li><strong>Engine changes:</strong>
+<ul>
+<li>REM/REG in <code>energy_requirement()</code></li>
+<li>an intake cap with a flag for CP-limited diets</li>
+<li>SOC based on SOCref (IPCC Table 2.3) with a baseline land-use and management state</li>
+</ul>
+</li>
+<li><strong>Guards:</strong>
+<ul>
+<li>error or warn instead of silently returning 0</li>
+<li>remove <code>get(parent.frame())</code></li>
+<li>validate inputs against the input contract, with units documented</li>
+</ul>
+</li>
+<li><strong>Hygiene:</strong>
+<ul>
+<li>get R CMD check to pass</li>
+<li>a shipped example that runs</li>
+<li>the critical tests plus a golden regression test on Study_1 and Study_2</li>
+<li>move non-.rda files out of <code>data/</code></li>
+</ul>
+</li>
+</ol>
+<p>The proposed fixes and their test results are in <code>07_fix_log.md</code>. The demo is <code>08_demo.md</code>.</p>
+<h2>Local artefacts</h2>
+<ul>
+<li><code>../cleaned_review/</code>: these reports, and the user guide as extracted text</li>
+<li><code>../cleaned_review_src/</code>: read-only checkout of v0.7.0 (a detached worktree)</li>
+<li><code>fixes/</code>: tests, the proposed fixes, the runner, <code>demo.Rmd</code>, <code>results/</code>, and <code>cleaned_fixed_copy/</code> (a plain folder, not git)</li>
+<li><code>../icleaned_review_src/</code>: read-only clone of the app</li>
+<li>Session scratchpad: the IPCC PDFs as text, the reviewers' run scripts, and the scratch R library (openxlsx)</li>
+</ul>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

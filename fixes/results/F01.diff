@@ -1,0 +1,45 @@
+diff -ru a/R/energy_requirement.R b/R/energy_requirement.R
+--- a/R/energy_requirement.R	2026-09-29 10:30:38
++++ b/R/energy_requirement.R	2026-09-29 10:30:38
+@@ -138,6 +138,9 @@
+   #Compute annual energy and protein required
+   annual_requirement <- lactation_cp%>%
+     mutate(energy_required_annually=(er_maintenance+er_activity+er_growth+er_lactation+er_pregnancy+er_work+er_wool)*no_days*herd_composition,
++           # IPCC 2019 Eq. 10.16 splits NE into terms divided by REM and by REG
++           ne_rem_annually=(er_maintenance+er_activity+er_lactation+er_pregnancy+er_work)*no_days*herd_composition,
++           ne_reg_annually=(er_growth+er_wool)*no_days*herd_composition,
+            protein_required_annually =((cp_maintenance*no_days)+
+                                          ifelse(!is.finite(((cp_lys_pregnancy/(no_days*birth_interval))*no_days)),0,((cp_lys_pregnancy/(no_days*birth_interval))*no_days))+
+                                          ifelse(!is.finite(((cp_lactation/(no_days*birth_interval))*no_days)),0,((cp_lactation/(no_days*birth_interval))*no_days))+
+@@ -167,8 +170,16 @@
+              energy_required_by_season = energy_required_annually*(sl/no_days),#compute energy require by season
+              protein_required_by_season = protein_required_annually*(sl/no_days))%>% #compute protein require by season
+       left_join(s_feed_basket_quality, by = "livestock_category_code")%>%
+-      mutate(fresh_intake_required_e = energy_required_by_season/average_me,
+-             dmi_required_e = fresh_intake_required_e*average_dm/100,
++      mutate(de_pct = ((average_me*100/average_dm)/0.81)/18.45*100, #DE as % of GE, package ME/DE = 0.81
++             # IPCC 2019 p. 10.21: common ruminant DE ranges start at 45%; below that REG
++             # (Eq. 10.15) approaches 0 and intake diverges, so 45% is used as a floor.
++             de_eq = pmax(de_pct, 45),
++             rem = 1.123-(4.092e-3*de_eq)+(1.126e-5*de_eq^2)-(25.4/de_eq), #IPCC 2019 equation 10.14
++             reg = 1.164-(5.16e-3*de_eq)+(1.308e-5*de_eq^2)-(37.4/de_eq), #IPCC 2019 equation 10.15
++             ipcc_ruminant = grepl("^(Cattle|Buffalo|Sheep|Goats)", livestock_category_name),
++             ge_required_by_season = ((ne_rem_annually*sl/no_days)/rem+(ne_reg_annually*sl/no_days)/reg)/(de_eq/100), #IPCC 2019 equation 10.16
++             dmi_required_e = ifelse(ipcc_ruminant, ge_required_by_season/18.45, (energy_required_by_season/average_me)*average_dm/100),
++             fresh_intake_required_e = dmi_required_e*100/average_dm,
+              fresh_intake_required_cp = protein_required_by_season/(average_cp/100),
+              dmi_required_cp = fresh_intake_required_cp*average_dm/100,
+              dmi_s = ifelse(dmi_required_cp>dmi_required_e,dmi_required_cp,dmi_required_e),
+@@ -178,6 +189,12 @@
+                                      ifelse(limiting=="CP",(dmi_required_cp-dmi_required_e)/dmi_required_e,
+                                             (dmi_required_e-dmi_required_cp)/dmi_required_cp)),
+              me_intake_s = dmi_s*average_me*100/average_dm)
++
++    low_de <- temp$ipcc_ruminant & temp$de_pct < 45 & temp$energy_required_by_season > 0
++    if (any(low_de, na.rm = TRUE)) {
++      warning(sprintf("energy_requirement(): diet DE of %.0f%% in season %s is below the IPCC common range (45%%); intake for %s is calculated at 45%% DE.",
++                      min(temp$de_pct[low_de]), seasons$season_name[i], paste(unique(temp$livestock_category_name[low_de]), collapse = ", ")), call. = FALSE)
++    }
+ 
+     #Binding seasonal results
+     if (i==1) {df <- temp}

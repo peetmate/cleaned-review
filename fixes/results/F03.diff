@@ -1,0 +1,122 @@
+diff -ru a/R/soc.R b/R/soc.R
+--- a/R/soc.R	2026-09-29 10:31:04
++++ b/R/soc.R	2026-09-29 10:31:04
+@@ -33,6 +33,12 @@
+ #' @export
+ 
+ soil_organic_carbon <- function(para, stock_change_para, land_required, biomass) {
++
++  # Previous land use / management key; defaults to the current one (no change).
++  soc_prev_key <- function(para, key) {
++    k <- para[[paste0(key, "_previous")]]
++    if (is.null(k) || length(k) == 0 || is.na(k) || !nzchar(k)) para[[key]] else k
++  }
+   
+   co2_conversion_factor <- 44 / 12
+   
+@@ -122,12 +128,27 @@
+         para[["cropland_orgmatter"]],
+         "cropland_orgmatter"
+       ),
++      prev_factor_land_use = lookup_soc_factor(
++        crop_landuse_tbl,
++        soc_prev_key(para, "cropland_system"),
++        "cropland_system"
++      ),
++      prev_factor_management = lookup_soc_factor(
++        crop_tillage_tbl,
++        soc_prev_key(para, "cropland_tillage"),
++        "cropland_tillage"
++      ),
++      prev_factor_input = lookup_soc_factor(
++        crop_input_tbl,
++        soc_prev_key(para, "cropland_orgmatter"),
++        "cropland_orgmatter"
++      ),
++      # IPCC 2006 Eq. 2.25: dC = (SOC0 - SOC(0-T)) / D. The measured stock is SOC0,
++      # so SOC(0-T) = SOC0 * F(0-T) / F0. No previous state given means no change.
+       annual_change_carbon_stocks_mineral_soils =
+-        ((carbon_stock_last_year_inventory_period *
+-            stock_change_factor_land_use *
+-            stock_change_factor_management *
+-            stock_change_factor_input) -
+-           carbon_stock_last_year_inventory_period) /
++        (carbon_stock_last_year_inventory_period *
++           (1 - (prev_factor_land_use * prev_factor_management * prev_factor_input) /
++              (stock_change_factor_land_use * stock_change_factor_management * stock_change_factor_input))) /
+         time_dependence_stock_change *
+         area_last_year_inventory_period
+     )
+@@ -156,12 +177,27 @@
+         para[["grassland_implevel"]],
+         "grassland_implevel"
+       ),
++      prev_factor_land_use = lookup_soc_factor(
++        grass_landuse_tbl,
++        "All",
++        "grassland landuse"
++      ),
++      prev_factor_management = lookup_soc_factor(
++        grass_mgmt_tbl,
++        soc_prev_key(para, "grassland_management"),
++        "grassland_management"
++      ),
++      prev_factor_input = lookup_soc_factor(
++        grass_input_tbl,
++        soc_prev_key(para, "grassland_implevel"),
++        "grassland_implevel"
++      ),
++      # IPCC 2006 Eq. 2.25: dC = (SOC0 - SOC(0-T)) / D. The measured stock is SOC0,
++      # so SOC(0-T) = SOC0 * F(0-T) / F0. No previous state given means no change.
+       annual_change_carbon_stocks_mineral_soils =
+-        ((carbon_stock_last_year_inventory_period *
+-            stock_change_factor_land_use *
+-            stock_change_factor_management *
+-            stock_change_factor_input) -
+-           carbon_stock_last_year_inventory_period) /
++        (carbon_stock_last_year_inventory_period *
++           (1 - (prev_factor_land_use * prev_factor_management * prev_factor_input) /
++              (stock_change_factor_land_use * stock_change_factor_management * stock_change_factor_input))) /
+         time_dependence_stock_change *
+         area_last_year_inventory_period
+     )
+@@ -190,12 +226,27 @@
+         para[["grassland_implevel"]],
+         "grassland_implevel"
+       ),
++      prev_factor_land_use = lookup_soc_factor(
++        grass_landuse_tbl,
++        "All",
++        "grassland landuse"
++      ),
++      prev_factor_management = lookup_soc_factor(
++        grass_mgmt_tbl,
++        soc_prev_key(para, "grassland_management"),
++        "grassland_management"
++      ),
++      prev_factor_input = lookup_soc_factor(
++        grass_input_tbl,
++        soc_prev_key(para, "grassland_implevel"),
++        "grassland_implevel"
++      ),
++      # IPCC 2006 Eq. 2.25: dC = (SOC0 - SOC(0-T)) / D. The measured stock is SOC0,
++      # so SOC(0-T) = SOC0 * F(0-T) / F0. No previous state given means no change.
+       annual_change_carbon_stocks_mineral_soils =
+-        ((carbon_stock_last_year_inventory_period *
+-            stock_change_factor_land_use *
+-            stock_change_factor_management *
+-            stock_change_factor_input) -
+-           carbon_stock_last_year_inventory_period) /
++        (carbon_stock_last_year_inventory_period *
++           (1 - (prev_factor_land_use * prev_factor_management * prev_factor_input) /
++              (stock_change_factor_land_use * stock_change_factor_management * stock_change_factor_input))) /
+         time_dependence_stock_change *
+         area_last_year_inventory_period
+     )
+@@ -248,4 +299,4 @@
+   )
+   
+   return(results)
+-}
+\ No newline at end of file
++}

@@ -1,0 +1,959 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>05 - App relevance calibration and workshop test plan (iCLEANED web app)</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>05 - App relevance calibration and workshop test plan (iCLEANED web app)</h1>
+<p><strong>Scope.</strong> This report checks the four expert reviews against what the iCLEANED Shiny app actually does:</p>
+<ul>
+<li>01_climate_ghg.md, 02_livestock.md, 03_landuse.md and 04_package_code.md, all reviewing <code>cleaned</code> v0.7.0 at <code>staging</code> @ 800d53a.</li>
+<li>The app source is read-only at <code>CIAT/icleaned</code> @ fb8498c (<code>main</code> @ fb8498c, 2026-08-24).</li>
+<li>The user guide is <code>iCLEANED_user_process_guide.txt</code>.</li>
+</ul>
+<p><strong>Method.</strong> I did not touch the live site. I emulated the app's simulation code path line for line (<code>R/10_mod_board_simulation_server.R:176-300</code>, including its <code>environment()</code> hack and its attached libraries) in the scratchpad, and ran it against three package builds:</p>
+<ul>
+<li><code>4c44dc9</code>, the renv.lock pin.</li>
+<li><code>origin/cleaned_v0.6.0</code>, the fallback in <code>global.R</code>.</li>
+<li><code>4ae5505</code>, the current head of the fork branch. Its <code>R/</code> and <code>inst/</code> are identical to <code>staging</code> 800d53a, i.e. v0.7.0 code.</li>
+</ul>
+<p>Inputs were the app's own shipped study objects (<code>data/shared_folder/study_objects/Study_1.json</code> and <code>Study_2.json</code>). These are the &quot;Shared Examples&quot; that participants will clone. I then ran input variants that reproduce what a user can do in the UI. The comparison view was emulated with <code>calculate_differences()</code> on the app-written JSON.</p>
+<p>Scripts are in the session scratchpad (<code>/private/tmp/claude-501/.../scratchpad/</code>):</p>
+<ul>
+<li><code>app_run.R</code>: exact emulator of the app pipeline.</li>
+<li><code>variant.R</code>: runs one input edit and prints the headline outputs.</li>
+<li><code>diffs.R</code>: comparison indicators.</li>
+</ul>
+<p>The scratchpad worktrees are <code>pkg_4c44</code>, <code>pkg_v06</code> and <code>pkg_4ae5</code>, with matching libraries <code>lib4c44</code>, <code>libv06</code> and <code>lib4ae5</code>.</p>
+<hr />
+<h2>1. Deployed-version finding</h2>
+<table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>renv.lock:717-727</code>: <code>cleaned</code> &quot;Version 0.6.0&quot;, RemoteRepo <code>M-Emmanuel/cleaned-staging-v2</code>, RemoteRef <code>feature/correct-functions</code>, RemoteSha <code>4c44dc9</code></td>
+<td>This is a snapshot record. It was last committed on 2026-02-27 (&quot;update renv state&quot;, CIAT/icleaned 2b31647) and not touched since. There is no <code>renv/activate.R</code> or <code>.Rprofile</code> in the repo, so the lock file is <strong>not enforced</strong> at runtime.</td>
+</tr>
+<tr>
+<td><code>global.R:15-18</code> falls back to <code>remotes::install_github(&quot;CIAT/cleaned@cleaned_v0.6.0&quot;)</code> only if <code>cleaned</code> is not installed</td>
+<td>This fallback is <strong>not viable</strong>. v0.6.0 crashes on every study object the current app writes: <code>Column 'feed_type_name' doesn't exist</code> (reproduced on Study_1 and Study_2). If the live app runs simulations at all, it is not on v0.6.0.</td>
+</tr>
+<tr>
+<td>App <code>main</code> includes e9762e1 (2026-08-17, &quot;replace t unit to kg for ghg emissions&quot;). <code>data/iCLEANED - Graphs Information.xlsx</code> now lists <code>ghg_emission_kg_co2_eq_per_kg_fpcm/_meat/_protein</code></td>
+<td>These indicator names exist only in package ≥ 56f09d3 (2026-08-17, &quot;Rename GHG product intensity outputs to kg CO2e units&quot;). That commit is in fork head 4ae5505 (2026-08-18), which equals v0.7.0 code. Under 4c44, <code>calculate_differences()</code> emits <code>ghg_emission_t_co2_eq_per_kg_*</code> instead, so those three comparison plots would be empty (verified with <code>setdiff()</code> on the 4c44 output).</td>
+</tr>
+<tr>
+<td>No Dockerfile, CI deploy or manifest. <code>.gitignore</code> lists <code>/rsconnect</code> and <code>cmds server.txt</code></td>
+<td>Deployment is manual: rsconnect or an install on the server. Whatever <code>cleaned</code> was in the deployer's library is what runs.</td>
+</tr>
+<tr>
+<td>4c44 is an ancestor of staging (57 commits behind). 4ae5505 has an identical R/ and inst/ to 800d53a</td>
+<td>The review findings for v0.7.0 apply one-to-one if the server runs the fork head.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion.</strong></p>
+<ul>
+<li><strong>Most likely running:</strong> v0.7.0-equivalent code, i.e. fork head 4ae5505. Confidence is moderate, about 65%. The app code of 24 Aug 2026 was built against it, and the developer renamed the outputs in both repos on the same day.</li>
+<li><strong>Plausible alternative:</strong> 4c44dc9, about 30%, if the server was last rebuilt around the Feb 2026 renv snapshot and only the app code was pushed afterwards.</li>
+<li><strong>v0.6.0:</strong> effectively ruled out (under 5%).</li>
+</ul>
+<p>The two candidates give very different comparison-screen numbers (NEW-02 and NEW-03 below). <strong>Workshop test T0 settles this in two minutes on the live site.</strong> Verdicts below are given for v0.7.0/4ae5505, with a separate column wherever 4c44 differs.</p>
+<hr />
+<h2>2. App → package call map</h2>
+<p><strong>Study object construction.</strong> This is entirely app-side. The package's <code>example_input.json</code> is never used.</p>
+<ul>
+<li><code>R/30_mod_scenario_server.R</code> autosaves the study object as JSON on every edit (L2515-2650, <code>write(toJSON(...))</code> at L2648).</li>
+<li>The object is built from these tabs:
+<ul>
+<li><strong>Farm tab.</strong> Numeric inputs, with the region and climate pickers <code>climate_zone_2</code> (L2911), the soil parameters, the SOC dropdowns (IPCC factors copied as <code>*_ipcc</code>), the seasons table, the fertilizer table and the waste inputs.</li>
+<li><strong>Livestock tab.</strong> A row is added from the <code>lkp_livetype</code> picker (L983-1036).</li>
+<li><strong>Feed production tab.</strong> A row is added from the <code>lkp_feeditem</code> and <code>lkp_crops</code> pickers (L1432-1500). <code>dry_yield</code>/<code>residue_dry_yield</code> are taken <strong>directly from <code>lkp_crops</code></strong>, so the missing harvest-index derivation (reviewer D-01) is not an app problem.</li>
+<li><strong>Crop inputs table.</strong> Fertiliser kg/ha and <code>fraction_as_fertilizer</code>.</li>
+<li><strong>Livestock feeding tab.</strong> % allocation per season, which is saved as <code>feed_basket</code>.</li>
+</ul>
+</li>
+<li>The JSON uses the code's own column names: <code>crop_name</code>, <code>fat_milkcontent</code>, <code>cp_lys_pregnancy</code>, <code>cp_lys_growth</code>, <code>lw_gain_piglets</code>, <code>proportion_growth_piglets_milk</code>, <code>n_manure_content</code>, <code>dry_yield</code>, <code>residue_dry_yield</code>, and <code>dm_content</code> in %. So the &quot;shipped examples don't run&quot; findings do not affect the app.</li>
+</ul>
+<p><strong>Parameter JSONs.</strong> <code>global.R:59-70</code> reads <code>ghg_parameters.json</code>, <code>stock_change_parameters.json</code> and <code>energy_parameters.json</code> from the <strong>installed package's</strong> <code>inst/extdata</code> via <code>system.file()</code>. The <code>data/*.rda</code> and <code>data/*.json</code> copies are never used.</p>
+<p><strong>Run Scenario.</strong> <code>R/10_mod_board_simulation_server.R</code>:</p>
+<ol>
+<li><code>para &lt;- fromJSON(study_object, flatten=TRUE)</code> (L180).</li>
+<li><code>environment(n_balance|ghg_emission|combineOutputs) &lt;- environment()</code> (L191-193). This is the app-side workaround for the package's dynamic scoping (PK F03).</li>
+<li><code>feed_quality(para)</code> → <code>energy_requirement(para, fbq, energy_parameters)</code> → <code>land_requirement(fbq, er, para)</code> → <code>soil_health(para, lr)</code> → <code>water_requirement(para, lr)</code> → <code>n_balance(para, lr, soil_erosion=)</code> → <code>land_productivity(para, er)</code> → <code>biomass_calculation(para, lr)</code> → <code>soil_organic_carbon(para, stock_change_para, lr, biomass)</code> → <code>ghg_emission(para, er, ghg_ipcc_data, lr, nb)</code> (L196-249).</li>
+<li><strong>App-side check:</strong> a warning appears if <code>dmi_tot/365 &gt; 0.04*body_weight</code> (L252-273). See NEW-04: it compares <strong>herd</strong> DMI with <strong>one animal's</strong> BW.</li>
+<li><code>combineOutputs(..., filePath, primary_excel=&quot;www/ReadMe.xlsx&quot;)</code> (L281). Its <code>json_output</code>, <code>on_farm_table</code>, <code>nitrogen_balance</code>, <code>land_required</code> and <code>water_use_per_feed_item</code> are saved (L296-331).</li>
+</ol>
+<p><strong>Dashboard (simulation).</strong> There are four plots in <code>R/graphs.R</code>:</p>
+<ul>
+<li>GHG <code>t_CO2e_per_ha</code> by source.</li>
+<li>N balance per feed (<code>nbalance_kg_n_total</code>).</li>
+<li>Land per feed and season (<code>area_feed_total</code>).</li>
+<li>Water share per feed (%).</li>
+</ul>
+<p>The downloadable Excel has all the sheets.</p>
+<p><strong>Compare.</strong> <code>R/20_mod_board_comparison_server.R:151-178</code> runs <code>calculate_differences(outfile, &lt;scenario&gt;.json...)</code>, then <code>clean_plotting()</code> (absolute values) and <code>compare_scenario()</code> (relative % against the chosen base). The 44 indicators are listed in <code>Graphs Information.xlsx</code> rows 5-48.</p>
+<p><strong>App-side defaults and validation that matter.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Behaviour</th>
+<th>Effect on findings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>30_mod_scenario_server.R:1449-1450</code></td>
+<td>A new feed row gets <code>main_product_removal = 0</code> and <code>residue_removal = 0</code></td>
+<td>Triggers LU-01 by default: 0 ha for every newly added feed until the user edits it.</td>
+</tr>
+<tr>
+<td><code>:1441</code>, <code>:2007</code></td>
+<td><code>source_type</code> defaults to &quot;Main&quot;. The options are Main / Residue / <strong>Purchased</strong></td>
+<td>&quot;Purchased&quot; always gives 0 ha. The DB crop &quot;Purchased&quot; has <code>dry_yield = 0</code> (<code>lkp_crops</code>), so &quot;Concentrate (commercial)&quot; gets 0 ha even as &quot;Main&quot;.</td>
+</tr>
+<tr>
+<td><code>:1446-1447</code></td>
+<td><code>slope_desc</code> defaults to <code>lkp_slope[1]</code> (&quot;Flat (0-5%)&quot;) and <code>slope_length</code> to 15</td>
+<td>Guards SE-01 for blank slopes. The option &quot;Non-agricultural (all slope categories)&quot; is still selectable and gives LS = NA, i.e. 0 erosion.</td>
+</tr>
+<tr>
+<td><code>helpers_shiny.R:191-210</code></td>
+<td>A blank numeric cell becomes 0, not NA</td>
+<td>NA propagation is avoided, but zeros feed silent-zero paths (LU-01, NEW-01).</td>
+</tr>
+<tr>
+<td><code>:1010-1012</code></td>
+<td>New livestock: <code>body_weight_weaning = 0</code>, <code>body_weight_year_one = 0</code>, <code>adult_weight = 0</code> (hard-coded, although <code>lkp_livetype</code> has 10/30 and 350/600)</td>
+<td>Triggers H-02 and <strong>NEW-01</strong>.</td>
+</tr>
+<tr>
+<td><code>:987</code></td>
+<td>Manure systems default to <code>lkp_manureman[1]</code> = &quot;Pasture / range / paddock&quot;. Both that label <strong>and</strong> &quot;Pasture/Range/Paddock&quot; are offered</td>
+<td>Triggers CL F07 (MCF lookup miss).</td>
+</tr>
+<tr>
+<td><code>:783-784</code>, <code>30_mod_scenario_init.R:334-341</code></td>
+<td>Fertiliser %N is auto-filled for Urea 46, DAP 18, AN 34.5, AS 21, N-solutions 32 and Ammonia 82. <strong>NPK defaults to 0 %N</strong>. There is no CAN</td>
+<td>Mostly guards N-04 and CL F10, but not NPK.</td>
+</tr>
+<tr>
+<td><code>:1880-1930</code></td>
+<td>Fertiliser kg/ha columns are editable only for fertilisers added in the Farm tab</td>
+<td>Guards N-04 (&quot;fertiliser not in table&quot;).</td>
+</tr>
+<tr>
+<td><code>:2365</code></td>
+<td>Alert if Σ <code>fraction_as_fertilizer</code> &gt; 1</td>
+<td>Guards N-05 (advisory only).</td>
+</tr>
+<tr>
+<td><code>30_mod_scenario_validation.R</code> and <code>:1176-1290</code></td>
+<td>Range and sum alerts for area, waste, manure, time fractions, residue fractions and intercrop</td>
+<td><strong>All alerts are advisory. Only duplicate feed or crop names block saving (<code>:2527-2532</code>). Nothing blocks Run.</strong></td>
+</tr>
+<tr>
+<td><code>40_mod_params_db_server.R:622-640</code></td>
+<td><code>lkp_livetype</code> names and IPCC categories are locked, with no add or delete</td>
+<td>Guards the &quot;unknown livestock label → 0&quot; part of PK F04. Slope, manure and feed tables in cloned DBs remain editable.</td>
+</tr>
+<tr>
+<td><code>validation.R:66</code></td>
+<td>&quot;Soil depth (m)&quot;; the guide says m; the shared examples use 0.2</td>
+<td>The unit is consistent with the code (metres). Only <code>non_negative</code> is checked.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. New app-relevant issues (not in the four reports)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Versions</th>
+<th>Issue</th>
+<th>Evidence</th>
+<th>What a participant sees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NEW-01</td>
+<td>4c44 and v0.7.0</td>
+<td>Cattle growth energy is silently 0 when <strong>mature weight = 0</strong>. That is the app default for every newly added animal.</td>
+<td>App <code>30_mod_scenario_server.R:1012</code> (<code>adult_weight = 0</code>). Pkg <code>energy_requirement.R:93-95</code> uses <code>body_weight/(C*adult_weight)</code>, which gives Inf, and <code>:102</code> sets it to 0. Study_1 and Study_2 heifers ship with <code>adult_weight = 0</code>: <code>er_growth = 0</code> for 125 and 200 kg/yr gain. Setting 600 gives 4.31 MJ/d (about 17% of the heifer's NE).</td>
+<td>No error. Growth energy is missing from the Excel energy sheets. Energy-limited DMI, GE and CH4 for growing cattle are underestimated. The effect is masked when CP binds.</td>
+</tr>
+<tr>
+<td>NEW-02</td>
+<td><strong>4c44 only</strong> (regression e517787 of 2026-01-07, fixed c5734c8 of 2026-03-17)</td>
+<td><strong>Manure CH4 is always 0.</strong> <code>climate_zone &lt;- para[[&quot;climate&quot;]]</code> (the app writes <code>climate_zone_2</code>), and <code>Table 10.17$climate</code> is an ambiguous partial match, so NULL. The MCF table ends up with 0 rows, MCF = NA, and <code>sum(na.rm=TRUE)</code> gives 0.</td>
+<td><code>pkg_4c44/R/ghg_emission.R:146-148</code>. The Study_1 and Study_2 runs give Manure-Methane = 0. It is still 0 after setting <code>para$climate</code> and fixing the labels.</td>
+<td>The &quot;Liv. Manure&quot; bar is N2O only. Manure-management scenarios such as covered storage or biogas show no CH4 change.</td>
+</tr>
+<tr>
+<td>NEW-03</td>
+<td><strong>4c44 only</strong> (fixed in v0.7.0)</td>
+<td>The comparison &quot;GHG Emissions per Year (t CO2e)&quot; is <code>sum(ghg_balance$value)</code>, which adds kg CH4 + kg N2O + kg CO2e. <code>carbon_stock_change_t_co2eq_per_meat</code> divides by <em>land per kg meat</em>.</td>
+<td><code>pkg_4c44/R/differences.R:89, :107</code>. Study_1 shows <strong>196.1</strong> where the true value is 5.12 t CO2e. Study_2 shows <strong>15,745</strong> where the true value is 34.9. Under v0.7.0 the same studies give 5.12 and 34.92.</td>
+<td>Totals, per-ha and per-kg GHG values in the Compare tab are wrong by 1–3 orders of magnitude. The three GHG-intensity plots are blank, because of the indicator-name mismatch in §1.</td>
+</tr>
+<tr>
+<td>NEW-04</td>
+<td>app</td>
+<td>The &quot;&gt;4% of body weight&quot; DMI warning compares <strong>herd</strong> DMI with a <strong>single animal's</strong> BW.</td>
+<td><code>10_mod_board_simulation_server.R:253-258</code> (<code>dmi_tot</code> is herd total, from <code>energy_requirement.R:140</code> × <code>herd_composition</code>). Study_1 with 3 cows at 1.86% BW each triggers the warning.</td>
+<td>False warnings for any class with more than about 2 head. The true over-intake cases (H-01) are indistinguishable from herd-size artefacts.</td>
+</tr>
+<tr>
+<td>NEW-05</td>
+<td>app</td>
+<td>Unit labels are misleading. The simulation GHG plot's unit is the literal string &quot;ghg_emission&quot; (Graphs Info row 1). Land is &quot;ha /year&quot;. &quot;ha/kg FPCM&quot; is really ha/t (<code>differences.R</code> ×1000). &quot;t CO2eq/kg FPCM&quot; for carbon stock is really kg/kg. Water &quot;m³&quot; is mm·ha (W-01).</td>
+<td><code>data/iCLEANED - Graphs Information.xlsx</code> sheet 2.</td>
+<td>Participants will copy these units into slides.</td>
+</tr>
+<tr>
+<td>NEW-06</td>
+<td>app ↔ pkg</td>
+<td>Validation is advisory, and Run never re-validates. Time fractions not summing to 1, removal fractions of 0, Σ manure fraction &gt; 1 and so on all run silently.</td>
+<td>§2 table</td>
+<td>Results are produced from inputs the UI itself flagged as invalid.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. Per-finding verdicts (all Critical and High, deduplicated)</h2>
+<p><strong>Verdict key.</strong></p>
+<ul>
+<li><strong>AFFECTS-APP:</strong> the code is in the deployed version and the app's input path triggers it.</li>
+<li><strong>APP-GUARDED:</strong> the app's own JSON, defaults or UI prevent it.</li>
+<li><strong>NOT-IN-DEPLOYED-VERSION</strong></li>
+<li><strong>UNCLEAR</strong></li>
+<li><strong>NO-RUNTIME-EFFECT:</strong> development or process findings that are not user-visible. I added this fifth label so that they are not misclassified.</li>
+</ul>
+<p>The primary verdict assumes v0.7.0/4ae5505. The &quot;4c44&quot; column states where that version differs. v0.6.0 contains essentially all of the model code (grep-verified), but it cannot run app inputs, so it is omitted as a column.</p>
+<p><strong>Source of the per-finding evidence.</strong> The &quot;Evidence&quot; column cites the package code at 4c44 (<code>pkg_4c44/R/...</code>; v0.7.0 line numbers are in the original reports). Unless stated otherwise, numbers come from the app emulator run on Study_1 (S1) and Study_2 (S2).</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>IDs (report)</th>
+<th>Sev</th>
+<th>Verdict</th>
+<th>4c44</th>
+<th>Evidence (package @4c44 · app)</th>
+<th>Participant sees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>LV C-01 = CL F02 (NE divided by ME)</td>
+<td>Crit</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>energy_requirement.R:79-140, 170</code>; every run</td>
+<td>Energy-limited DMI, GE, CH4, land and N are ~35–45% low. It is masked where CP binds: S1 cows dmiE 3,380 vs dmiCP 3,823 kg/yr.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>LV C-02 = PK F07 = CL F04 (N retention used as a fraction and /365²)</td>
+<td>Crit</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>ghg_emission.R:193, 196</code>. S1 cow Nex 65.5 kg N/yr, where (N_in − N_ret)·365 = 53.1 (+23%). Heifers 54.1 vs 44.2 (+22%).</td>
+<td>Manure N2O and PRP N2O about 20–30% high.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LV H-01 = LU LU-02 = CL F19 (DMI = max(E, CP), uncapped)</td>
+<td>High</td>
+<td>AFFECTS-APP (partly warned)</td>
+<td>same</td>
+<td><code>energy_requirement.R:174</code>. S2 (barley straw at the DB's CP 0.3%): cow 50.5 kg DM/d (8.4% BW), heifer 5.9% BW. Raising straw CP to 4% cuts DMI, land and GHG by 34%.</td>
+<td>The &quot;&gt;4% BW&quot; warning (unreliable, NEW-04). Every downstream indicator is inflated.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>LV H-02 (small-ruminant weaning / 1-yr weights default 0)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>energy_requirement.R:96-101, 109</code>. The app hard-codes 0 (<code>scenario_server:1010-1011</code>) although <code>lkp_livetype</code> has 10/30. Goat kids NEg 0.27 → 0.64 MJ/d when set to 10/30. Doe NEl is 0.</td>
+<td>No visible change while CP binds, which is typical: goat kids hit 27.8% BW DMI (CP-limited via <code>cp_lys_growth</code> 0.45). It matters on energy-limited diets.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>LV H-03 = LU D-01 = PK F01 (+CL F22 Low) (column contract / examples don't run)</td>
+<td>High/Crit</td>
+<td><strong>APP-GUARDED</strong></td>
+<td>same</td>
+<td>The app writes the code's names (Study_1 keys). The emulator runs cleanly on 4c44 and v0.7.0. <code>dry_yield</code> comes from <code>lkp_crops</code>.</td>
+<td>Nothing. This is a package and batch-user problem only.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>LV H-04 (growth N retention mixes MJ/d and kg/yr)</td>
+<td>High</td>
+<td>AFFECTS-APP (minor)</td>
+<td>same</td>
+<td><code>ghg_emission.R:193</code> growth branch</td>
+<td>Masked by #2. Also, with NEW-01 <code>er_growth = 0</code>, so the term defaults to 268 g/kg.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>LV H-05 (two manure-N pathways)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>energy_requirement.R:203-211</code> (DMI × 0.365 × 0.029) vs GHG Nex. S1 N-balance collected manure N is about 67 kg vs GHG Nex 119.6 kg.</td>
+<td>The N balance and N2O are inconsistent. Only visible in the Excel.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>LU LU-01 (+PK F04) (Inf/NaN → 0 ha)</td>
+<td>Crit</td>
+<td><strong>AFFECTS-APP (strong)</strong></td>
+<td>same</td>
+<td><code>land_requirement.R:99-102, 120-121</code>. App defaults removal = 0 (<code>:1449-1450</code>). &quot;Purchased&quot; gives 0 ha. The DB &quot;Purchased&quot; crop has yield 0. S1: 679 kg DM of concentrate → 0 ha. S2: barley straw residue_removal 0 → farm land 17.3 → 8.1 ha while it is still fed.</td>
+<td>Land, erosion, water, N, SOC and per-kg footprints silently drop feeds. Purchased concentrates are footprint-free.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>LU N-01 (+PK F17) (leaching per-ha added to totals)</td>
+<td>Crit</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>nitrogen_balance.R:256-259</code>. S1 concentrate (0 ha) still gets 6.48 kg N leached.</td>
+<td>N balance per feed (dashboard plot) and N totals are wrong.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>LU N-02 (+PK F17) (<code>0.021*(P-3.9)</code>)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>nitrogen_balance.R:256</code>. Clay &lt; 35% in both shared examples (23%).</td>
+<td>Leaching about 3.8 percentage points high.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>LU N-03 (scalar <code>ifelse</code> drops grazing manure N)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td><strong>NOT-IN-DEPLOYED-VERSION</strong> (4c44 vectorised, <code>nitrogen_balance.R:245</code>)</td>
+<td>Regression in v0.7.0 (<code>:234</code>). S1 with 50% on-farm grazing: grazing-manure N 1.65/17.6/6.0/11.9 kg per feed (4c44) vs <strong>0 for all</strong> (v0.7.0).</td>
+<td>Grazing systems lose manure N inputs, so the N balance is more negative.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>LU N-04 = CL F10 (fertiliser N 0 if type or %N missing; no urea CO2/CAN)</td>
+<td>High</td>
+<td>AFFECTS-APP (narrowed)</td>
+<td>same</td>
+<td><code>nitrogen_balance.R:111</code>. The app auto-fills %N except NPK = 0 (<code>:783-784</code>). S1 NPK set to 0%: soil N2O → 0 while manufacture stays at 36.8 kg CO2e. CAN is not offered. Urea CO2 is absent.</td>
+<td>NPK users who skip the %N cell get no soil N2O.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>LU N-05 (manure N multiplied across feeds)</td>
+<td>High</td>
+<td><strong>APP-GUARDED</strong> (advisory)</td>
+<td>same</td>
+<td>Alert at Σ &gt; 1 (<code>:2365</code>). With Σ ≤ 1 the allocation is correct (S1: 0.15/0.2/0.2 of 67 kg).</td>
+<td>Only if a user ignores the red alert.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>LU N-06 (&quot;NUE&quot; = nout/nin; mining &gt; 0.9)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>nitrogen_balance.R:263, 286-295</code>. S1 and S2: <strong>100% area &quot;mining&quot;</strong>, including groundnut residue with a <em>positive</em> balance (+0.74 kg).</td>
+<td>The &quot;Area Mining/Leaching %&quot; comparison plots are meaningless and contradict the guide (§5).</td>
+</tr>
+<tr>
+<td>15</td>
+<td>LU SE-01 (LS NA → erosion 0)</td>
+<td>High</td>
+<td>AFFECTS-APP (narrow)</td>
+<td>same</td>
+<td><code>soil_health.R:54-78</code>. Defaults guard blanks, but the &quot;Non-agricultural (all slope categories)&quot; option (lkp_slope row 5) gives erosion 0.000 (S1 variant, vs 0.418 t).</td>
+<td>Erosion silently 0.</td>
+</tr>
+<tr>
+<td>16</td>
+<td>LU SE-02 (unsourced R formula)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>soil_health.R:28</code>. S1 R = 81.7.</td>
+<td>Erosion probably 5–10× low (S1: 0.59 t/ha/yr on &quot;Hilly 5-20%&quot;).</td>
+</tr>
+<tr>
+<td>17</td>
+<td>LU SE-04 (erosion summary rows shifted)</td>
+<td>High</td>
+<td>AFFECTS-APP (Excel only)</td>
+<td>same</td>
+<td><code>merge_outputs.R:327, 336</code>. The Compare tab reads the &quot;total&quot; row (<code>differences.R:82</code>; v0.7.0 sums <code>soil_loss_plot</code>), so dashboard values are right.</td>
+<td>Mislabelled on-farm/off-farm rows in the downloaded Excel.</td>
+</tr>
+<tr>
+<td>18</td>
+<td>LU W-01 (mm·ha labelled m³)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>water_requirement.R:49, 57</code>. S1 total 733 &quot;m³&quot; on 0.705 ha = 1,039 &quot;m³/ha&quot;, which equals Kc·ET0 in mm. The true volume is ×10.</td>
+<td>Water per kg FPCM is 0.32 &quot;m³/kg&quot; vs the guide benchmark of 1.2–3.1.</td>
+</tr>
+<tr>
+<td>19</td>
+<td>LU W-02 (annual ET0 × mean Kc, no season/green-blue/drinking)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>water_requirement.R:45-49</code>. S1 &quot;precipitation used for feed&quot; 94%.</td>
+<td>Water indicators are not interpretable as water footprints.</td>
+</tr>
+<tr>
+<td>20</td>
+<td>LU S-01 = PK F02 (tree SOC always 0)</td>
+<td>High/Crit</td>
+<td>AFFECTS-APP (when trees entered)</td>
+<td>same</td>
+<td><code>soc.R:130</code> (4c44) / <code>:234</code> (v0.7.0). The app exposes tree columns. <code>lkp_crops</code> defaults are mostly 0.</td>
+<td>Agroforestry scenarios show no soil-C benefit.</td>
+</tr>
+<tr>
+<td>21</td>
+<td>LU S-02 + S-03 = CL F01 (measured SOC as SOCref, perpetual loss; depth)</td>
+<td>Crit</td>
+<td><strong>AFFECTS-APP (strong)</strong></td>
+<td>same</td>
+<td><code>soc.R:39, 49, 63</code>. S1 (depth 0.2 m, 44 g C/kg): <strong>−4.5 t CO2/yr = −6.4 t CO2/ha/yr</strong>, about 88% of the herd's 5.1 t CO2e. S2: −32.4 t CO2/yr. Depth 0.2 → 0.3 m adds 50% more &quot;loss&quot; with no management change.</td>
+<td>The &quot;Carbon stock change&quot; and &quot;Carbon balance&quot; plots are dominated by a spurious loss.</td>
+</tr>
+<tr>
+<td>22</td>
+<td>LU S-03 (depth unit)</td>
+<td>High</td>
+<td><strong>APP-GUARDED</strong> (residual risk)</td>
+<td>same</td>
+<td>The UI label &quot;Soil depth (m)&quot; and the guide both say m, consistent with the code. There is only a ≥ 0 check: typing 20 (cm) gives <strong>−445 t CO2/yr</strong>.</td>
+<td>Only if a user enters cm.</td>
+</tr>
+<tr>
+<td>23</td>
+<td>LU S-04 (+CL F17) (grassland &quot;Medium&quot; = 1.5)</td>
+<td>High</td>
+<td><strong>APP-GUARDED</strong></td>
+<td>same</td>
+<td>UI management options come from <code>lkp_grasslandman</code> (no &quot;Medium&quot;). Implevel &quot;Medium&quot; = 1.0.</td>
+<td>Nothing, unless a cloned DB adds &quot;Medium&quot;.</td>
+</tr>
+<tr>
+<td>24</td>
+<td>LU C-01 (% change sign/zero)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>compare_scenario.R:49-150</code></td>
+<td>The relative view flips sign for negative N balance and SOC, and shows 0% for zero baselines (0-ha feeds, 0 manure CH4).</td>
+</tr>
+<tr>
+<td>25</td>
+<td>LU C-03 (no uncertainty)</td>
+<td>High</td>
+<td>AFFECTS-APP (design)</td>
+<td>same</td>
+<td>absence</td>
+<td>Point values with no range.</td>
+</tr>
+<tr>
+<td>26</td>
+<td>PK F03 (dynamic scoping)</td>
+<td>Crit</td>
+<td><strong>APP-GUARDED</strong> (workaround)</td>
+<td>worse: 4c44 <code>n_balance</code> uses a free <code>energy_required</code> (L122)</td>
+<td><code>10_mod_board_simulation_server.R:191-193</code></td>
+<td>Nothing now; fragile.</td>
+</tr>
+<tr>
+<td>27</td>
+<td>PK F04 (bad inputs → silent 0)</td>
+<td>Crit</td>
+<td>AFFECTS-APP (partly guarded)</td>
+<td>same</td>
+<td>Livestock labels are locked (guarded). Zeros are not: NEW-01, LU-01 and blank cells → 0.</td>
+<td>Silent zeros, as in #8 and NEW-01.</td>
+</tr>
+<tr>
+<td>28</td>
+<td>PK F05 (+CL F11) (off-farm residue N = fertiliser N)</td>
+<td>High</td>
+<td>AFFECTS-APP (when OFC/IP feeds are used)</td>
+<td>same</td>
+<td><code>ghg_emission.R:336-338</code>. 6 of 14 shipped DBs have &quot;…OFC/…IP&quot; feeds. Test: 12.81 kg N appears as both synthetic and residue N for an OFC feed.</td>
+<td>Off-farm concentrate soil N2O doubled.</td>
+</tr>
+<tr>
+<td>29</td>
+<td>PK F06 = CL F03 (burning: CO2 + NOx×GWP_N2O)</td>
+<td>Crit</td>
+<td><strong>AFFECTS-APP (strong)</strong></td>
+<td>same</td>
+<td><code>merge_outputs.R:406</code> (4c44) / <code>:810-812</code>. S2 (rice straw burnt 0.4): <strong>13.8 t CO2e = 40% of 34.9 t</strong>. Burnt 0 gives 22.1 t. The IPCC-consistent value for the same mass is ≈ 0.58 t.</td>
+<td>Burning dominates totals wherever residues are burnt.</td>
+</tr>
+<tr>
+<td>30</td>
+<td>PK F08 (tryCatch / fallback zeros in combineOutputs)</td>
+<td>High</td>
+<td>UNCLEAR (latent)</td>
+<td>NOT-IN-DEPLOYED-VERSION (0 <code>tryCatch</code> at 4c44)</td>
+<td>No schema drift was observed with app JSON.</td>
+<td>Nothing observed. It would hide future app/package mismatches.</td>
+</tr>
+<tr>
+<td>31</td>
+<td>PK F09 (CI red)</td>
+<td>High</td>
+<td>NO-RUNTIME-EFFECT</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>32</td>
+<td>PK F10 (data/ copies diverge)</td>
+<td>High</td>
+<td><strong>APP-GUARDED</strong></td>
+<td>same</td>
+<td>The app reads <code>inst/extdata</code> via <code>system.file</code> (<code>global.R:59-70</code>).</td>
+<td>–</td>
+</tr>
+<tr>
+<td>33</td>
+<td>PK F11 (docs stale)</td>
+<td>High</td>
+<td>NO-RUNTIME-EFFECT</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>34</td>
+<td>PK F12 (no tests)</td>
+<td>High</td>
+<td>NO-RUNTIME-EFFECT</td>
+<td>–</td>
+<td>It explains how the NEW-02 and N-03 regressions shipped.</td>
+<td>–</td>
+</tr>
+<tr>
+<td>35</td>
+<td>CL F05 (manure applied to soils: no N2O)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>ghg_emission.R:310, 322</code> (<code>manure_produced</code> is not in the app JSON). <code>merge_outputs.R:390</code> omits the row. S1: about 67 kg manure N applied, 0 N2O (≈ 0.28 t CO2e ≈ 5% missing).</td>
+<td>Manure-to-crop recycling scenarios show no N2O.</td>
+</tr>
+<tr>
+<td>36</td>
+<td>CL F06 (off-farm grazing N2O dropped)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td><code>ghg_emission.R:441-452</code>; not aggregated. S1 with 50% off-farm grazing: total <strong>falls</strong> 5.12 → 4.79 t.</td>
+<td>&quot;Send animals to communal grazing&quot; looks like mitigation.</td>
+</tr>
+<tr>
+<td>37</td>
+<td>CL F07 (manure-label mismatch → MCF NA → CH4 0)</td>
+<td>High</td>
+<td><strong>AFFECTS-APP (strong)</strong></td>
+<td>masked by NEW-02 (CH4 is 0 anyway)</td>
+<td>The app's default label &quot;Pasture / range / paddock&quot; is not an MCF key. v0.7.0 S1: manure CH4 <strong>0</strong>. Relabelled to &quot;Pasture/Range/Paddock&quot;: 12.5 kg CH4 (+0.35 t CO2e).</td>
+<td>Manure CH4 is 0 for any animal with the default label in <em>any</em> location, including time = 0 locations.</td>
+</tr>
+<tr>
+<td>38</td>
+<td>CL F08 (duplicate 10.21 keys)</td>
+<td>High</td>
+<td><strong>APP-GUARDED</strong></td>
+<td>same</td>
+<td>The app's manure options do not include &quot;Liquid/Slurry&quot; or &quot;Burned for fuel or as waste&quot;. The slurry test gave 2 rows for 2 animals (no duplication).</td>
+<td>–</td>
+</tr>
+<tr>
+<td>39</td>
+<td>CL F09 (2006 EF3PRP 0.02 vs 2019)</td>
+<td>High</td>
+<td>AFFECTS-APP</td>
+<td>same</td>
+<td>JSON <code>table_11.1_&amp;_table_11.3</code> (4c44 and v0.7.0). S1 with 50% on-farm grazing: soil N2O 0.06 → 1.94 kg.</td>
+<td>PRP N2O about 5× high relative to the 2019 factors.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Counts (39 deduplicated rows from 49 Critical/High findings; v0.7.0 assumption).</strong></p>
+<table>
+<thead>
+<tr>
+<th>Verdict</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AFFECTS-APP</td>
+<td>28</td>
+</tr>
+<tr>
+<td>APP-GUARDED</td>
+<td>7 (#5, 13, 22, 23, 26, 32, 38)</td>
+</tr>
+<tr>
+<td>UNCLEAR</td>
+<td>1 (#30)</td>
+</tr>
+<tr>
+<td>NO-RUNTIME-EFFECT</td>
+<td>3 (#31, 33, 34)</td>
+</tr>
+<tr>
+<td>NOT-IN-DEPLOYED-VERSION</td>
+<td>0 (this becomes 2, #11 and #30, if 4c44 is deployed)</td>
+</tr>
+</tbody>
+</table>
+<p>On 4c44, NEW-02 and NEW-03 are added.</p>
+<p><strong>Calibration summary: where the reviewers overstated relative to the app.</strong></p>
+<ul>
+<li>Everything about the shipped examples or column names not running (LV H-03, LU D-01, PK F01, CL F22).</li>
+<li><code>data/</code> divergence (PK F10).</li>
+<li>Dynamic scoping (PK F03, worked around by the app).</li>
+<li>Grassland &quot;Medium&quot; (S-04).</li>
+<li>Duplicate 10.21 keys (CL F08).</li>
+<li>Depth units (S-03, which the app labels in metres).</li>
+<li>Fertiliser-type omissions (N-04), which are mostly guarded; the exceptions are NPK and CAN.</li>
+</ul>
+<p>Conversely, the app <strong>amplifies</strong> LU-01, H-02 and CL F07 through its defaults, and adds NEW-01 to NEW-06.</p>
+<hr />
+<h2>5. User guide vs code: contradictions</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Guide claim (section)</th>
+<th>Code reality (deployed)</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>§1 Fig 3/Fig 4: dimensions include <strong>Economics</strong> / &quot;VOP/GP&quot;</td>
+<td>There are no economics outputs in the package or the app (<code>economics_payback</code> was removed; PK F32).</td>
+<td>Misleading scope</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>§2.2.3: energy requirements are &quot;mainly based on NRC 1998 (pigs), 2001 (cattle &amp; buffalo), 2007 (sheep/goats); McDonald 1985&quot;</td>
+<td>Ruminants use <strong>IPCC 2006 Tier 2 NE equations 10.3–10.13</strong> (<code>energy_requirement.R:79-128</code>), divided by ME (#1). Only the pig lactation term is NRC. NRC-style ME values in <code>lkp_livetype</code> (<code>me_*</code>) are unused (LV M-02).</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>§5.1: GHG are &quot;Tier 2 results&quot; and include &quot;CO2 from ... burning of crop residues&quot;</td>
+<td>Enteric is Tier 2. Manure CH4 is 0 by default (#37 / NEW-02). Soils use Tier 1 2006 EFs mixed with 2019 manure tables (#39). Off-farm grazing N2O and manure-applied N2O are omitted (#35, #36). <strong>IPCC excludes biogenic burning CO2</strong>; the guide advertises the error (#29).</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>§5.1: GWP 28/265</td>
+<td>Matches code (<code>merge_outputs.R:365-366</code>, AR5). <strong>Consistent</strong> (no AR6 option).</td>
+<td>–</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>§3.3 3.1: &quot;% mining = share of fields with <strong>negative N balance</strong>; % leaching = positive balance (&gt; 150 kg N/ha undesirable)&quot;</td>
+<td>Code: mining = <code>nout/nin &gt; 0.9</code>, leaching = <code>&lt; 0.5</code> (<code>nitrogen_balance.R:286-295</code>), with losses in <code>nout</code> (#14). S1 has 100% mining although one feed's balance is positive.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>§4.1: water &quot;percentage of water used to produce a kg of milk, meat, protein&quot;</td>
+<td>The code reports a volume per kg (labelled m³, actually mm·ha, so 10× low, #18). No green/blue split, no season length (#19).</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>§1.3: &quot;Area per milk unit (<strong>ha/kg FPCM</strong>)&quot;</td>
+<td>The code multiplies by 1000, so the value is <strong>ha/t</strong>. The Graphs Info label also says ha/kg. The §3.4 benchmark is in ha/t, so the numbers match the benchmark but not the label (NEW-05).</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>G8</td>
+<td>§2.2.2: &quot;Soil N ... in g/kg&quot;</td>
+<td>Mineralisation uses <code>soil_n*20*bulk*10</code>, which is 10× low for g/kg (LU N-07).</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>G9</td>
+<td>§2.2.3: &quot;all time not spent in stable, enclosure or on-farm grazing is spent grazing off-farm&quot;</td>
+<td>Nothing infers this. The code uses the entered fractions as they are. The app only warns if they don't sum to 1 (non-blocking).</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>G10</td>
+<td>§2.2.2 / §2.2.4: stock-change and grassland factors are &quot;IPCC default values&quot;</td>
+<td>The factors are IPCC, but the <strong>method</strong> is not: measured SOC is used as SOCref and F is applied every year (#21). Grassland SOC is fixed at 40 t C. There is no LUC even though <code>grassland_toarable</code>/<code>arable_tograssland</code> are inputs (CL F17).</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G11</td>
+<td>§2.2.3: &quot;Adult body weight&quot; and weaning weights are inputs for energy</td>
+<td>They are inputs, but the app pre-fills them with <strong>0</strong> (NEW-01, #4), silently removing growth or lactation energy. The guide does not warn.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G12</td>
+<td>§2.2.4 i: Source type &quot;purchased (i.e., concentrate)&quot;</td>
+<td>Purchased feeds get <strong>0 ha</strong> and no soil, water or fertiliser footprint (#8). The guide's §3.3 1.2 describes off-farm/imported land categories, which are only populated by name suffixes &quot;OFR/OFC/IP&quot; (LU-04).</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G13</td>
+<td>§3.3 2.1: AME = 2500 kcal/day</td>
+<td>4c44: 2500 (consistent). v0.7.0 Compare tab: <strong>2100</strong> (<code>differences.R:196</code>) while the Excel uses 2500 (LV L-07). S1 AME days are 876 vs 1,043 depending on version.</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>G14</td>
+<td>§3.2.4: % change = (S − B)/B × 100</td>
+<td>Same as the code, but wrong for negative baselines (#24). The guide should say &quot;use absolute differences for N balance and C stock&quot;.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>G15</td>
+<td>§3.3 1.4/1.5: DM requirement and feed per kg FPCM &quot;Lower values indicate better conversion&quot;</td>
+<td>DMI = max(energy, CP) (#3). Low-CP feeds <em>raise</em> DM demand and land, which inverts the interpretation.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>G16</td>
+<td>§3.3: &quot;users should focus on relative changes&quot;</td>
+<td>Reasonable, but several errors are <strong>not</strong> constant across scenarios: burning share, zero-land feeds, CP-limited DMI, and off-farm grazing. So relative changes are biased as well.</td>
+<td>–</td>
+</tr>
+<tr>
+<td>G17</td>
+<td>§3.4 benchmarks</td>
+<td>These have no sources or years. There are internal inconsistencies: East Africa semi-intensive dairy mean 2,147.8 &lt; min 2,244.8; West Africa goat intensive mean 0.09 &gt; max 0.08; there are typos (&quot;`1258&quot;, &quot;sss&quot;, &quot;0. 43&quot;, &quot;Regionlal&quot;). The benchmarks are LCA values (usually allocated, cradle-to-farm-gate, with LUC or energy in some). iCLEANED's intensities are <strong>unallocated</strong> (100% of emissions go to milk and again to meat; LU-06, CL F18) and exclude energy, transport and LUC. So they are <strong>not like-for-like</strong>. Water benchmarks (m³/kg) cannot be compared with the 10×-low mm·ha values. Under 4c44 the GHG per kg values are off by orders of magnitude (NEW-03).</td>
+<td>High for the workshop</td>
+</tr>
+<tr>
+<td>G18</td>
+<td>§2.2.2 fertiliser: &quot;% N added automatically except NPK&quot;</td>
+<td>This matches the app, but the app lets NPK stay at 0% with no warning (#12). CAN, the dominant East African top-dressing, is not offered.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>G19</td>
+<td>§3.3 3.1: erosion in &quot;t soil/ha/year&quot;</td>
+<td>The R formula is unsourced and gives low values (#16). A &quot;Non-agricultural&quot; slope gives 0 (#15).</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>6. Workshop test plan</h2>
+<p>Use the two <strong>Shared Examples</strong> so that everyone starts from the same state:</p>
+<ul>
+<li><strong>Study_1 &quot;Rungwe&quot;:</strong> 1 improved cow + 2 improved heifers, zero-grazed, 0.7 ha.</li>
+<li><strong>Study_2 &quot;Lao PDR&quot;:</strong> 1 cow + 1 heifer on barley and rice straw.</li>
+</ul>
+<p>Participants clone each study, change <strong>one</strong> thing, save as a new scenario, run, then compare against the original (base = original) and against None.</p>
+<p>The expected values below are what the deployed code produces in my emulator (v0.7.0 unless noted; 4c44 values in brackets where they differ). The plausible ranges are independent references.</p>
+<table>
+<thead>
+<tr>
+<th>T</th>
+<th>Scenario (UI steps)</th>
+<th>Expected app output</th>
+<th>Plausible / reference</th>
+<th>Exposes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T0</strong> (facilitators, before the workshop)</td>
+<td>Clone Study_1 and Study_2, run both, Compare, base = None, and look at &quot;GHG Emissions per Year&quot;</td>
+<td><strong>5.12 and 34.9 t CO2e</strong> means v0.7.0. <strong>196 and 15,745</strong> with blank GHG-per-FPCM plots means 4c44.</td>
+<td>Real totals are 5.1 and 34.9 t.</td>
+<td>Version fingerprint (§1, NEW-03)</td>
+</tr>
+<tr>
+<td>T1</td>
+<td>Study_1 → Livestock tab: change the three non-stable manure systems from &quot;Pasture / range / paddock&quot; to &quot;Pasture/Range/Paddock&quot;</td>
+<td>Manure CH4 0 → about 12.5 kg CH4 (+0.35 t CO2e; &quot;Liv. Manure&quot; bar rises). Under 4c44 it stays 0.</td>
+<td>Manure CH4 from solid-stored dairy manure should be &gt; 0 (IPCC 2019 Tier 2 with Africa Bo and MCF).</td>
+<td>CL F07, NEW-02</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Study_1 → Feed production: add &quot;Pennisetum purpureum&quot; (or any feed) with allocation, leaving <em>Main product removal</em> at the default 0. Then set it to 0.9.</td>
+<td>Land for that feed is <strong>0 ha</strong>, then becomes &gt; 0. The &quot;Concentrate (commercial)&quot; row stays at 0 ha whatever you do.</td>
+<td>Every fed kg DM should need land, or be flagged as imported.</td>
+<td>LU-01, app defaults</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Study_2 → set Source type of Barley (straw) to &quot;Purchased&quot;, or set its residue removal to 0</td>
+<td>Total land 17.3 → about 8.1 ha, although the same straw is still fed.</td>
+<td>Land should not fall when the diet is unchanged.</td>
+<td>LU-01</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Study_2 → Feed parameters: Barley straw CP 0.3 → 4 %DM (a realistic value)</td>
+<td>Warning &quot;&gt;4% BW&quot; for both animals at baseline. Cow DMI 50.5 → 33.3 kg DM/d. GHG, land and N all fall by about 34%.</td>
+<td>A 600 kg cow producing 3,500 kg/yr eats about 2.5–3.5% BW (15–21 kg DM/d; NASEM 2021 intake equations).</td>
+<td>H-01, M-06 (feed library)</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Study_1 → set cow number 1 → 3</td>
+<td>A DMI warning for cows appears, although per-cow intake is unchanged (1.86% BW).</td>
+<td>There should be no warning.</td>
+<td>NEW-04</td>
+</tr>
+<tr>
+<td>T6</td>
+<td>Study_2 → Crop residue burnt 0.4 → 0 for rice straw</td>
+<td>Total 34.9 → 22.1 t CO2e. Burning is 13.8 t (40%).</td>
+<td>IPCC 2006 Table 2.5 (CH4 2.7, N2O 0.07 g/kg DM; no CO2) gives about 0.094 kg CO2e/kg DM burnt, i.e. about 0.6 t here (~24× lower).</td>
+<td>PK F06 / CL F03</td>
+</tr>
+<tr>
+<td>T7</td>
+<td>Study_1 → Livestock: time in stable 1.0 → 0.5 and off-farm grazing 0 → 0.5</td>
+<td>Total GHG <strong>falls</strong> 5.12 → 4.79 t.</td>
+<td>Emissions should stay similar or rise (PRP N2O plus activity energy).</td>
+<td>CL F06</td>
+</tr>
+<tr>
+<td>T8</td>
+<td>Study_1 → Farm → Fertilizer: set NPK %N 12 → 0 (or add NPK and never fill %N)</td>
+<td>Soil N2O → 0. Fertilizer manufacture unchanged (36.8 kg CO2e). No warning. Also note that CAN is not in the list.</td>
+<td>200 kg NPK/ha × 15% N ≈ 30 kg N/ha → about 0.3 kg N2O-N/ha (EF1 0.01).</td>
+<td>N-04 / CL F10</td>
+</tr>
+<tr>
+<td>T9</td>
+<td>Study_1 → Farm: soil depth 0.2 → 0.3, then enter 20 (a user thinking in cm)</td>
+<td>Carbon stock change −4.5 → −6.7 → <strong>−445 t CO2/yr</strong>.</td>
+<td>Long-term cultivated land under unchanged management: ΔSOC ≈ 0 (IPCC eq 2.25, D = 20 yr).</td>
+<td>S-02, S-03</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>Compare Study_1 with an exact copy of itself</td>
+<td>Both show −4.5 t CO2/yr &quot;carbon stock change&quot; (−6.4 t/ha/yr). The carbon balance per kg FPCM (4.26) is almost double the GHG per kg (2.27).</td>
+<td>≈ 0 change. East Africa intensive dairy benchmark (guide §3.4): 1.1–5.9 kg CO2e/kg FPCM, mean 2.39.</td>
+<td>S-02 / CL F01</td>
+</tr>
+<tr>
+<td>T11</td>
+<td>Study_1 → look at the N balance plot and Compare &quot;Area Mining %&quot;</td>
+<td>100% of area &quot;mining&quot;, although Groundnut residue has a positive balance. The concentrate shows leaching N with 0 ha.</td>
+<td>By the guide's own definition, mining should be &lt; 100%.</td>
+<td>N-06, N-01, G5</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Study_1 → Compare &quot;Total water use&quot; and &quot;Water per FPCM&quot;</td>
+<td>733 &quot;m³/yr&quot;, 1,039 &quot;m³/ha&quot;, 0.32 &quot;m³/kg FPCM&quot;.</td>
+<td>×10 gives the true volume: ≈ 7,300 m³, ≈ 10,400 m³/ha (= Kc·ET0 1,040 mm). Guide benchmark for East Africa: 1.2–3.1 m³/kg FPCM.</td>
+<td>W-01, W-02</td>
+</tr>
+<tr>
+<td>T13</td>
+<td>Study_1 → Livestock: set heifers' &quot;mature body weight&quot; 0 → 600. Download Excel → energy sheet</td>
+<td><code>er_growth</code> 0 → 4.3 MJ/d per heifer. Dashboard unchanged (CP-limited).</td>
+<td>IPCC eq 10.6 for a 327 kg heifer gaining 0.34 kg/d: NEg ≈ 4–5 MJ/d.</td>
+<td>NEW-01</td>
+</tr>
+<tr>
+<td>T14</td>
+<td>New scenario from Study_1: add &quot;Goats - Kids&quot; (10 head, 20 kg/yr gain), leaving the weaning and 1-yr weights at the app default 0</td>
+<td>DMI warning. Kids' DMI is about 28% BW (CP-limited). NEg only uses <code>a</code>.</td>
+<td>Kids eat about 3–4% BW.</td>
+<td>H-02, H-01</td>
+</tr>
+<tr>
+<td>T15</td>
+<td>Study_1 → set slope to &quot;Non-agricultural (all slope categories)&quot; for all feeds</td>
+<td>Erosion 0.42 → <strong>0.00 t/yr</strong>.</td>
+<td>P-factor 1 should <em>increase</em> erosion.</td>
+<td>SE-01</td>
+</tr>
+</tbody>
+</table>
+<p>Optional (DBs with OFC feeds: Tunisia, Uzbekistan, Mongolia, Uganda, Haiti, Honduras): an OFC concentrate with urea shows the same N counted twice in &quot;Concentrates off-farm&quot; soil N2O (PK F05).</p>
+<p><strong>Sanity anchors for facilitators</strong> (independent of the tool):</p>
+<ul>
+<li>Improved East African dairy cow (2,000–3,500 kg milk): enteric CH4 about 60–100 kg/yr (Tier 2 range).</li>
+<li>IPCC 2006 Tier 1 Africa dairy: 40 kg/head/yr for low-yield cows.</li>
+<li>FAO GLEAM (Gerber et al. 2013), sub-Saharan Africa dairy: about 7.5 kg CO2e/kg FPCM (allocated, includes feed and LUC).</li>
+<li>DMI of lactating cows: 2.5–3.5% BW.</li>
+<li>Growing cattle and small ruminants: about 2.5–4% BW.</li>
+</ul>
+<hr />
+<h2>7. Known issues facilitators should flag up front</h2>
+<ol>
+<li><strong>Do not use absolute numbers for reporting.</strong> Use the workshop to test usability and relative directions only, and even those are biased (G16).</li>
+<li><strong>Soil carbon:</strong> the &quot;Carbon stock change&quot; and &quot;Carbon balance&quot; indicators show a large permanent loss for any cropland. Ignore them (T9/T10).</li>
+<li><strong>Burning</strong> is overstated about 24×. Don't interpret burning-reduction scenarios quantitatively (T6).</li>
+<li><strong>Manure CH4 shows 0</strong> with the default manure labels. If you need it, choose &quot;Pasture/Range/Paddock&quot; (not &quot;Pasture / range / paddock&quot;) for grazing and enclosure locations (T1). On the 4c44 build it is always 0.</li>
+<li><strong>Always set removal fractions</strong> (main product / residue) for each feed, otherwise the feed gets 0 ha. <strong>Purchased concentrates never get land, water or soil footprints</strong> (T2/T3).</li>
+<li><strong>Always fill &quot;mature body weight&quot;</strong> for cattle, and weaning / 1-year weights for sheep and goats. The app pre-fills 0 (T13/T14).</li>
+<li><strong>Check feed CP values.</strong> Very low CP (e.g. barley straw 0.3% in the DB) makes the model &quot;feed&quot; impossible amounts. The &gt;4% BW warning is also triggered by herd size alone, so check per-head intake in the Excel (T4/T5).</li>
+<li><strong>Water volumes are 10× too low</strong> (the unit is mm·ha, not m³), and the water indicator is not a water footprint (T12).</li>
+<li><strong>&quot;% area mining/leaching&quot; is not the N-balance share</strong> that the guide describes. Use the per-feed N balance values instead (T11).</li>
+<li><strong>Off-farm grazing appears to reduce emissions</strong>, because its N2O is dropped (T7).</li>
+<li><strong>Fertiliser:</strong> enter %N for NPK. CAN is not available. Urea CO2 is not counted (T8).</li>
+<li><strong>Units:</strong> soil depth is in <strong>metres</strong> (0.2–0.3). &quot;ha/kg FPCM&quot; is really ha per tonne. &quot;t CO2eq/kg&quot; for the carbon stock is really kg/kg.</li>
+<li><strong>Red alerts don't stop a run.</strong> Fix every alert before pressing Run.</li>
+<li><strong>% changes</strong> flip sign for negative baselines (N balance, SOC). Read absolute differences instead.</li>
+<li><strong>Benchmarks in guide §3.4</strong> are not like-for-like with iCLEANED (no allocation, different boundaries, water unit error), and some rows are internally inconsistent.</li>
+<li>If T0 shows the 4c44 build: <strong>Compare-tab GHG totals and intensities are wrong by 1–3 orders of magnitude.</strong> Use only the Simulation tab (per-ha by source) and the Excel <code>ghg_balance</code> <code>kg_co2_e_tot</code> column.</li>
+</ol>
+<hr />
+<h2>8. Top app-affecting issues (priority for fixes before or after the workshop)</h2>
+<ol>
+<li><strong>SOC perpetual loss</strong> (#21, CL F01 / LU S-02). It dominates the carbon balance (S1: −4.5 t CO2/yr against 5.1 t CO2e of emissions).</li>
+<li><strong>Silent zero land</strong> from the app's default removal = 0 and from &quot;Purchased&quot; feeds (#8, LU-01). This propagates to every per-ha and per-kg indicator.</li>
+<li><strong>Intake engine</strong>: DMI = max(E, CP) with no cap, combined with NE÷ME (#3, #1). S2 cow: 8.4% BW. The app's warning is itself mis-scaled (NEW-04).</li>
+<li><strong>Burning CO2 plus NOx×GWP_N2O</strong> (#29). S2: 40% of total GHG.</li>
+<li><strong>Manure CH4 missing</strong> (#37 CL F07 via the app's default label; NEW-02 on 4c44). If 4c44 is live, <strong>NEW-03</strong> (Compare-tab GHG totals in mixed units) jumps to #1.</li>
+</ol>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

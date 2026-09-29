@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>4. Residue burning: about 24× too high</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="../index.html">Home</a><a href="../00_summary.html">summary</a><a href="../01_climate_ghg.html">climate ghg</a><a href="../02_livestock.html">livestock</a><a href="../03_landuse.html">landuse</a><a href="../04_package_code.html">package code</a><a href="../05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="../06_critical_tests.html">critical tests</a><a href="../07_fix_log.html">fix log</a><a href="../08_demo.html">demo</a><a href="../issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>4. Residue burning: about 24× too high</h1>
+<p>The package's burning total adds the CO2 from burning, and multiplies NOx by the N2O warming factor (GWP) (<code>R/merge_outputs.R:810-812</code>). IPCC 2006 Vol 4 Ch 2 (p. 2.41) counts only non-CO2 gases for burning on cropland and grassland, because the CO2 is taken back up when the crop regrows. NOx has no GWP.</p>
+<table>
+<thead>
+<tr>
+<th align="left">1 t DM residue burnt</th>
+<th align="right">IPCC</th>
+<th align="right">Current</th>
+<th align="right">Fixed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">kg CO2e</td>
+<td align="right">75.3</td>
+<td align="right">1,802.5</td>
+<td align="right">75.3</td>
+</tr>
+</tbody>
+</table>
+<pre class="diff"><code>--- a/R/merge_outputs.R	2026-09-29 10:31:17
++++ b/R/merge_outputs.R	2026-09-29 10:31:17
+@@ -807,9 +807,11 @@
+ 
+   burning &lt;- 0
+   if (nrow(ghg_burn) &gt; 0 &amp;&amp; ncol(ghg_burn) &gt;= 5 &amp;&amp; &quot;ghg_gas&quot; %in% names(ghg_burn)) {
+-    burning &lt;- sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CO2&quot;, 5]) +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CH4&quot;, 5]) * methane +
+-      sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;Nox&quot;, 5]) * N2O
++    # IPCC 2006 Vol 4 Ch 2 p. 2.41: residue-burning CO2 is re-absorbed and not counted.
++    # NOx has no GWP. Read the amount by name, not by column position.
++    burn_amount &lt;- ghg_burn$amount_of_ghg_emission_from_fire
++    burning &lt;- sum_num(burn_amount[ghg_burn$ghg_gas == &quot;CH4&quot;]) * methane +
++      sum_num(burn_amount[ghg_burn$ghg_gas == &quot;N2O&quot;]) * N2O
+   }
+   burning_per_ha_kg_co2_e &lt;- safe_zero_div(burning, area_required_on_farm_ha)
+   burning_kg_co2_e_per_kg_fpcm &lt;- safe_zero_div(burning, total_milk_produced_kg_fpcm_per_year)
+@@ -1326,4 +1328,4 @@
+   )
+ 
+   c(app_output, batch_output[setdiff(names(batch_output), names(app_output))])
+-}
++}
+</code></pre>
+<div class="box"><strong>Reproduce this</strong><br><code>Rscript reproduce_critical_issues.R 4</code> using <a href="../reproduce/reproduce_critical_issues.R" download>reproduce_critical_issues.R</a> (installs what it needs into its own library and <code>cleaned</code> @ 800d53a). Add <code>CLEANED_FIXES=proposed_fixes.R</code> with <a href="../fixes/proposed_fixes.R" download>proposed_fixes.R</a> for the fixed column.<br>Test: <a href="../fixes/tests/test-critical-04-burning-co2e.R">tests/test-critical-04<e2><80><a6></a> <c2><b7> Proposed change: <a href="../fixes/results/F04.diff">F04.diff</a> <c2><b7> <a href="https://github.com/CIAT/cleaned/issues/new?template=bug_report.yml&title=%5BBug%5D%3A%20Residue%20burning%3A%20about%2024%C3%97%20too%20high">Open an issue in CIAT/cleaned</a></div><div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>

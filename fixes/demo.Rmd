@@ -1,0 +1,305 @@
+---
+title: "cleaned v0.7.0: critical issues, demonstrated"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, comment = "")
+here <- normalizePath(".")
+current <- normalizePath(file.path(here, "..", "..", "cleaned_review_src"))
+fixed <- file.path(here, "cleaned_fixed_copy")
+helpers <- file.path(here, "tests", c("helper-ipcc-reference.R", "helper-critical-fixture.R"))
+res <- file.path(here, "results")
+
+# Run fn() in a fresh R process with one version of the package loaded.
+in_pkg <- function(path, fn) {
+  callr::r(function(path, helpers, fn) {
+    suppressMessages(pkgload::load_all(path, quiet = TRUE, helpers = FALSE))
+    for (h in helpers) sys.source(h, envir = globalenv())
+    environment(fn) <- globalenv()
+    fn()
+  }, args = list(path = path, helpers = helpers, fn = fn), libpath = .libPaths())
+}
+both <- function(fn) list(current = in_pkg(current, fn), fixed = in_pkg(fixed, fn))
+show_diff <- function(id, max_lines = 40) {
+  d <- readLines(file.path(res, paste0(id, ".diff")))
+  d <- d[!grepl("^(diff|Only in|\\\\ No newline)", d)]
+  if (length(d) > max_lines) d <- c(d[seq_len(max_lines)], sprintf("... (%d more lines in results/%s.diff)", length(d) - max_lines, id))
+  cat("```diff\n", paste(d, collapse = "\n"), "\n```\n", sep = "")
+}
+fmt <- function(x, d = 1) { x <- round(x, d); x[x == 0] <- 0; formatC(x, format = "f", digits = d, big.mark = ",") }
+```
+
+This page shows each critical issue in the `cleaned` R package (v0.7.0, `staging` @ `800d53a`), which the iCLEANED app uses for its calculations. For each issue it compares three things:
+
+- **Current:** the package as it is today.
+- **Fixed:** a temporary copy of the package with the proposed fix applied. The repository itself is not changed.
+- **IPCC:** an independent calculation written from the IPCC source text, citing the equation and page.
+
+Every number is produced when this page is built, from the code shown. The full fix log is in `07_fix_log.md`.
+
+## 1. Feed intake: net energy treated as metabolisable energy
+
+The IPCC equations give an animal's energy requirement as **net energy** (NE). Feed supplies **metabolisable energy** (ME), and only part of it becomes net energy. IPCC 2019 Eq. 10.14–10.16 (Vol 4 Ch 10, pp. 10.29–10.30) converts between them with the efficiency ratios REM and REG. The package skips that step (`R/energy_requirement.R:170`), so it underestimates how much an animal eats. Enteric CH4, manure, land and N are all calculated from that intake.
+
+The test diet gives every feed 9.5 MJ ME/kg DM, which is about 64% digestible.
+
+```{r energy}
+e <- both(function() {
+  p <- ct_para()
+  p$feed_items$me_content <- 9.5
+  p$feed_items$dm_content <- c(30, 29, 15, 87)[seq_len(nrow(p$feed_items))]
+  r <- ct_run(p)
+  ar <- as.data.frame(r$er$annual_results)
+  sr <- merge(as.data.frame(r$er$seasonal_results), p$seasons, by = "season_name")
+  sr <- merge(sr, ar[, c("livestock_category_code", "er_maintenance", "er_activity", "er_lactation",
+                         "er_work", "er_pregnancy", "er_growth", "er_wool", "herd_composition", "body_weight")],
+              by = "livestock_category_code")
+  de <- (9.5 / 0.81) / 18.45
+  ge <- ipcc_ge(sr$er_maintenance, sr$er_activity, sr$er_lactation, sr$er_work,
+                sr$er_pregnancy, sr$er_growth, sr$er_wool, de)
+  sr$ipcc <- ipcc_dmi_from_ge(ge) * sr$season_length * sr$herd_composition
+  agg <- aggregate(cbind(dmi_required_e, ipcc, season_length) ~ livestock_category_name + herd_composition + body_weight,
+                   data = sr, FUN = sum)
+  agg
+})
+tab <- data.frame(
+  Animal = e$current$livestock_category_name,
+  `IPCC kg DM/day` = fmt(e$current$ipcc / 365 / e$current$herd_composition),
+  `Current kg DM/day` = fmt(e$current$dmi_required_e / 365 / e$current$herd_composition),
+  `Fixed kg DM/day` = fmt(e$fixed$dmi_required_e / 365 / e$fixed$herd_composition),
+  `Current / IPCC` = fmt(e$current$dmi_required_e / e$current$ipcc, 2),
+  `Fixed / IPCC` = fmt(e$fixed$dmi_required_e / e$fixed$ipcc, 2),
+  check.names = FALSE)
+knitr::kable(tab, align = "lrrrrr")
+```
+
+Currently the package gives these animals only 55–63% of the IPCC intake when energy is the limiting factor. The fix applies Eq. 10.14–10.16 to cattle, buffalo, sheep and goats, and warns if the diet is too poor for the equations to be valid.
+
+```{r energy-diff, results = "asis"}
+show_diff("F01", 30)
+```
+
+## 2. N excretion: N retention used with the wrong units
+
+IPCC 2019 Eq. 10.33 (p. 10.85) gives N retained in milk and weight gain in **kg N per animal per day**. On the same page, IPCC says cattle excretion then uses Eq. 10.31A: Nex = (N intake − N retention) × 365.
+
+The package divides milk retention by 365 twice (`R/ghg_emission.R:226`). It then uses the result as a *fraction* of intake (`:233`).
+
+```{r nex}
+n <- both(function() {
+  nx <- as.data.frame(ct_run()$ghg$n_excretion)
+  nx <- nx[grepl("Cattle", nx$livetype_desc), ]
+  ret <- ipcc_n_retention_cattle(nx$annual_milk / 365, nx$protein_milkcontent, nx$annual_growth / 365, nx$er_growth)
+  data.frame(animal = nx$livetype_desc, ret_pkg = nx$n_retained, ret_ipcc = ret,
+             nex_pkg = nx$n_excretion_rate, nex_ipcc = ipcc_nex_option2(nx$n_intake, ret * nx$herd_composition))
+})
+knitr::kable(data.frame(
+  Animal = n$current$animal,
+  `IPCC retention (kg N/d)` = fmt(n$current$ret_ipcc, 4),
+  `Current retention` = fmt(n$current$ret_pkg, 4),
+  `Fixed retention` = fmt(n$fixed$ret_pkg, 4),
+  `Current Nex (kg N/yr)` = fmt(n$current$nex_pkg),
+  `IPCC Nex, same intake` = fmt(n$current$nex_ipcc),
+  check.names = FALSE), align = "lrrrrr")
+```
+
+For the dairy cow, the package's N retention is about 365× too small, so almost all intake N is counted as excreted. That overstates manure N2O and the nitrogen balance. The last column applies IPCC Eq. 10.31A to the package's own N intake, so it isolates the retention error from the intake error in section 1. With the fix, the package matches it exactly (test 02).
+
+```{r nex-diff, results = "asis"}
+show_diff("F02")
+```
+
+## 3. Soil carbon: a permanent loss on land that hasn't changed
+
+IPCC 2006 Eq. 2.25 (Vol 4 Ch 2, p. 2.30) calculates soil carbon change from a *change* in land use or management between two points in time: ΔC = (SOC₀ − SOC₍₀₋T₎)/D. The package applies the stock-change factors to the measured stock every year (`R/soc.R:125-132`). So any cropland whose factors are below 1 shows a carbon loss every year, even if nothing has changed.
+
+```{r soc}
+s <- both(function() {
+  soil_organic_carbon(ct_soc_para(), ct_params()$stock_change, ct_soc_land(1),
+                      data.frame(c_increase_soc = 0))$total_annual_change_carbon_soils
+})
+knitr::kable(data.frame(
+  `1 ha, unchanged cropland` = "t C per year",
+  IPCC = fmt(0, 2), Current = fmt(s$current, 2), Fixed = fmt(s$fixed, 2),
+  check.names = FALSE), align = "lrrr")
+```
+
+The fix adds optional `*_previous` inputs for the previous land use and management. If they aren't given, the change is 0, as Eq. 2.25 requires. This changes the method, so the authors need to agree it (see the fix log).
+
+```{r soc-diff, results = "asis"}
+show_diff("F03", 30)
+```
+
+## 4. Residue burning: about 24× too high
+
+The package's burning total adds the CO2 from burning, and multiplies NOx by the N2O warming factor (GWP) (`R/merge_outputs.R:810-812`). IPCC 2006 Vol 4 Ch 2 (p. 2.41) counts only non-CO2 gases for burning on cropland and grassland, because the CO2 is taken back up when the crop regrows. NOx has no GWP.
+
+```{r burn}
+b <- both(function() {
+  para <- ct_para(); run <- ct_run(para)
+  burn <- as.data.frame(run$ghg$ghg_burn)
+  burn$mass_residue_burn <- 1
+  burn$amount_of_ghg_emission_from_fire <- ipcc_fire_gas_kg(1000, burn$combusion_factor, burn$burnt_emission_factor)
+  ghg <- run$ghg; ghg$ghg_burn <- burn
+  out <- combineOutputs(para, run$fq, run$er, run$lr, run$se, water_requirement(para, run$lr), run$nb,
+                        land_productivity(para, run$er), run$bm, run$sc, ghg, filePath = tempfile())
+  amt <- setNames(burn$amount_of_ghg_emission_from_fire, burn$ghg_gas)
+  c(pkg = as.numeric(out$ghg_balance$value[out$ghg_balance$GHG_balance == "Burning"]),
+    ipcc = ipcc_burning_co2e(amt[["CH4"]], amt[["N2O"]], 28, 265))
+})
+knitr::kable(data.frame(
+  `1 t DM residue burnt` = "kg CO2e",
+  IPCC = fmt(b$current[["ipcc"]]), Current = fmt(b$current[["pkg"]]), Fixed = fmt(b$fixed[["pkg"]]),
+  check.names = FALSE), align = "lrrr")
+```
+
+```{r burn-diff, results = "asis"}
+show_diff("F04")
+```
+
+## 5. Tree carbon never reaches soil carbon
+
+`biomass_calculation()` returns a data frame with a `c_increase_soc` column. `soil_organic_carbon()` looks for an element called `trees_non_feed_biomass` inside it (`R/soc.R:234`), which doesn't exist. So tree carbon always contributes 0.
+
+```{r trees}
+t <- both(function() {
+  p <- ct_soc_para(); sp <- ct_params()$stock_change; land <- ct_soc_land(1)
+  soil_organic_carbon(p, sp, land, data.frame(c_increase_soc = 2.5))$total_annual_change_carbon_soils -
+    soil_organic_carbon(p, sp, land, data.frame(c_increase_soc = 0))$total_annual_change_carbon_soils
+})
+knitr::kable(data.frame(`Tree carbon added` = 2.5, `Current change in SOC total` = fmt(t$current, 2),
+                        `Fixed change in SOC total` = fmt(t$fixed, 2), check.names = FALSE))
+```
+
+```{r trees-diff, results = "asis"}
+show_diff("F05")
+```
+
+## 6. Feeds silently get 0 ha
+
+When a feed's yield or removal fraction is 0, the area calculation divides by zero. The package then replaces the resulting infinite or missing value with 0 ha (`R/land_requirement.R:120-121`), without any message. iCLEANED pre-fills removal as 0 for new feeds, so this happens often. The demo below sets the pasture's yield to 0.
+
+```{r land}
+l <- both(function() {
+  p <- ct_para()
+  past <- grepl("pasture", p$feed_items$feed_item_name, ignore.case = TRUE)
+  p$feed_items$dry_yield[past] <- 0
+  fq <- feed_quality(p); er <- energy_requirement(p, fq, ct_params()$energy)
+  msg <- character(0)
+  lr <- withCallingHandlers(land_requirement(fq, er, p),
+                            warning = function(w) { msg <<- c(msg, conditionMessage(w)); invokeRestart("muffleWarning") })
+  d <- as.data.frame(lr$land_requirements_all)
+  d <- d[grepl("pasture", d$feed, ignore.case = TRUE), ]
+  m <- grep("pasture", msg, ignore.case = TRUE, value = TRUE)
+  list(dm = sum(d$feed_item_dm), ha = sum(d$area_feed), msg = if (length(m)) m[1] else "(no message)")
+})
+knitr::kable(data.frame(
+  Version = c("Current", "Fixed"),
+  `Pasture DM demand (kg)` = fmt(c(l$current$dm, l$fixed$dm), 0),
+  `Pasture area (ha)` = fmt(c(l$current$ha, l$fixed$ha), 2),
+  `Message to the user` = c(l$current$msg, l$fixed$msg), check.names = FALSE))
+```
+
+The proposed fix doesn't change the result. It warns the user, so the app can show the problem. DM demand differs between the two rows because fix 1 corrects intake. How much land purchased feeds should count for is a separate question, left to the authors.
+
+```{r land-diff, results = "asis"}
+show_diff("F06")
+```
+
+## 7. N leaching isn't multiplied by area
+
+Leaching (`out3`, `R/nitrogen_balance.R:249-253`) is calculated per hectare but added to farm totals, and it uses the farm-total organic N. Gaseous loss (`out4`), on the next line, is multiplied by `area_total`.
+
+```{r leach}
+lc <- both(function() {
+  nb <- as.data.frame(ct_run()$nb); nb <- nb[nb$area_total > 0, ]
+  data.frame(feed = nb$feed, ha = nb$area_total, out3 = nb$out3)
+})
+knitr::kable(data.frame(Feed = lc$current$feed, `Area (ha)` = fmt(lc$current$ha, 2),
+                        `Current leaching (kg N)` = fmt(lc$current$out3),
+                        `Fixed leaching (kg N)` = fmt(lc$fixed$out3), check.names = FALSE))
+```
+
+The fix leaves the leaching coefficient `0.021 * (P - 3.9)` unchanged, because I couldn't verify the published form (see the fix log).
+
+```{r leach-diff, results = "asis"}
+show_diff("F07")
+```
+
+## 8. Missing inputs taken from the caller
+
+When `energy_required` is left out, `n_balance()` looks for an object with that name in whatever code called it (`R/nitrogen_balance.R:36`); `ghg_emission()` does the same for `feed_basket_quality`. If another scenario's object is lying around under that name, the function uses it without saying anything. iCLEANED relies on this lookup, so the fix warns for now instead of stopping.
+
+```{r scope}
+sc <- both(function() {
+  run <- ct_run()
+  energy_required <- energy_requirement(run$para, run$fq, ct_params()$energy)
+  msg <- "(no message; used the caller's object)"
+  withCallingHandlers(n_balance(run$para, run$lr, soil_erosion = run$se),
+                      warning = function(w) { msg <<- conditionMessage(w); invokeRestart("muffleWarning") })
+  msg
+})
+knitr::kable(data.frame(Version = c("Current", "Fixed"), `n_balance() without energy_required` = c(sc$current, sc$fixed),
+                        check.names = FALSE))
+```
+
+## 9. The shipped example doesn't run
+
+```{r example}
+ex <- both(function() {
+  p <- jsonlite::fromJSON(ct_extdata("example_input.json"))
+  tryCatch({
+    fq <- feed_quality(p)
+    energy_requirement(p, fq, ct_params()$energy)
+    "runs"
+  }, error = function(e) paste("error:", gsub("\n.*", "", conditionMessage(e))))
+})
+knitr::kable(data.frame(Version = c("Current", "Fixed"), `inst/extdata/example_input.json` = c(ex$current, ex$fixed),
+                        check.names = FALSE))
+```
+
+## What this means in iCLEANED
+
+These are the two example studies shipped with the app (`data/shared_folder/study_objects`), run the same way the app runs them, with the current package and with all fixes.
+
+```{r app}
+ab <- readRDS(file.path(res, "baseline_app.rds")); af <- readRDS(file.path(res, "ALL_app.rds"))
+num <- function(x) suppressWarnings(as.numeric(x))
+rows <- c("Enteric fermentation-Methane", "Manure-Methane", "Manure-Direct N2O", "Manure-Indirect N2O",
+          "Soil-Direct N2O", "Soil-Indirect N2O", "Burning", "Production fertilizer")
+app_tab <- do.call(rbind, lapply(names(ab), function(s) {
+  g <- function(r) { t <- r$out$ghg_balance[1:10, ]; sapply(rows, function(k) sum(num(t$kg_co2_e_tot[t$GHG_balance == k]), na.rm = TRUE)) }
+  gb <- g(ab[[s]]); gf <- g(af[[s]])
+  socb <- ab[[s]]$sc$total_change_co2_soils * 1000; socf <- af[[s]]$sc$total_change_co2_soils * 1000
+  data.frame(Study = s, Source = c(rows, "Soil carbon change (kg CO2/yr)", "On-farm total incl. soil carbon"),
+             Current = fmt(c(gb, -socb, sum(gb) - socb), 0), Fixed = fmt(c(gf, -socf, sum(gf) - socf), 0))
+}))
+knitr::kable(app_tab, align = "llrr", caption = "On-farm GHG, kg CO2e per year (soil carbon: a loss is shown as a positive emission)")
+```
+
+```{r app-intake}
+it <- do.call(rbind, lapply(names(ab), function(s) {
+  eb <- as.data.frame(ab[[s]]$er$annual_results); ef <- as.data.frame(af[[s]]$er$annual_results)
+  pct <- function(e) 100 * e$dmi_tot / 365 / e$herd_composition / e$body_weight
+  data.frame(Study = s, Animal = eb$livestock_category_name,
+             `Intake, % of body weight (current)` = fmt(pct(eb)), `(fixed)` = fmt(pct(ef)),
+             `Limiting (current)` = eb$limiting_total, `(fixed) ` = ef$limiting_total, check.names = FALSE)
+}))
+knitr::kable(it, caption = "IPCC: intake should be about 2-3% of body weight, and can exceed 4% in high-producing dairy cows (2019 Vol 4 Ch 10, p. 10.30)")
+```
+
+Messages the app would receive with the fixes:
+
+```{r app-warn, results = "asis"}
+for (s in names(af)) cat(sprintf("- **%s:** %s\n", s, paste(unique(sub(" has [0-9]+ kg", " has ... kg", af[[s]]$warnings)), collapse = "; ")))
+```
+
+### Not fixed by these proposals
+
+- **Intake has no upper limit.** Intake is the larger of the energy-based and protein-based values, so a diet low in protein can push it to impossible levels. The Study_2 cow still eats more than 8% of body weight. This needs a cap on intake from rumen fill, or a flag for such diets (Livestock review H-01, Land-use review LU-02).
+- **Manure CH4 is 0.** The manure-system labels don't match the keys in the IPCC emission-factor table (Climate review F07).
+- **The water unit.** Water is calculated in mm·ha but labelled m³, so it is about 10× too low (Land-use review W-01).
+- The rest of the High findings are in `00_summary.md`.
+
+---
+Built with `knitr::knit("demo.Rmd", "../08_demo.md")` from `cleaned_review/fixes/`, after running `./run_all.sh`.

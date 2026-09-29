@@ -1,0 +1,612 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>04 - Package design, correctness and best-practice review: `cleaned` v0.7.0</title><style>
+body { font: 15px/1.5 -apple-system, Helvetica, Arial, sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1em; color: #222; }
+h1, h2, h3 { line-height: 1.25; } h2 { border-bottom: 1px solid #ddd; padding-bottom: .2em; margin-top: 2em; }
+table { border-collapse: collapse; margin: 1em 0; font-size: 14px; display: block; overflow-x: auto; }
+th, td { border: 1px solid #ccc; padding: .35em .6em; vertical-align: top; } th { background: #f3f3f3; }
+code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px; font-size: 90%; }
+pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; } pre code { background: none; padding: 0; }
+.diff .add { color: #116329; background: #e6ffec; } .diff .del { color: #82071e; background: #ffebe9; }
+nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
+.box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
+.comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>04 - Package design, correctness and best-practice review: <code>cleaned</code> v0.7.0</h1>
+<p>Reviewed: <code>CIAT/cleaned</code> @ 800d53a (read-only). Everything was run on a copy under the session scratchpad.
+Tooling: R 4.6.0 (aarch64 macOS), <code>R CMD build</code> + <code>R CMD check --as-cran --no-manual</code> (pandoc from the RStudio bundle), lintr 3.x, and the full model pipeline run end to end. <code>openxlsx</code> and <code>spelling</code> were installed into a scratch library only. devtools, rcmdcheck and covr are not installed, so coverage was judged by reading the tests.</p>
+<h2>Verdict</h2>
+<p><strong>Not release-quality.</strong> The package builds and installs. <code>R CMD check</code> finishes with <strong>4 WARNINGs and 4 NOTEs</strong>, and the repo's own CI (<code>error_on = &quot;warning&quot;</code>) would therefore fail. Check looks cleaner than the package really is because every example is <code>\dontrun</code> and every vignette is <code>eval = FALSE</code>. <strong>No input file shipped with the package runs the pipeline.</strong> Once a working input was built by hand, several reproducible model bugs showed up:</p>
+<ul>
+<li>Tree SOC is silently dropped.</li>
+<li>Off-farm fertiliser N is double counted as crop-residue N.</li>
+<li>Water use for off-farm concentrates is double counted.</li>
+<li>Anhydrous ammonia is given the urea quantity.</li>
+<li>NOx is costed at the N2O warming potential.</li>
+<li>A single typo in a category name produces <strong>0 ha</strong> of land with no warning.</li>
+</ul>
+<p>Two exported functions find their main input by dynamic scoping (<code>get(..., parent.frame())</code>). Testing is effectively zero: one file with no expectations.</p>
+<h2>R CMD check summary (reproduced)</h2>
+<p><code>R CMD build</code>: OK (tarball 821 KB). The first attempt failed only because pandoc was missing, which is an environment issue.</p>
+<p><code>R CMD check --as-cran --no-manual cleaned_0.7.0.tar.gz</code>: <strong>Status: 4 WARNINGs, 4 NOTEs</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Check</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WARNING</td>
+<td>portable file names</td>
+<td><code>R/misc/v37 loop.R</code> (has a space; it ships in the tarball)</td>
+</tr>
+<tr>
+<td>WARNING</td>
+<td>code/documentation mismatches</td>
+<td><code>combineOutputs</code> (<code>primary_excel</code> vs <code>readMe</code>/<code>benchMark</code>), <code>ghg_emission</code> (<code>feed_basket_quality</code>, <code>ym_prod</code> undocumented), <code>n_balance</code> (argument 3 is <code>energy_required</code> in the code but <code>soil_erosion</code> in the docs)</td>
+</tr>
+<tr>
+<td>WARNING</td>
+<td>Rd \usage</td>
+<td><code>readMe</code>, <code>benchMark</code> undocumented</td>
+</tr>
+<tr>
+<td>WARNING</td>
+<td>contents of <code>data</code></td>
+<td><code>cleaned.sqlite</code>, <code>energy_parameters.json</code>, <code>explore_qt_json.html/.pdf/.rmd</code>, <code>mappings/</code>, <code>qt_example.json</code> are not allowed in <code>data/</code></td>
+</tr>
+<tr>
+<td>NOTE</td>
+<td>top-level files</td>
+<td><code>-ILRIKE-21154.Rhistory</code>, <code>CITATION.cff</code>, <code>auxilary_info</code></td>
+</tr>
+<tr>
+<td>NOTE</td>
+<td>package subdirectories</td>
+<td><code>CITATION.cff</code> in a non-standard place</td>
+</tr>
+<tr>
+<td>NOTE</td>
+<td>dependencies in R code</td>
+<td>Imports declared but never imported: <code>ggplot2</code>, <code>plyr</code>, <code>rlang</code>, <code>tidyverse</code></td>
+</tr>
+<tr>
+<td>NOTE</td>
+<td>R code problems</td>
+<td>about 250 &quot;no visible binding&quot; globals across 10 functions; <code>where</code> has no visible definition; check suggests <code>importFrom(&quot;datasets&quot;,&quot;npk&quot;)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Examples, tests and vignettes all say &quot;OK&quot;, but only because none of them execute model code (see F19 and F20).</p>
+<p>lintr (defaults, line length 120): <strong>4,879 lints</strong>. The largest groups are <code>object_usage</code> 1550, <code>infix_spaces</code> 1113, <code>commas</code> 550, <code>line_length</code> 377, <code>T_and_F_symbol</code> 25 and <code>seq_linter</code> 17 (<code>1:length</code>/<code>1:nrow</code>).</p>
+<p>Pipeline timing on the patched example: about 0.68 s per full scenario run (10 runs took 6.8 s).</p>
+<h2>Findings table</h2>
+<p>Verdict key: C = CONFIRMED (reproduced by running code, or shown directly by the file contents or check output); P = PLAUSIBLE (strong static evidence, needs a domain or numeric check). Refuted and dropped: a suspected copy-paste title bug in <code>compare_scenario.R</code> (my own sed splice produced it); <code>land_requirement</code> returning only the last iteration's <code>feed_items_frac</code> (masked in practice because <code>feed_quality</code> always emits every feed); the &quot;wet season crossing a year boundary goes negative&quot; hypothesis (it computes correctly); and input mutation by reference (<code>para</code> is unchanged after a run, and no <code>:=</code> is used in <code>R/</code>).</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>V</th>
+<th>Location</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01</td>
+<td>Critical</td>
+<td>C</td>
+<td><code>inst/extdata/example_input.json</code>, <code>data/qt_example.json</code>, <code>data/mufindi.rda</code>, <code>data/ghg_para.rda</code></td>
+<td>No shipped input or parameter set runs the pipeline. <code>feed_quality()</code> fails on <code>crop_name</code>, and <code>ghg_para</code> has the wrong table names</td>
+</tr>
+<tr>
+<td>F02</td>
+<td>Critical</td>
+<td>C</td>
+<td><code>R/soc.R:234</code></td>
+<td><code>biomass[[&quot;trees_non_feed_biomass&quot;]]</code> is always NULL, so tree SOC is always 0</td>
+</tr>
+<tr>
+<td>F03</td>
+<td>Critical</td>
+<td>C</td>
+<td><code>R/nitrogen_balance.R:29-37</code>, <code>R/ghg_emission.R:46-48</code></td>
+<td><code>get(&quot;energy_required&quot;/&quot;feed_basket_quality&quot;, envir = parent.frame(), inherits = TRUE)</code> is dynamic scoping</td>
+</tr>
+<tr>
+<td>F04</td>
+<td>Critical</td>
+<td>C</td>
+<td><code>R/energy_requirement.R:70-79,102-128</code>; <code>R/land_requirement.R:58-60,120-121</code>; <code>R/feed_quality.R:132</code></td>
+<td>Unknown category names or NA inputs silently become 0, e.g. 0 ha of land for a whole herd</td>
+</tr>
+<tr>
+<td>F05</td>
+<td>High</td>
+<td>C</td>
+<td><code>R/ghg_emission.R:373-375</code></td>
+<td>Off-farm crop-residue N is taken from fertiliser columns (conc_of and conc_ip double counted) or from a column that does not exist (rough_of is always 0)</td>
+</tr>
+<tr>
+<td>F06</td>
+<td>High</td>
+<td>C</td>
+<td><code>R/ghg_emission.R:494-504</code>, <code>R/merge_outputs.R:808-813</code></td>
+<td>Burning multiplies NOx by the N2O GWP, counts biogenic CO2, and reads a positional column 5</td>
+</tr>
+<tr>
+<td>F07</td>
+<td>High</td>
+<td>P</td>
+<td><code>R/ghg_emission.R:213-233</code></td>
+<td><code>n_retained</code> mixes daily and annual units and is used as a fraction in eq. 10.31</td>
+</tr>
+<tr>
+<td>F08</td>
+<td>High</td>
+<td>C</td>
+<td><code>R/merge_outputs.R:74-84,92-98</code> and throughout</td>
+<td>Defensive <code>tryCatch</code>/&quot;column missing, use 0&quot; helpers turn schema drift into silent zeros in the GHG balance</td>
+</tr>
+<tr>
+<td>F09</td>
+<td>High</td>
+<td>C</td>
+<td>R CMD check, <code>.github/workflows/R-CMD-check.yaml:84</code></td>
+<td>4 WARNINGs, and CI uses <code>error_on=&quot;warning&quot;</code>, so CI is red by design</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>High</td>
+<td>C</td>
+<td><code>data/</code></td>
+<td>Non-.rda artefacts ship in <code>data/</code>; copies diverge (<code>energy_parameters.json</code> typo, <code>stock_change_para</code> differs from the JSON)</td>
+</tr>
+<tr>
+<td>F11</td>
+<td>High</td>
+<td>C</td>
+<td><code>man/*.Rd</code>, <code>R/*.R</code> roxygen, <code>vignettes/*.Rmd</code></td>
+<td>Docs out of sync: codoc mismatches, all examples <code>\dontrun</code> and broken, all vignettes <code>eval=FALSE</code></td>
+</tr>
+<tr>
+<td>F12</td>
+<td>High</td>
+<td>C</td>
+<td><code>tests/testthat/test-feed_quality.R:1</code></td>
+<td>The only test is <code>context(&quot;test-feed_quality&quot;)</code>: zero expectations and no regression tests</td>
+</tr>
+<tr>
+<td>F13</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/water_requirement.R:56</code></td>
+<td><code>kc_water_use_on_farm</code> does not subtract concentrates off-farm (OFC), so their water is counted twice</td>
+</tr>
+<tr>
+<td>F14</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/ghg_emission.R:517-523</code></td>
+<td>&quot;Anhydrous ammonia&quot; falls through to the urea quantity, giving phantom emissions</td>
+</tr>
+<tr>
+<td>F15</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/energy_requirement.R:190-191</code></td>
+<td><code>sum(x, na.omit=TRUE)</code> adds 1 and does not drop NA</td>
+</tr>
+<tr>
+<td>F16</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/ghg_emission.R:395-399,565-569</code></td>
+<td><code>if (rice$source_type != &quot;Purchased&quot;)</code> errors with two or more rice feeds; the two rice filters disagree</td>
+</tr>
+<tr>
+<td>F17</td>
+<td>Medium</td>
+<td>P</td>
+<td><code>R/nitrogen_balance.R:249-254</code></td>
+<td>Leaching <code>0.021*(P-3.9)</code> probably should be <code>(0.021*P-3.9)</code>; <code>in2</code> (total kg) is mixed with per-ha terms</td>
+</tr>
+<tr>
+<td>F18</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/feed_quality.R:79-84,135-137</code></td>
+<td>Errors when a livestock category has no feed-basket rows; relies on loop leftovers</td>
+</tr>
+<tr>
+<td>F19</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>DESCRIPTION:28-41</code>, <code>NAMESPACE:37</code></td>
+<td><code>tidyverse</code> in Imports; <code>plyr</code>, <code>ggplot2</code>, <code>rlang</code> unused; <code>importFrom(utils, de)</code> (the data editor)</td>
+</tr>
+<tr>
+<td>F20</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/global.R:1-251</code></td>
+<td>250-name <code>globalVariables</code> list is stale, hides the dynamic-scoping objects, and still leaves ~250 NOTE entries</td>
+</tr>
+<tr>
+<td>F21</td>
+<td>Medium</td>
+<td>C</td>
+<td>stray files</td>
+<td><code>-ILRIKE-21154.Rhistory</code> (personal <code>C:/Users/soloo...</code> paths) and <code>R/misc/v37 loop.R</code> ship in the tarball; also <code>R/.Rhistory</code>, <code>auxilary_info/</code>, <code>data/__MACOSX</code></td>
+</tr>
+<tr>
+<td>F22</td>
+<td>Medium</td>
+<td>C</td>
+<td>exported API</td>
+<td>Inconsistent argument order and naming, a positional-swap heuristic, <code>ym_prod=F</code>, and the <code>fetilizer_ghg</code> typo exported twice</td>
+</tr>
+<tr>
+<td>F23</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/ghg_emission.R:144,188-194,239-248,262,450,480</code>; <code>R/merge_outputs.R:810</code></td>
+<td>Fragile positional indexing and renames that depend on auto-generated column names</td>
+</tr>
+<tr>
+<td>F24</td>
+<td>Medium</td>
+<td>P</td>
+<td><code>R/land_requirement.R:108-119</code>, <code>R/water_requirement.R:53-55</code>, <code>R/nitrogen_balance.R:269-298</code>, <code>R/ghg_emission.R:367-369,538-540</code></td>
+<td>Feed origin is encoded as substrings (<code>&quot;OFR&quot;</code>, <code>&quot;OFC&quot;</code>, <code>&quot;IP&quot;</code>) inside free-text names</td>
+</tr>
+<tr>
+<td>F25</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/merge_outputs.R:693-694</code></td>
+<td>GWPs (CH4 = 28, N2O = 265) are hardcoded rather than taken from parameters</td>
+</tr>
+<tr>
+<td>F26</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>R/merge_outputs.R:1262-1267</code>, <code>R/merge_outputs.R:29</code></td>
+<td>Docs say &quot;saved JSON file&quot;, but only an xlsx is written, named <code>&lt;file&gt;.json.xlsx</code></td>
+</tr>
+<tr>
+<td>F27</td>
+<td>Medium</td>
+<td>C</td>
+<td><code>.github/workflows/R-CMD-check.yaml</code></td>
+<td>Obsolete runners and actions (ubuntu-20.04, setup-r@v1, cache@v2, checkout@v2); dev branch never checked</td>
+</tr>
+<tr>
+<td>F28</td>
+<td>Low</td>
+<td>C</td>
+<td><code>R/plotting.R:34-236</code>, <code>R/compare_scenario.R:36-478</code></td>
+<td>The &quot;plotting&quot; functions do not plot; unused <code>dir.create</code> side effect; stale <code>title</code> in the <code>else</code> branch; <code>1:nrow</code> fails with only a base run</td>
+</tr>
+<tr>
+<td>F29</td>
+<td>Low</td>
+<td>C</td>
+<td><code>R/season_length.R:22-36</code></td>
+<td>Hardcoded <code>%Y/%m/%d</code> format, so ISO dates fail with a cryptic error; leap year taken from the start date</td>
+</tr>
+<tr>
+<td>F30</td>
+<td>Low</td>
+<td>C</td>
+<td><code>R/nitrogen_balance.R:243,267</code></td>
+<td><code>replace_na(as.list(rep(0, ncol(.)-2)))</code> with an unnamed list does nothing</td>
+</tr>
+<tr>
+<td>F31</td>
+<td>Low</td>
+<td>C</td>
+<td><code>R/feed_quality.R:31-50</code>, <code>R/land_requirement.R:71</code>, <code>R/nitrogen_balance.R:45</code>, <code>R/energy_requirement.R:183</code></td>
+<td>Loop-invariant <code>unnest()</code> recomputed in nested loops; <code>rbind</code> inside a loop; <code>1:length</code>/<code>1:nrow</code></td>
+</tr>
+<tr>
+<td>F32</td>
+<td>Low</td>
+<td>C</td>
+<td><code>R/data.R:42,67</code>; missing NEWS.md and inst/CITATION; stale <code>docs/</code></td>
+<td>Roxygen typos (<code>#' #' @keywords</code>), <code>...</code> placeholders in <code>@format</code>; <code>docs/reference/economics_payback.html</code> documents a removed function</td>
+</tr>
+</tbody>
+</table>
+<p>Counts by severity: <strong>Critical 4, High 8, Medium 15, Low 5</strong> (32 findings).</p>
+<h2>Detailed findings</h2>
+<h3>F01 (Critical, CONFIRMED): nothing shipped can run the model</h3>
+<p>Evidence:</p>
+<ul>
+<li><code>feed_quality(fromJSON(system.file(&quot;extdata&quot;,&quot;example_input.json&quot;, package=&quot;cleaned&quot;)))</code> fails with <code>Column 'crop_name' doesn't exist</code> (<code>R/feed_quality.R:44</code>). <code>data/qt_example.json</code> fails the same way.</li>
+<li><code>inst/extdata/example_input.json</code> also lacks <code>dry_yield</code> and <code>residue_dry_yield</code> in <code>feed_items</code>, which <code>land_requirement</code> needs (<code>R/land_requirement.R:94-96</code>). It lacks <code>fat_milkcontent</code>, <code>cp_lys_pregnancy</code>, <code>cp_lys_growth</code>, <code>lw_gain_piglets</code>, <code>proportion_growth_piglets_milk</code> and <code>n_manure_content</code> in <code>livestock</code>, which <code>R/energy_requirement.R:106-144,206-213</code> needs.</li>
+<li><code>data(mufindi)</code> is an older schema: <code>txt_*</code> fields, a <code>ferlitizer</code> typo, and <code>manureman_*</code> at top level. Yet every roxygen example uses it.</li>
+<li><code>data(ghg_para)</code> has the names <code>Table_10.12</code>, <code>table_10.17</code> and so on, but <code>ghg_emission</code> reads <code>&quot;Table 10.12&quot;</code>, <code>&quot;Table 10.13&quot;</code>, <code>&quot;Table_m&quot;</code> and <code>&quot;Table 10.16&quot;</code>. Running <code>ghg_emission(..., ghg_para, ...)</code> fails with <code>replacement has length zero</code>.</li>
+<li>To exercise the pipeline I had to build a working input by adding <code>crop_name = feed_item_name</code>, deriving <code>dry_yield</code> and <code>residue_dry_yield</code> from <code>fresh_yield</code>, <code>dm_content</code>, <code>harvest_index</code> and <code>water_content</code>, and aliasing six livestock fields.</li>
+</ul>
+<p>Impact: users cannot run the README or vignette example. No golden or regression test is possible, and the input contract is not machine-checked anywhere.</p>
+<p>Fix:</p>
+<ul>
+<li>Ship one canonical, validated <code>inst/extdata/example_scenario.json</code> that runs end to end.</li>
+<li>Delete or regenerate <code>mufindi</code>, <code>ghg_para</code> and <code>stock_change_para</code> from <code>data-raw/</code> scripts that read the <code>inst/extdata</code> JSON, so there is a single source of truth.</li>
+<li>Add a smoke test that runs the full pipeline on the shipped example.</li>
+</ul>
+<h3>F02 (Critical, CONFIRMED): SOC ignores tree biomass</h3>
+<p><code>R/soc.R:234</code>:</p>
+<pre><code class="language-r">biomass = sum(biomass[[&quot;trees_non_feed_biomass&quot;]]$c_increase_soc),
+</code></pre>
+<p><code>biomass_calculation()</code> returns a tibble, not a list (<code>R/biomass_calculation.R:141-144</code>), so <code>biomass[[&quot;trees_non_feed_biomass&quot;]]</code> is <code>NULL</code> and the sum is <code>0</code>. Reproduced: <code>sum(biomass$c_increase_soc)</code> is 30.38, but the value used is 0. Setting <code>c_increase_soc = 1000</code> still gives SOC = 0. Wrapping the input as <code>list(trees_non_feed_biomass = biomass)</code> gives 4000 / 14666.67.</p>
+<p>Fix:</p>
+<pre><code class="language-r">tree_df &lt;- if (is.data.frame(biomass)) biomass else biomass[[&quot;trees_non_feed_biomass&quot;]]
+stopifnot(&quot;c_increase_soc&quot; %in% names(tree_df))
+biomass_c &lt;- sum(tree_df$c_increase_soc, na.rm = TRUE)
+</code></pre>
+<h3>F03 (Critical, CONFIRMED): dynamic scoping in exported functions</h3>
+<p>In <code>R/nitrogen_balance.R:27-37</code>, <code>n_balance(para, land_required, energy_required = NULL, soil_erosion = NULL)</code> guesses whether argument 3 is really <code>soil_erosion</code>, then runs <code>get(&quot;energy_required&quot;, envir = parent.frame(), inherits = TRUE)</code>. <code>R/ghg_emission.R:46-48</code> does the same for <code>feed_basket_quality</code>. <code>R/global.R:61,67</code> then declares both names as globals, which hides the check NOTE.</p>
+<p>Reproduced:</p>
+<ul>
+<li>The documented call <code>n_balance(para, land_required, soil_erosion)</code> made inside a function fails with <code>object 'energy_required' not found</code>.</li>
+<li>Inside a function with an unrelated local <code>energy_required</code>, it silently used that object and returned <code>organic_n_kg_total</code> = 3e6 instead of 0.</li>
+</ul>
+<p>Fix: make the arguments explicit and required, and error on the wrong type:</p>
+<pre><code class="language-r">n_balance &lt;- function(para, land_required, energy_required, soil_erosion) {
+  stopifnot(is.list(energy_required), &quot;annual_results&quot; %in% names(energy_required),
+            is.data.frame(soil_erosion))
+  ...
+}
+</code></pre>
+<p>Deprecate the old positional form with <code>lifecycle::deprecate_warn()</code> if the app depends on it.</p>
+<h3>F04 (Critical, CONFIRMED): bad inputs silently become zeros</h3>
+<p>In <code>R/energy_requirement.R:70-77</code>, categories are matched by exact strings (<code>&quot;Cattle - Cows (improved)&quot;</code>), and anything unmatched gets <code>maintenance_cat = NA</code>. Later, <code>ifelse(!is.finite(x), 0, x)</code> (lines 102, 112, 118, 123, 128), <code>replace(is.na(.), 0)</code> (<code>R/land_requirement.R:60,121</code>) and <code>feed_allocation_all[is.na(...)] &lt;- 0</code> (<code>R/feed_quality.R:132</code>) erase the problem.</p>
+<p>Reproduced:</p>
+<ul>
+<li>Renaming <code>&quot;Cattle - Cows (improved)&quot;</code> to <code>&quot;Cattle - Cows (Improved)&quot;</code> gives <code>er_maintenance = NA</code> and <strong>0 ha of land</strong> for the dairy herd, with no warning.</li>
+<li>Setting <code>body_weight = NA</code> for one class gives 0 ha for that class.</li>
+</ul>
+<p>Fix: validate before computing, and fail loudly.</p>
+<pre><code class="language-r">validate_para &lt;- function(para, energy_parameters) {
+  lv &lt;- para$livestock
+  bad &lt;- setdiff(lv$livetype_desc, known_livetypes)
+  if (length(bad)) stop(&quot;Unknown livetype_desc: &quot;, paste(bad, collapse = &quot;, &quot;), call. = FALSE)
+  req &lt;- c(&quot;body_weight&quot;, &quot;herd_composition&quot;, &quot;time_in_stable&quot;, ...)
+  miss &lt;- req[!req %in% names(lv)]
+  if (length(miss)) stop(&quot;livestock missing: &quot;, toString(miss), call. = FALSE)
+  if (anyNA(lv[req])) stop(&quot;NA in required livestock fields&quot;, call. = FALSE)
+  tt &lt;- rowSums(lv[grep(&quot;^time_in_&quot;, names(lv))])
+  if (any(abs(tt - 1) &gt; 1e-6)) warning(&quot;time_in_* fractions do not sum to 1&quot;)
+  invisible(TRUE)
+}
+</code></pre>
+<p>Call it at the top of each exported function, or once in a <code>run_cleaned()</code> wrapper. Replace NaN/Inf with 0 only for the documented structural 0/0 cases.</p>
+<h3>F05 (High, CONFIRMED): off-farm crop-residue N is wrong</h3>
+<p><code>R/ghg_emission.R:373-375</code>:</p>
+<pre><code class="language-r">rough_of_n_from_crop_residue_managed_soil &lt;- sum(nitrogen_balance$rough_of_n_from_crop_residue, na.rm = TRUE) # column does not exist -&gt; 0
+conc_of_n_from_crop_residue_managed_soil  &lt;- sum(nitrogen_balance$conc_of_min_fert_n, na.rm = TRUE)          # fertiliser N!
+conc_ip_n_from_crop_residue_managed_soil  &lt;- sum(nitrogen_balance$conc_ip_min_fert_n, na.rm = TRUE)          # fertiliser N!
+</code></pre>
+<p>Reproduced with urea on an <code>OFC</code> feed: <code>conc_of_n_synthetic_fertilizer_managed_soil</code> = 41.305 and <code>conc_of_n_from_crop_residue_managed_soil</code> = 41.305. The same N is counted twice in <code>ghg_balance</code> (<code>R/merge_outputs.R:857-860</code>).</p>
+<p>Fix: use the values already computed at lines 361-370.</p>
+<pre><code class="language-r">rough_of_n_from_crop_residue_managed_soil &lt;- sum(n_from_crop_residues$rough_of_n_from_crop_residue, na.rm = TRUE)
+conc_of_n_from_crop_residue_managed_soil  &lt;- sum(n_from_crop_residues$conc_of_n_from_crop_residue,  na.rm = TRUE)
+conc_ip_n_from_crop_residue_managed_soil  &lt;- sum(n_from_crop_residues$conc_ip_n_from_crop_residue,  na.rm = TRUE)
+</code></pre>
+<h3>F06 (High, CONFIRMED statically): residue burning GHG</h3>
+<p><code>table_2.5</code> rows are CO2 1515, CO 92, CH4 2.7, N2O 0.07 and <strong>Nox 2.5</strong>. <code>R/merge_outputs.R:810-812</code>:</p>
+<pre><code class="language-r">burning &lt;- sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CO2&quot;, 5]) +
+  sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CH4&quot;, 5]) * methane +
+  sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;Nox&quot;, 5]) * N2O
+</code></pre>
+<p>This does three wrong things:</p>
+<ul>
+<li>NOx is costed at the N2O GWP, which overstates the N2O term by about 36 times (2.5 / 0.07).</li>
+<li>Biogenic CO2 from residue burning is counted, although IPCC excludes it from national totals.</li>
+<li>Column 5 is picked by position.</li>
+</ul>
+<p>Fix:</p>
+<pre><code class="language-r">b &lt;- ghg_burn$amount_of_ghg_emission_from_fire; g &lt;- ghg_burn$ghg_gas
+burning &lt;- sum(b[g == &quot;CH4&quot;]) * gwp[[&quot;CH4&quot;]] + sum(b[g == &quot;N2O&quot;]) * gwp[[&quot;N2O&quot;]]
+</code></pre>
+<p>Also check the units: the factors are g/kg DM while the masses are kg.</p>
+<h3>F07 (High, PLAUSIBLE): N retention units in eq. 10.31</h3>
+<p><code>R/ghg_emission.R:226</code>: the non-pig <code>n_retained</code> is divided by <code>no_days</code> when <code>annual_growth == 0</code> and <strong>not</strong> divided in the growth branch, so the two branches have different units. It is then used as a fraction: <code>n_excretion_rate = n_intake*(1-n_retained)*no_days</code> (line 233). IPCC 2019 eq. 10.31 uses <code>N_intake × (1 − N_retention_frac)</code>. When retention is in kg N/day (eq. 10.33), the correct form is <code>N_intake − N_retention</code>.</p>
+<p>Fix: compute <code>n_retained_kg_day</code> consistently, then <code>n_excretion_rate = (n_intake - n_retained_kg_day) * 365</code>. Pin the result with a hand-calculated golden value for one cow and one steer.</p>
+<h3>F08 (High, CONFIRMED statically): <code>combineOutputs</code> hides upstream failures</h3>
+<p><code>to_df()</code> (<code>R/merge_outputs.R:74-84</code>) wraps <code>as.data.frame</code> in <code>tryCatch(..., error = function(e) data.frame())</code>. <code>sum_col</code>, <code>soil_direct_pick</code> and the <code>if (&quot;col&quot; %in% names(x)) ... else 0</code> branches (lines 736-828) all fall back to 0 or NA. If an upstream column is renamed, for example <code>direct_N2O_emission</code>, the GHG balance quietly reports 0 for that source.</p>
+<p>Fix: define the required output schema once (a named list of required columns per section) and <code>stop()</code> when something is missing. Keep the tolerant fallbacks only for known legacy JSON, and <code>warning()</code> when they fire.</p>
+<h3>F09 (High, CONFIRMED): check status versus CI</h3>
+<p>The 4 WARNINGs are listed above. <code>.github/workflows/R-CMD-check.yaml:84</code> runs <code>rcmdcheck(..., error_on = &quot;warning&quot;)</code>, so every CI run on master fails. Fix everything in F10, F11, F19, F20 and F21, then enforce <code>error_on = &quot;note&quot;</code>.</p>
+<h3>F10 (High, CONFIRMED): <code>data/</code> misuse and diverging copies</h3>
+<p><code>data/</code> holds <code>cleaned.sqlite</code> (lookup tables), a rendered <code>explore_qt_json.html</code> (1.1 MB), <code>.pdf</code>, <code>.rmd</code>, <code>energy_parameters.json</code>, <code>qt_example.json</code> and <code>mappings/*.csv</code>, all of which ship. The copies disagree:</p>
+<ul>
+<li><code>data/energy_parameters.json:19</code> has <code>&quot;Sheep_lamb_to _1_year&quot;</code> (stray space) where <code>inst/extdata</code> has <code>&quot;Sheep_lamb_to_1_year&quot;</code>.</li>
+<li><code>stock_change_para.rda</code> is not identical to <code>inst/extdata/stock_change_parameters.json</code>.</li>
+<li><code>ghg_para.rda</code> uses another schema (F01).</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Move the raw artefacts to <code>data-raw/</code>, which is already in <code>.Rbuildignore</code>, together with build scripts.</li>
+<li>Keep in <code>data/</code> only the <code>.rda</code> objects produced by <code>usethis::use_data()</code> from <code>inst/extdata</code>.</li>
+<li>Move <code>explore_qt_json.*</code> to a vignette or out of the package.</li>
+<li>Add <code>^data/__MACOSX$</code> and <code>.DS_Store</code> to <code>.Rbuildignore</code> and <code>.gitignore</code>.</li>
+</ul>
+<h3>F11 (High, CONFIRMED): documentation out of sync</h3>
+<ul>
+<li>The <code>man/</code> pages are stale compared with both code and roxygen: <code>man/combineOutputs.Rd</code> documents <code>readMe</code> and <code>benchMark</code>, which appear nowhere in <code>R/</code>. <code>document()</code> has not been re-run.</li>
+<li>Every <code>@examples</code> block is inside <code>\dontrun{}</code> and calls objects that do not exist. Examples: <code>feed_quality(para)</code> after <code>data(mufindi)</code>; <code>economics_payback()</code>, which was removed; <code>energy_requirement(mufindi, fbq, energy_parameters)</code> with <code>energy_parameters</code> never defined; <code>soil_organic_carbon(para, land_required, biomass)</code> with 3 of its 4 arguments; <code>land_productivity(para)</code> missing <code>energy_required</code>; <code>data(para)</code>.</li>
+<li><code>@param para &quot;A JSON file&quot;</code> is wrong everywhere: the argument is a parsed list.</li>
+<li>All four vignettes set <code>eval = FALSE</code>.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Run <code>devtools::document()</code>.</li>
+<li>Replace <code>\dontrun</code> with runnable <code>@examples</code> built on the canonical example from F01. Use <code>@examplesIf interactive()</code> only for file writers, with <code>tempdir()</code>.</li>
+<li>Set <code>eval = TRUE</code> in <code>cleaned-overview.Rmd</code> so the vignette build becomes an integration test.</li>
+</ul>
+<h3>F12 (High, CONFIRMED): no tests</h3>
+<p><code>tests/testthat/test-feed_quality.R</code> is one line, <code>context(&quot;test-feed_quality&quot;)</code>. That is a deprecated call with zero expectations. There is no <code>Config/testthat/edition: 3</code>, no fixtures and no snapshot tests.</p>
+<p>Fix, in priority order:</p>
+<ol>
+<li><code>test-pipeline.R</code>: run the canonical example end to end and <code>expect_snapshot_value(round(key_indicators, 6), style = &quot;json2&quot;)</code>.</li>
+<li>One unit test per module on a 1-animal, 1-feed, 1-season fixture with values computed by hand.</li>
+<li>Regression tests for F02, F05, F13, F14, F15 and F16.</li>
+<li>Error tests: unknown category, NA input, missing column.</li>
+</ol>
+<p>Add covr and a coverage badge.</p>
+<h3>F13 (Medium, CONFIRMED): water double counting for OFC feeds</h3>
+<p><code>R/water_requirement.R:56</code>:</p>
+<pre><code class="language-r">kc_water_use_on_farm = feed_water_use-kc_water_use_of_roughages-kc_water_use_ip_concentrates,
+</code></pre>
+<p>Reproduced: the <code>&quot;... OFC&quot;</code> feed shows 2237.2 under <code>kc_water_use_of_concentrates</code> and also 2237.2 under <code>kc_water_use_on_farm</code>. Land (<code>R/land_requirement.R:111</code>) subtracts all three categories.</p>
+<p>Fix: <code>- kc_water_use_of_concentrates</code> as well.</p>
+<h3>F14 (Medium, CONFIRMED): anhydrous ammonia gets the urea quantity</h3>
+<p>In <code>R/ghg_emission.R:517-523</code>, the nested <code>ifelse</code> has no <code>&quot;Anhydrous ammonia&quot;</code> branch, so it takes the final <code>else</code>, which is the urea sum. Reproduced: Urea 10994 kg gives 8631 kg CO2e, and &quot;Anhydrous ammonia&quot; also gets 10994 kg, giving a phantom 28586 kg CO2e in <code>fertilizer_applied</code>. This affects the reported sheet and JSON, not the headline balance, which uses the by-crop table.</p>
+<p>Fix:</p>
+<pre><code class="language-r">qty &lt;- vapply(fert_cols, function(cl) sum(crop_parameters[[cl]] * crop_parameters$area_total, na.rm = TRUE), numeric(1))
+fertilizer_applied &lt;- data.frame(fertilizer_list = names(fert_cols), fertilizer_quantity = unname(qty))
+</code></pre>
+<p>Here <code>fert_cols</code> is a named vector mapping each label to its column, with no fallthrough.</p>
+<h3>F15 (Medium, CONFIRMED): <code>sum(..., na.omit = TRUE)</code></h3>
+<p><code>R/energy_requirement.R:190-191</code>. <code>na.omit</code> is not an argument of <code>sum</code>, so <code>TRUE</code> is summed as 1: <code>sum(1, 2, na.omit = TRUE)</code> returns 4. Reproduced: <code>dmi_energy_total</code> is 5683 against a true 5682, and every class is +1. NA values are not removed either. <code>surplus_total</code> and <code>limiting_total</code> inherit the error.</p>
+<p>Fix: <code>na.rm = TRUE</code>.</p>
+<h3>F16 (Medium, CONFIRMED): rice branch</h3>
+<p><code>R/ghg_emission.R:399</code> and <code>:569</code> use <code>if (rice$source_type != &quot;Purchased&quot;)</code>. With two rice feeds, R 4.2+ fails with <code>the condition has length &gt; 1</code> (reproduced). Line 395 filters on <code>feed_item_name</code>, line 565 on <code>crop_name</code>, so the two blocks can select different rows.</p>
+<p>Fix: filter once, use <code>rice &lt;- rice[rice$source_type != &quot;Purchased&quot;, ]</code> and vectorise.</p>
+<h3>F17 (Medium, PLAUSIBLE): leaching and gaseous-loss equations</h3>
+<p><code>R/nitrogen_balance.R:249</code>:</p>
+<pre><code class="language-r">out3a = (...) * (0.021 * (annual_precipitation - 3.9) / 100)
+</code></pre>
+<p>The sibling equations are written <code>a*P + b</code> (lines 250-251). The NUTMON leaching equation for clay &lt; 35 % is <code>0.021*P - 3.9</code>. At P = 1500 the two give 31.4 and 27.6, a 14 % difference.</p>
+<p><code>in2</code> is <code>organic_n_kg_total</code>, a farm total in kg, yet it is added to per-ha terms in <code>out3*</code>. <code>out4</code> correctly uses <code>organic_n_kg_per_ha * area_total</code>. Confirm against the Excel reference model.</p>
+<h3>F18 (Medium, CONFIRMED): <code>feed_quality</code> fragility</h3>
+<ul>
+<li>Adding a livestock class that has no feed-basket rows fails with <code>fraction_as_fed must be size 1, not 0</code> (reproduced).</li>
+<li>Lines 135-137 build <code>season_name</code> and <code>livestock_category_code</code> from <code>feed_item_selected</code> and <code>livestock_selected</code>, which are leftovers of the last inner-loop iteration. The season can become NA if the last feed has no rows for that season.</li>
+<li>Lines 33 and 44 re-read and re-<code>unnest</code> inputs on every iteration of the livestock and season loops.</li>
+</ul>
+<p>Fix: rewrite as one join, sketched below.</p>
+<pre><code class="language-r">fi  &lt;- tidyr::unnest(para$feed_items, cols = crop_name)
+fb  &lt;- tidyr::unnest(para$feed_basket, cols = feeds) |&gt; tidyr::unnest(cols = livestock)
+alloc &lt;- tidyr::expand_grid(livetype_code = para$livestock$livetype_code,
+                            season_name = para$seasons$season_name,
+                            feed_item_code = fi$feed_item_code) |&gt;
+  dplyr::left_join(fb, by = c(&quot;season_name&quot;, &quot;feed_item_code&quot;, &quot;livetype_code&quot;)) |&gt;
+  dplyr::mutate(fraction_as_fed = dplyr::coalesce(as.numeric(allocation), 0) / 100)
+</code></pre>
+<h3>F19 (Medium, CONFIRMED): Imports hygiene</h3>
+<p><code>DESCRIPTION:28-41</code> lists <code>tidyverse</code>. Putting a meta-package in Imports is an anti-pattern: it pulls in about 80 packages and CRAN advises against it. <code>plyr</code>, <code>ggplot2</code> and <code>rlang</code> are never used (check NOTE). Loading <code>plyr</code> after <code>dplyr</code> also masks <code>summarise</code>/<code>mutate</code> in user sessions. <code>NAMESPACE:37</code> has <code>importFrom(utils, de)</code>, the interactive data editor, from <code>R/biomass_calculation.R:13</code>. <code>lubridate</code> is used only for <code>leap_year</code>.</p>
+<p>Fix:</p>
+<pre><code>Imports: data.table, dplyr, jsonlite, openxlsx, stringr, tibble, tidyr, tidyselect, utils
+</code></pre>
+<p>Use <code>tidyselect::where</code> (it currently raises a NOTE), drop <code>@importFrom utils de</code>, and replace <code>lubridate::leap_year</code> with base R:</p>
+<pre><code class="language-r">y &lt;- as.integer(format(d, &quot;%Y&quot;)); leap &lt;- (y %% 4 == 0 &amp; y %% 100 != 0) | y %% 400 == 0
+</code></pre>
+<h3>F20 (Medium, CONFIRMED): <code>globalVariables</code> misuse</h3>
+<p><code>R/global.R</code> is a stale list of 250 names that still misses about 250 others (check NOTE). It includes object names that should be arguments (<code>energy_required</code>, <code>feed_basket_quality</code>, <code>livestock_productivity</code>), functions (<code>all_of</code>, <code>starts_with</code>), <code>.</code>, typos (<code>anaimal_category</code>), and auto-generated rbind names.</p>
+<p>Fix: use <code>.data$col</code> / <code>.env$x</code> in dplyr verbs, or maintain one generated list. Remove <code>.</code>, the functions and the object names. As a side effect, <code>npk</code> currently resolves to <code>datasets::npk</code> if the column is missing, giving a confusing error instead of &quot;column not found&quot;.</p>
+<h3>F21 (Medium, CONFIRMED): personal and legacy files in the build</h3>
+<p>The tarball contains:</p>
+<ul>
+<li><code>-ILRIKE-21154.Rhistory</code>, 26 KB, with lines such as <code>C:/Users/SOloo.CGIARAD/OneDrive - CGIAR/Documents/...</code>. That is a personal machine path and working history.</li>
+<li><code>R/misc/v37 loop.R</code>, which calls <code>pacman::p_load</code> and sources <code>R/ghg_emission_v2.R</code>, a file that does not exist. R ignores subdirectories of <code>R/</code> for code, but the file still ships and triggers the portability WARNING.</li>
+<li><code>auxilary_info/*.xlsx</code> (misspelled directory name).</li>
+</ul>
+<p>The empty <code>R/.Rhistory</code> and the <code>.DS_Store</code> and <code>__MACOSX</code> files are untracked clutter.</p>
+<p>Fix: <code>git rm</code> the history files, move <code>R/misc</code> to <code>data-raw/</code> or <code>inst/scripts/</code>, and add to <code>.Rbuildignore</code>:</p>
+<pre><code>^.*\.Rhistory$
+^auxilary_info$
+^CITATION\.cff$
+^R/misc$
+\.DS_Store$
+^data/__MACOSX$
+</code></pre>
+<h3>F22 (Medium, CONFIRMED): inconsistent API</h3>
+<ul>
+<li><code>land_requirement(feed_basket_quality, energy_required, para)</code> is the only function that does not take <code>para</code> first.</li>
+<li>Naming mixes styles: <code>combineOutputs</code>/<code>filePath</code>/<code>oDir</code>/<code>baseRun</code> against <code>snake_case</code> elsewhere.</li>
+<li>Module names do not match their outputs: <code>n_balance</code> versus the output <code>nitrogen_balance</code>, and <code>land_productivity</code> returns livestock productivity.</li>
+<li><code>ghg_emission(..., ym_prod = F)</code> uses <code>F</code> (25 T/F lints).</li>
+<li>The typo <code>fetilizer_ghg</code> is returned alongside the alias <code>ghg_fertilizer</code> (<code>R/ghg_emission.R:606-607</code>).</li>
+<li><code>@return list/dataframe</code> is untyped.</li>
+</ul>
+<p>Fix:</p>
+<ul>
+<li>Add a single <code>run_cleaned(para, energy_parameters, ghg_parameters, stock_change_parameters)</code> that returns a classed <code>cleaned_result</code> list. The Shiny app and batch scripts should call that.</li>
+<li>Standardise names, and deprecate the old ones with <code>lifecycle</code>.</li>
+<li>Document each return structure with <code>@returns</code> and a column table.</li>
+</ul>
+<h3>F23 (Medium, CONFIRMED): positional indexing and generated names</h3>
+<ul>
+<li><code>table_10.16$Bo &lt;- table_10.16[,4]</code> (line 144)</li>
+<li><code>table_10.17[,c(1,4)]</code> (188-194)</li>
+<li><code>table_10.21[,c(1,4)]</code> (239-248)</li>
+<li><code>...$emission_factors==&quot;EF4&quot;,4]</code> (262)</li>
+<li><code>ghg_burn[..., 5]</code> (<code>merge_outputs.R:810</code>)</li>
+<li><code>rename(amount_of_N_applied = V1)</code> (450) and <code>rename(n_off_farm_pasture = rbind.cattle_pig_poultry_n_pasture_off_farm..sheep_and_other_n_pasture_off_farm.)</code> (480)</li>
+</ul>
+<p>Any reordering of the parameter JSON silently changes results.</p>
+<p>Fix: select by name (<code>MCFs</code>, <code>direct_nitrous_oxide_factor</code>, <code>n2o_emissions_from_managed_soils</code>), and build small frames with <code>data.frame(anthropogenic_N_input = c(...), amount = c(...))</code>.</p>
+<h3>F24 (Medium, PLAUSIBLE): feed origin encoded in names</h3>
+<p><code>stringr::str_detect(feed, &quot;OFR&quot; | &quot;OFC&quot; | &quot;IP&quot;)</code> appears in about 25 places. <code>&quot;IP&quot;</code> matches any feed name containing the uppercase letters <code>IP</code>, and a user-edited name loses its classification. <code>source_type</code> and <code>category</code> already exist in the input.</p>
+<p>Fix: add an explicit <code>feed_origin</code> field (<code>on_farm</code>, <code>off_farm_roughage</code>, <code>off_farm_concentrate</code>, <code>imported</code>), validate it, and derive it once.</p>
+<h3>F25 (Medium, CONFIRMED): hardcoded GWPs</h3>
+<p><code>R/merge_outputs.R:693-694</code> sets <code>methane &lt;- 28; N2O &lt;- 265</code> (AR5). These should come from <code>ghg_parameters</code>, with AR6 values of 27 (non-fossil CH4) and 273 available, and be reported in the output metadata.</p>
+<h3>F26 (Medium, CONFIRMED): <code>combineOutputs</code> output contract</h3>
+<p>The roxygen says &quot;@return saved JSON file&quot; and <code>@param filePath</code> says &quot;where the JSON is to be saved&quot;. In fact the function writes only a workbook, and <code>paste0(filePath, &quot;.xlsx&quot;)</code> turns <code>scenario_output.json</code> into <code>scenario_output.json.xlsx</code> (reproduced). <code>calculate_differences()</code> then expects JSON files on disk that nothing in the package writes. A model function writing files also violates the &quot;no side effects by default&quot; guidance.</p>
+<p>Fix: return the object only, and add explicit <code>write_cleaned_json(x, path)</code> and <code>write_cleaned_xlsx(x, path)</code> functions.</p>
+<h3>F27 (Medium, CONFIRMED statically): CI workflow</h3>
+<p>The workflow uses retired or deprecated components: <code>ubuntu-20.04</code> (runner image removed in 2025), <code>r-lib/actions/*@v1</code>, <code>actions/checkout@v2</code>, <code>actions/cache@v2</code> (retired) and a focal RSPM URL. It triggers only on <code>main</code>/<code>master</code>, so the active <code>cleaned_dev_ps</code> branch is never checked.</p>
+<p>Fix: regenerate with <code>usethis::use_github_action(&quot;check-standard&quot;)</code> (v2 actions, <code>setup-r-dependencies</code>), and add <code>test-coverage</code> and <code>pkgdown</code> workflows.</p>
+<h3>F28 (Low, CONFIRMED): plotting functions</h3>
+<p><code>clean_plotting()</code> and <code>compare_scenario()</code> only build lists of titles; they plot nothing, despite the titles &quot;Plot results&quot; and &quot;It plots the change&quot;. <code>clean_plotting</code> calls <code>dir.create(oDir)</code> and never uses the directory. The <code>else { NA }</code> branch (<code>R/plotting.R:225-227</code>) leaves <code>title</code>/<code>y_title</code> from the previous column. <code>compare_scenario</code> with only the base scenario fails with <code>arguments imply differing number of rows: 1, 0</code> (reproduced), because of <code>1:nrow(scenarios_df)</code>.</p>
+<p>Fix: use a lookup table of labels, <code>seq_len()</code>, and remove the directory argument.</p>
+<h3>F29 to F32 (Low)</h3>
+<ul>
+<li><strong>F29 <code>season_length</code>:</strong> <code>season_length(&quot;2020-03-01&quot;, &quot;2020-12-31&quot;)</code> fails with <code>missing value where TRUE/FALSE needed</code> (reproduced). Use <code>as.Date(x)</code> with <code>tryFormats</code> and validate. The leap year should come from the season's span, and the function should state whether the end day is inclusive.</li>
+<li><strong>F30 <code>replace_na</code>:</strong> <code>tidyr::replace_na(df, as.list(rep(0, ncol(df)-2)))</code> is a no-op because the list has no names (reproduced). Delete it; the preceding <code>across(where(is.numeric), ...)</code> already handles non-finite values.</li>
+<li><strong>F31 efficiency:</strong> <code>unnest(para$feed_items)</code> is recomputed inside livestock × season × feed loops (<code>land_requirement.R:71</code>), <code>n_balance.R:45</code> and <code>feed_quality.R:44</code>. <code>energy_requirement.R:183-184</code> uses <code>rbind</code> in a loop. At about 0.7 s per run this only matters for batch Monte-Carlo, but it should be hoisted and vectorised (see the F18 sketch). <code>1:nrow(seasons)</code> and <code>1:length(feed_types)</code> should be <code>seq_len()</code>/<code>seq_along()</code>.</li>
+<li><strong>F32 docs hygiene:</strong>
+<ul>
+<li><code>R/data.R:42,67</code> has <code>#' #' @keywords datasets</code>, so the keyword is lost.</li>
+<li><code>@format</code> blocks end in <code>...</code>.</li>
+<li>There is no <code>NEWS.md</code> for v0.7.0 and no <code>inst/CITATION</code>; <code>CITATION.cff</code> is not build-ignored.</li>
+<li><code>docs/</code> is gitignored but present and stale (<code>economics_payback.html</code>).</li>
+<li>The DESCRIPTION Title is 155 characters; CRAN wants 65 or fewer.</li>
+</ul>
+</li>
+</ul>
+<h2>Prioritised refactor roadmap</h2>
+<p><strong>Quick wins (hours)</strong></p>
+<ol>
+<li>Fix the one-line bugs, each with a regression test: F15 (<code>na.rm</code>), F02 (SOC biomass), F05 (residue N), F13 (water OFC), F14 (anhydrous ammonia), F16 (rice <code>if</code>), F30 (drop the no-op).</li>
+<li>Hygiene: delete the <code>.Rhistory</code> files, move <code>R/misc</code> and the non-rda <code>data/</code> files to <code>data-raw/</code>, extend <code>.Rbuildignore</code>, and remove <code>tidyverse</code>, <code>plyr</code>, <code>ggplot2</code>, <code>rlang</code> and <code>utils::de</code> from Imports.</li>
+<li>Run <code>devtools::document()</code>, fix the <code>data.R</code> typos, and add <code>NEWS.md</code> and <code>Config/testthat/edition: 3</code>.</li>
+<li>Regenerate CI from <code>usethis::use_github_action(&quot;check-standard&quot;)</code> and include the dev branch.</li>
+</ol>
+<p><strong>Short term (days)</strong>
+5. Build one canonical <code>inst/extdata/example_scenario.json</code> that runs the full pipeline. Regenerate the <code>.rda</code> datasets from it via <code>data-raw/</code>, and turn examples and the overview vignette into runnable code.
+6. Add a golden snapshot test of about 40 headline indicators on that example, plus hand-calculated unit fixtures per module. Target at least 70 % line coverage with covr.
+7. Remove the dynamic scoping from <code>n_balance</code> and <code>ghg_emission</code> (F03), with explicit required arguments and lifecycle deprecation.
+8. Add <code>validate_para()</code> (F04) plus a JSON Schema in <code>inst/schema/</code> checked with <code>jsonvalidate</code>. Fail on unknown categories and NA in required fields.</p>
+<p><strong>Medium term (weeks)</strong>
+9. Resolve the domain PLAUSIBLE items (F06 burning, F07 N retention, F17 leaching) against the Excel reference model, and record the decisions in NEWS.
+10. Replace name-string semantics (<code>&quot;OFR&quot;</code>/<code>&quot;OFC&quot;</code>/<code>&quot;IP&quot;</code>, exact <code>livetype_desc</code> strings) with explicit coded fields and lookup tables in the parameter JSON. Select parameters by name, never by position (F23, F24). Parameterise the GWPs (F25).
+11. Split <code>combineOutputs</code> (1.3k lines) into <code>summarise_*()</code> functions that return data and separate <code>write_*()</code> functions. Replace the silent <code>tryCatch</code>/0 fallbacks with a schema check (F08, F26).
+12. Add a single <code>run_cleaned()</code> entry point that returns a classed result, standardise naming to snake_case, and vectorise the loop-based modules with joins (F18, F22, F31).</p>
+<h2>Done well</h2>
+<ul>
+<li>The README and four vignettes (input contract, output contract, developer guide) are a serious attempt at documenting the data contract, and <code>_pkgdown.yml</code> is organised by pipeline stage.</li>
+<li><code>soil_organic_carbon()</code> has a good lookup helper (<code>lookup_soc_factor</code>) that fails loudly with the list of valid keys. That is the pattern the rest of the package should copy.</li>
+<li>Model functions do not modify their inputs: <code>para</code> was byte-identical after a full run, and there is no <code>:=</code> or <code>setwd()</code> in <code>R/</code>.</li>
+<li>The code is ASCII-clean, namespace imports are mostly explicit (<code>dplyr::</code>, <code>tidyr::</code>), and IPCC equation numbers are cited inline, which makes domain review possible.</li>
+<li>Issue templates, a code of conduct, <code>CITATION.cff</code> and a spelling test show good project-governance intent.</li>
+</ul>
+<div class="comments"><h2>Comments</h2><p>Comments are GitHub Discussions on <a href="https://github.com/peetmate/cleaned-review/discussions">peetmate/cleaned-review</a>; sign in with GitHub to post.</p>
+<script src="https://giscus.app/client.js" data-repo="peetmate/cleaned-review" data-repo-id="R_kgDOUyD-Ig" data-category="Announcements" data-category-id="DIC_kwDOUyD-Is4DGo2i"
+ data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top"
+ data-theme="light" data-lang="en" crossorigin="anonymous" async></script></div></body></html>
