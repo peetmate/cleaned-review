@@ -1,5 +1,9 @@
 # cleaned-review
 
+**▶ Try the Scenario Builder mockup:** https://peetmate.github.io/cleaned-review/ui_ux/mockup/ · [source](ui_ux/mockup/src-tree) · [review of the mockup](md/ui_ux/05_mockup_review.md)
+
+**UI/UX review of the iCLEANED app:** https://peetmate.github.io/cleaned-review/ui_ux/
+
 Adversarial review of the `cleaned` R package v0.7.0 (CIAT/cleaned @ 800d53a) and the iCLEANED app.
 
 Site: https://peetmate.github.io/cleaned-review/
