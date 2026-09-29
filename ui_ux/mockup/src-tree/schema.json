@@ -19,49 +19,51 @@
   },
   {
    "id": "about",
-   "title": "About this {about}",
-   "short": "About",
-   "purpose": "A few questions so we only ask what applies to this {farm}.",
+   "title": "Your livestock system",
+   "short": "Your system",
+   "purpose": "A few questions about what you keep and how, so we only ask what applies to you.",
    "order": 1,
    "wizard": true
   },
   {
    "id": "location",
-   "title": "Location & climate",
-   "short": "Location",
-   "purpose": "Tell us where the {farm} is. We fill in climate and soil from public maps; you can correct anything.",
+   "title": "Place, climate, seasons and land",
+   "short": "Place & land",
+   "purpose": "Where the animals are, what the year looks like there, and the land that feeds them.",
    "order": 2,
    "wizard": true
   },
   {
    "id": "boundary",
-   "title": "What we count",
-   "short": "Boundary",
-   "purpose": "One livestock enterprise, one year: its animals, the land that grows their feed, and where the manure goes. From one household to a national herd.",
-   "order": 3,
-   "wizard": true
+   "title": "What the model counts",
+   "short": "What we count",
+   "purpose": "Background: where the enterprise starts and stops, and what stays outside it.",
+   "order": 18,
+   "wizard": false
   },
   {
    "id": "plots",
    "title": "Land & {plot}s",
    "short": "Plots",
    "purpose": "Describe each {plot} that grows feed or is grazed. Feeds are linked to {plot}s later.",
-   "order": 4,
-   "wizard": true,
+   "order": 5,
+   "wizard": false,
    "entity": "plot",
    "visible_if": {
     "path": "system.growsFeed",
     "eq": true
-   }
+   },
+   "parent": "location"
   },
   {
    "id": "seasons",
    "title": "Seasons",
    "short": "Seasons",
-   "purpose": "Split the year into feeding periods. Each period gets its own feeding plan.",
-   "order": 5,
-   "wizard": true,
-   "entity": "season"
+   "purpose": "The feeding periods of the year.",
+   "order": 4,
+   "wizard": false,
+   "entity": "season",
+   "parent": "location"
   },
   {
    "id": "herds",
@@ -161,6 +163,14 @@
    "short": "Batch",
    "purpose": "Check and run many enterprises at once from a spreadsheet or a JSON file.",
    "order": 16,
+   "wizard": false
+  },
+  {
+   "id": "help",
+   "title": "Help, FAQ and contact",
+   "short": "Help & FAQ",
+   "purpose": "Common questions, what to do when you are stuck, and how to reach the team.",
+   "order": 17,
    "wizard": false
   }
  ],

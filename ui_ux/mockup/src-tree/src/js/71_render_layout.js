@@ -2,6 +2,7 @@
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
   const CHILD_LIMIT = 6; // above this the sidebar shows a count instead of every record
+  const REFERENCE = ["boundary", "help"]; // reading, not steps: listed at the bottom
 
   function statusFor(sectionId, state, val, entityId) {
     const sec = D.section(sectionId);
@@ -14,6 +15,8 @@
     if (sectionId === "check") return val.errors.length ? "block" : "done";
     if (sectionId === "results" || sectionId === "home" || sectionId === "parameters" || sectionId === "batch") return "opt";
     if (sectionId === "fertiliser") return Object.values(state.fertilizer || {}).some((v) => v != null && v !== "") ? "done" : "none";
+    // The feeding plan lives in `allocation`, which is not provenance-tracked.
+    if (sectionId === "feeding") return Object.values(state.allocation || {}).some((byAnimal) => Object.values(byAnimal || {}).some((row) => Object.keys(row || {}).length)) ? "done" : "none";
     // touched?
     const prefix = sec.entity ? sectionId + "[" : sectionId === "location" || sectionId === "inputs" || sectionId === "losses" ? "farm." : sectionId;
     const touched = Object.keys(state.provenance).some((p) => p.startsWith(prefix)) || (sec.entity && (state[sectionId] || []).length) || sectionId === "about";
@@ -36,8 +39,9 @@
     const ul = h("ul");
     const route = state.route;
     const assumedBy = {}; for (const a of val.assumptions) assumedBy[a.screen] = (assumedBy[a.screen] || 0) + 1;
+    const CHILDREN = {}; for (const sec of D.sections()) if (sec.parent) (CHILDREN[sec.parent] = CHILDREN[sec.parent] || []).push(sec);
     for (const sec of D.sections()) {
-      if (sec.id === "results") continue;
+      if (sec.id === "results" || sec.parent || REFERENCE.includes(sec.id)) continue;
       if (sec.id === "parameters") ul.append(h("li", { class: "sep" }));
       const st = statusFor(sec.id, state, val);
       const num = ICL.num.prefix(sec.id);
@@ -63,9 +67,24 @@
         }
         ul.append(h("li", { class: "child add" }, h("a", { href: ICL.router.hashFor(sec.id, "new") }, statusIcon("opt"), h("span", null, "+ Add " + (sec.entity === "plot" ? ICL.dict.words().plot : sec.entity)))));
       }
+      // Sections that are part of this step (seasons, land) hang under it rather than
+      // taking a step number of their own.
+      for (const kid of CHILDREN[sec.id] || []) {
+        const kst = statusFor(kid.id, state, val);
+        if (kst === "off") continue;
+        const list = state[kid.id] || [];
+        const kerr = val.errors.filter((e) => e.screen === kid.id).length;
+        ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(kid.id), "aria-current": route.screen === kid.id ? "page" : null, dataset: { fb: "nav:" + kid.id, fbLabel: "Part of a step: " + ICL.t(kid.title) } },
+          statusIcon(kerr ? "block" : kst),
+          h("span", null, ICL.t(kid.short || kid.title)),
+          list.length ? h("span", { class: "cnt", title: `${list.length} in this step` }, "\u00d7" + list.length) : null)));
+      }
     }
     ul.append(h("li", null, h("a", { href: "#feedback" }, statusIcon("opt"), h("span", null, "Feedback dashboard"))));
-    ul.append(h("li", { class: "sep" }), h("li", null, h("a", { href: "#welcome" }, statusIcon("opt"), h("span", null, "What is iCLEANED?"))));
+    ul.append(h("li", { class: "sep" }),
+      h("li", null, h("a", { href: "#welcome" }, statusIcon("opt"), h("span", null, "What is iCLEANED?"))),
+      h("li", null, h("a", { href: "#boundary" }, statusIcon("opt"), h("span", null, ICL.t(D.section("boundary").short || "What we count")))),
+      h("li", null, h("a", { href: "#help" }, statusIcon("opt"), h("span", null, "Help, FAQ and contact"))));
     nav.append(ul);
   }
 

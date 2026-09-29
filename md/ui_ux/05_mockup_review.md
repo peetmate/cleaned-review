@@ -103,3 +103,19 @@ A separate **Batch** tab in the sidebar, for descriptions that already exist —
 **Download.** QAQC report as CSV with one row per problem (sheet, column, message) so it can go straight back to whoever filled the sheet; compiled model input as JSON, either ready-only or everything, one study object per enterprise with its assumed values; and the file as read.
 
 **Sample batch.** A button builds 12 enterprises from the example scenarios with ±15 % jitter and three deliberately broken rows (a 27-hour day, a diet column at 85 %, a feed name not in the parameter set), so the QAQC table has something real to show in the workshop. Verified: 7 ready, 2 with the legitimate Rungwe warnings, 3 blocked, each naming the right sheet and column.
+
+## Information architecture, second pass (v0.7.2)
+
+Four changes from your reading of the structure. The wizard is now **10 steps, not 13**.
+
+**"What we count" left the wizard.** It was a page of explanation sitting in a sequence of data-entry steps, and it made the wizard look longer than it is. It is now background material, reachable from the sidebar's reference group, from the welcome screen and from the FAQ, with no step number and no place in Next/Back.
+
+**"About this farm" is renamed.** On the web, *About* means who we are and how to contact us, so using it for the system description was a false signal. The step is now **"Your livestock system"** (sidebar: "Your system") — "a few questions about what you keep and how, so we only ask what applies to you".
+
+**Help, FAQ and contact now exist.** A new reference page with twelve questions answered (what it calculates; scenario vs project; what belongs inside the boundary; whether every field is needed; why results come out zero; where defaults come from and what you may change; a feed not in the list; units; the comma decimal; batch; who can see your data; how to report a problem), a "stuck right now" box, links to the background pages, and a reporting table that routes an app problem to CIAT/icleaned, a wrong result or a wrong default to CIAT/cleaned, and anything workshop-related to the in-page Comment button. It carries no email address — the team's channel is filled in by whoever runs the session. Reachable from "Help & FAQ" in the top bar and the sidebar, and it shows the build stamp to quote in a report.
+
+**Location, seasons and land are one step.** Step 2 is now "Place, climate, seasons and land": where the animals are, the climate and soil from maps, then the seasons, then the land. Seasons and plots keep their own detail screens for month strips and per-plot answers, and hang under the step in the sidebar instead of taking step numbers of their own.
+
+**Seasons are proposed from the rainy months, which answers the naming problem.** You already tick the months with rain in a normal year. The app reads the contiguous runs of those months and offers named seasons — "Rainy season (Nov–Apr) · Dry season (May–Oct)", or "Long rains / Short rains / Dry season" where there are two wet runs — with one button to accept and inline renaming afterwards. The suggestion disappears once the seasons match it, however they are named and in whatever order they are listed, and taking it warns first when it would clear an existing feeding plan. Verified on the Kenyan template: nine rainy months became "Rainy season (Mar–Nov)" and "Dry season (Dec–Feb)", 365 days placed.
+
+Also fixed in passing: the feeding plan showed as "not started" in the sidebar even when fully entered, because the diet lives in `allocation`, which is not provenance-tracked.

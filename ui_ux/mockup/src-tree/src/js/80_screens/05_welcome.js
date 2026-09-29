@@ -17,6 +17,11 @@
           h("span", { class: "small" }, ICL.t(s.purpose || ""))))),
       h("p", { class: "small" }, `${ICL.num.totalSteps()} steps. Nothing is compulsory in this order: the sidebar lets you jump, and we only ask what applies to the enterprise you describe. Expect 15–30 minutes for a first pass, less once the defaults fit your area.`));
 
+    root.append(h("div", { class: "callout", dataset: { fb: "welcome:help", fbLabel: "Pointer to help", noNumber: "" } },
+      h("strong", null, "Two pages of background, not data entry: "),
+      h("a", { href: "#boundary" }, "what the model counts"), " (where the enterprise starts and stops) and ",
+      h("a", { href: "#help" }, "help, FAQ and contact"), " (why results can come out zero, what the units are, who to tell when something is wrong)."));
+
     root.append(h("h2", { "data-no-number": "" }, "Words used here"),
       h("dl", { class: "glossary", dataset: { fb: "welcome:glossary", fbLabel: "Glossary" } },
         ...[

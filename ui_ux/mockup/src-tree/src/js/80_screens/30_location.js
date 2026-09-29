@@ -44,8 +44,127 @@
     const ctx = farmCtx(state, val);
     root.append(ICL.fields.renderFields("location", ctx, (f) => f.id !== "location_point" && !["soil_c", "soil_n", "soil_clay", "soil_bulk", "soil_depth"].includes(f.id) && f.group !== "Soil"));
     if (state.system.growsFeed) {
-      root.append(h("h2", { style: "margin:12px 0 8px" }, "Soil"), h("p", { class: "small" }, "Filled from SoilGrids for the location. Plots can override the soil type under Land & plots."));
+      root.append(h("h2", { style: "margin:12px 0 8px" }, "Soil"), h("p", { class: "small" }, "Filled from SoilGrids for the location. A single plot can override the soil type on its own card."));
       root.append(ICL.fields.renderFields("location", ctx, (f) => f.group === "Soil" || f.group === "Soil details"));
     }
+    root.append(seasonsBlock(state, val));
+    root.append(landBlock(state, val));
   };
+
+  // ---- seasons, described where the climate is described -----------------------
+  const MN = (m) => ICL.MONTHS[m - 1];
+  /** Contiguous runs of months, treating December → January as contiguous. */
+  function runs(set) {
+    const has = (m) => set.includes(m);
+    if (!set.length || set.length === 12) return set.length ? [[...Array(12).keys()].map((i) => i + 1)] : [];
+    const out = []; let cur = null;
+    let start = 1; while (start <= 12 && has(start) && has(start === 1 ? 12 : start - 1)) start++; // begin at a run boundary
+    for (let i = 0; i < 12; i++) {
+      const m = ((start - 1 + i) % 12) + 1;
+      if (has(m)) { if (!cur) { cur = [m]; out.push(cur); } else cur.push(m); }
+      else cur = null;
+    }
+    return out;
+  }
+  const label = (run) => run.length === 12 ? "all year" : run.length === 1 ? MN(run[0]) : `${MN(run[0])}–${MN(run[run.length - 1])}`;
+  /** Seasons proposed from the months the user already ticked as rainy. */
+  function proposeSeasons(rain) {
+    const wet = runs(rain);
+    const dryMonths = [...Array(12).keys()].map((i) => i + 1).filter((m) => !rain.includes(m));
+    const dry = runs(dryMonths);
+    if (!wet.length || !dry.length) return [["All year", [...Array(12).keys()].map((i) => i + 1)]];
+    const wetSorted = wet.slice().sort((a, b) => b.length - a.length);
+    const drySorted = dry.slice().sort((a, b) => b.length - a.length);
+    const name = (list, i, long, short) => list.length > 1 ? (list[i] === wetSorted[0] || list[i] === drySorted[0] ? long : short) : long;
+    const out = [];
+    wet.forEach((r) => out.push([wet.length > 1 ? (r === wetSorted[0] ? "Long rains" : "Short rains") : "Rainy season", r]));
+    dry.forEach((r) => out.push([dry.length > 1 ? (r === drySorted[0] ? "Dry season" : "Short dry season") : "Dry season", r]));
+    // rains first: that is how the year is usually described
+    const isWet = (r) => wet.includes(r);
+    return out.sort((a, b) => (isWet(b[1]) - isWet(a[1])) || (b[1].length - a[1].length));
+  }
+
+  function seasonsBlock(root_state, val) {
+    const state = root_state;
+    const box = h("div", { class: "card", dataset: { fb: "location:seasons", fbLabel: "Seasons block" } }, h("h2", null, "Seasons"),
+      h("p", { class: "small" }, "A season is a feeding period: animals eat differently in the rains and in the dry months, so the diet is described once per season. Most enterprises need two."));
+    // year strip
+    const strip = h("div", { class: "months", role: "img", "aria-label": "The year" });
+    const owner = new Map(); state.seasons.forEach((s, i) => (s.season_months || []).forEach((m) => owner.set(m, i)));
+    const rain = state.farm.rain_months || [];
+    ICL.MONTHS.forEach((m, i) => strip.append(h("button", { type: "button", class: owner.has(i + 1) ? "s" + (owner.get(i + 1) % 4) : "", disabled: true, title: (owner.has(i + 1) ? (state.seasons[owner.get(i + 1)].season_name || "Season") : "not in a season") + (rain.includes(i + 1) ? " · rain" : "") }, m)));
+    const days = state.seasons.reduce((t, s) => t + (s.season_months || []).reduce((d, m) => d + ICL.MONTH_DAYS[m - 1], 0), 0);
+    box.append(strip, h("div", { class: "total " + (days === 365 ? "ok" : "bad") }, `${days} of 365 days placed ${days === 365 ? "✓" : ""}`));
+    // proposal from the rainy months
+    const prop = rain.length ? proposeSeasons(rain) : null;
+    // "Same" means the same split of the year, whatever order the seasons are listed in
+    // and whatever they are called.
+    const asSet = (list) => list.map((m) => JSON.stringify(m.slice().sort((a, b) => a - b))).sort().join("|");
+    const same = prop && prop.length === state.seasons.length
+      && asSet(prop.map((p) => p[1])) === asSet(state.seasons.map((x) => x.season_months || []));
+    if (prop && !same) {
+      const hasPlan = Object.keys(state.allocation || {}).length > 0;
+      const apply = () => { ICL.store.set((s) => { s.seasons = prop.map((p) => ({ id: ICL.uid("s"), season_name: p[0], season_months: p[1] })); s.allocation = {}; s.system.nSeasons = prop.length; return s; }); ICL.toast(hasPlan ? "Seasons set from your rainy months. The feeding plan was cleared." : "Seasons set from your rainy months. Rename them if you call them something else."); };
+      box.append(h("div", { class: "callout", dataset: { fb: "location:season_proposal", fbLabel: "Season proposal" } },
+        h("strong", null, "From the months you marked as rainy: "),
+        prop.map((p) => `${p[0]} (${label(p[1])})`).join(" · "),
+        h("div", { class: "control", style: "margin-top:8px" },
+          hasPlan ? ICL.common.confirmButton("Use these seasons", apply, "btn") : h("button", { type: "button", class: "btn", onclick: apply }, "Use these seasons"),
+          h("span", { class: "small" }, hasPlan ? "Replacing the seasons clears the feeding plan." : "You can rename them or move a month afterwards."))));
+    }
+    // one row per season: rename in place, months on the season's own card
+    if (state.seasons.length) {
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Name"), h("th", null, "Months"), h("th", null, "Days"), h("th", null, ""))));
+      const tb = h("tbody");
+      for (const se of state.seasons) {
+        const nameInput = h("input", { type: "text", value: se.season_name || "", "aria-label": "Season name" });
+        nameInput.addEventListener("change", () => ICL.store.set((s) => { const x = s.seasons.find((y) => y.id === se.id); x.season_name = nameInput.value.trim() || null; s.provenance[`seasons[${se.id}].season_name`] = "user"; return s; }));
+        const ms = se.season_months || [];
+        tb.append(h("tr", null, h("td", null, nameInput), h("td", null, ms.length ? ms.map(MN).join(" ") : h("span", { class: "msg err" }, "no months")),
+          h("td", null, String(ms.reduce((d, m) => d + ICL.MONTH_DAYS[m - 1], 0))),
+          h("td", null, h("a", { class: "btn-sm", href: ICL.router.hashFor("seasons", se.id) }, "Months…"))));
+      }
+      t.append(tb);
+      box.append(h("div", { class: "tablewrap" }, t));
+    } else box.append(h("div", { class: "empty" }, "No seasons yet. Mark your rainy months above and use the suggestion, or add them by hand."));
+    const errs = val.errors.filter((e) => e.screen === "seasons");
+    if (errs.length) box.append(ICL.common.errorList(errs, "err"));
+    box.append(h("div", { class: "control" }, h("a", { class: "btn-sm", href: ICL.router.hashFor("seasons", "new") }, "+ Add a season"), h("a", { class: "btn-sm", href: ICL.router.hashFor("seasons") }, "Open the seasons screen")));
+    return box;
+  }
+
+  // ---- land, in the same step as the place it is in ----------------------------
+  function landBlock(state, val) {
+    const W = ICL.dict.words();
+    const box = h("div", { class: "card", dataset: { fb: "location:land", fbLabel: "Land block" } }, h("h2", null, ICL.t("Land and {plot}s")),
+      h("p", { class: "small" }, ICL.t(`Each ${W.plot} is a piece of land that grows feed or is grazed. Slope, cover and practice are asked once per ${W.plot} and reused by every feed grown there.`)));
+    if (!state.system.growsFeed) {
+      box.append(h("div", { class: "callout" }, ICL.t("You said no feed is grown or grazed on land you manage, so no {plot}s are needed. "), h("a", { href: "#about" }, "Change that answer"), "."));
+      return box;
+    }
+    if (!state.plots.length) box.append(h("div", { class: "empty" }, ICL.t(`Add the first ${W.plot} that grows feed or is grazed.`)));
+    else {
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, ICL.t("{plot}").replace(/^./, (c) => c.toUpperCase())), h("th", null, "Area"), h("th", null, "Use"), h("th", null, "Slope"), h("th", null, "Grows"), h("th", null, ""))));
+      const tb = h("tbody");
+      for (const p of state.plots) {
+        const errs = val.errors.filter((e) => e.screen === "plots" && e.entityId === p.id).length;
+        const grows = state.feeds.filter((f) => f.feed_plot === p.id).map((f) => { const d = D.decorate(f, "feed", state); return d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "?"; });
+        tb.append(h("tr", null,
+          h("td", null, p.plot_name || ICL.t("New {plot}"), errs ? h("span", { class: "chip", style: "margin-left:6px;color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+          h("td", null, p.plot_area_ha != null ? ICL.fmt(p.plot_area_ha, p.plot_area_ha < 100 ? 2 : 0) + " ha" : "—"),
+          h("td", null, { crops: "Feed or crops", grazing: "Grazing", both: "Crops and grazing" }[p.plot_use] || "—"),
+          h("td", null, p.slope_class ? p.slope_class.split(" (")[0] : "—"),
+          h("td", null, grows.length ? grows.join(", ") : h("span", { class: "small" }, "nothing yet")),
+          h("td", null, h("a", { class: "btn-sm", href: ICL.router.hashFor("plots", p.id) }, "Edit"))));
+      }
+      t.append(tb);
+      box.append(h("div", { class: "tablewrap" }, t));
+      const total = state.plots.reduce((s, p) => s + (Number(p.plot_area_ha) || 0), 0);
+      box.append(h("p", { class: "small" }, `${state.plots.length} ${state.plots.length === 1 ? W.plot : W.plot + "s"} · ${ICL.fmt(total, total < 100 ? 2 : 0)} ha in total.`));
+    }
+    const errs = val.errors.filter((e) => e.screen === "plots" && !e.entityId);
+    if (errs.length) box.append(ICL.common.errorList(errs, "err"));
+    box.append(h("div", { class: "control" }, h("a", { class: "btn-sm", href: ICL.router.hashFor("plots", "new") }, ICL.t("+ Add a {plot}")), state.plots.length > 6 ? h("a", { class: "btn-sm", href: ICL.router.hashFor("plots") }, ICL.t("Open the {plot}s screen (search and filter)")) : null));
+    return box;
+  }
 })(window.ICL);
