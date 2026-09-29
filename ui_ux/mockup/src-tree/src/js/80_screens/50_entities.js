@@ -36,6 +36,7 @@
     const touched = Object.keys(state.provenance).some((p) => p.startsWith(`${collection}[${e.id}]`)) || state.ui.validateAll;
     if (!touched) { ctx.errors = []; ctx.warnings = []; wrap.append(h("p", { class: "small" }, "Fill in what you know; we will point out anything missing on Check & run.")); }
     if (collection === "animals") wrap.append(animalCard(dec, ctx, state));
+    else if (collection === "herds") wrap.append(herdCard(dec, ctx, state, val));
     else if (collection === "feeds") wrap.append(feedCard(dec, ctx, state));
     else if (collection === "seasons") wrap.append(seasonCard(dec, ctx, state));
     else wrap.append(ICL.fields.renderFields(collection, ctx));
@@ -59,13 +60,7 @@
     if (collection === "animals") {
       if (!state.herds.length) { box.append(h("p", null, "First add a herd, so we know where these animals live."), h("a", { class: "btn", href: "#herds-new" }, "Add a herd")); return box; }
       box.append(h("p", { class: "small" }, "Pick the species, then the group. The description tells you which group fits."));
-      const species = [...new Set(D.vocab().livetype.map((l) => l.species))].filter((s) => (state.system.species || ["Cattle"]).includes(s) || s === "Cattle");
-      let sp = species[0]; const groupsBox = h("div", { class: "pickerlist" });
-      const herdSel = h("select", { "aria-label": "Herd" }, ...state.herds.map((hd) => h("option", { value: hd.id }, hd.herd_name || "Herd")));
-      const renderGroups = () => { groupsBox.innerHTML = ""; for (const lt of D.vocab().livetype.filter((l) => l.species === sp)) { const lab = D.tables().livetypeLabels[lt.desc] || { label: lt.desc.split(" - ")[1] }; groupsBox.append(h("button", { type: "button", onclick: () => { const id = addEntity("animals", { livetype: lt.code, herd_ref: herdSel.value }); ICL.router.go("animals", id); } }, h("strong", null, lab.label), h("span", { class: "small" }, `≈ ${lt.body_weight} kg · `, lab.definition || ""))); } };
-      const chips = h("div", { class: "chips" }); for (const s of species) { const r = h("input", { type: "radio", name: "sp" }); r.checked = s === sp; r.addEventListener("change", () => { sp = s; renderGroups(); }); chips.append(h("label", null, r, s)); }
-      renderGroups();
-      box.append(h("div", { class: "field" }, h("div", { class: "field-label" }, "Herd"), herdSel), h("div", { class: "field" }, h("div", { class: "field-label" }, "Species"), chips), h("div", { class: "field" }, h("div", { class: "field-label" }, "Group"), groupsBox));
+      box.append(groupPicker(state, null));
       return box;
     }
     if (collection === "feeds") {
@@ -86,6 +81,66 @@
   }
 
   // ---- specialised cards --------------------------------------------------------
+  /** Species chips + group list. `herdId` null = ask which herd; otherwise add straight into that herd. */
+  function groupPicker(state, herdId) {
+    const frag = document.createDocumentFragment();
+    const species = [...new Set(D.vocab().livetype.map((l) => l.species))].filter((sp) => (state.system.species || ["Cattle"]).includes(sp) || sp === "Cattle");
+    let sp = species[0];
+    const groupsBox = h("div", { class: "pickerlist" });
+    const herdSel = herdId ? null : h("select", { "aria-label": "Herd" }, ...state.herds.map((hd) => h("option", { value: hd.id }, hd.herd_name || "Herd")));
+    const renderGroups = () => {
+      groupsBox.innerHTML = "";
+      for (const lt of D.vocab().livetype.filter((l) => l.species === sp)) {
+        const lab = D.tables().livetypeLabels[lt.desc] || { label: lt.desc.split(" - ")[1] };
+        groupsBox.append(h("button", { type: "button", onclick: () => { const id = addEntity("animals", { livetype: lt.code, herd_ref: herdId || herdSel.value }); ICL.router.go("animals", id); } },
+          h("strong", null, lab.label), h("span", { class: "small" }, `\u2248 ${lt.body_weight} kg \u00b7 `, lab.definition || "")));
+      }
+    };
+    const chips = h("div", { class: "chips" });
+    for (const one of species) { const r = h("input", { type: "radio", name: "sp" + (herdId || "") }); r.checked = one === sp; r.addEventListener("change", () => { sp = one; renderGroups(); }); chips.append(h("label", null, r, one)); }
+    renderGroups();
+    if (herdSel) frag.append(h("div", { class: "field" }, h("div", { class: "field-label" }, "Herd"), herdSel));
+    frag.append(h("div", { class: "field" }, h("div", { class: "field-label" }, "Species"), chips),
+      h("div", { class: "field" }, h("div", { class: "field-label" }, "Group"), groupsBox));
+    return frag;
+  }
+
+  /** Herd card: the herd's own answers, its manure handling, and the animal groups inside it. */
+  function herdCard(e, ctx, state, val) {
+    const frag = document.createDocumentFragment();
+    frag.append(ICL.fields.renderFields("herds", ctx, (f) => f.group !== "Manure in this herd"));
+    const groups = state.animals.filter((a) => a.herd_ref === e.id);
+    const head = groups.reduce((t, a) => t + (Number(a.herd_n) || 0), 0);
+    const fs = h("fieldset", { dataset: { fb: `herd:groups:${e.id}`, fbLabel: "Animal groups in this herd" } },
+      h("legend", null, "Animal groups in this herd"),
+      h("p", { class: "small" }, "A group is one category of animal \u2014 milking cows, heifers, calves \u2014 because each eats and produces differently. Numbers, weights, milk and the day are on the group."));
+    if (!groups.length) fs.append(h("div", { class: "empty" }, "No groups yet. Add the first one, for example the milking cows."));
+    else {
+      const tbl = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Group"), h("th", null, "Head"), h("th", null, "A normal day (h)"), h("th", null, ""))));
+      const tb = h("tbody");
+      for (const a of groups) {
+        const d = D.decorate(a, "animal", state);
+        const errs = val.errors.filter((x) => x.screen === "animals" && x.entityId === a.id).length;
+        tb.append(h("tr", null,
+          h("td", null, D.livetypeLabel(d._desc), a.group_name ? h("div", { class: "small" }, a.group_name) : null, errs ? h("span", { class: "chip", style: "color:var(--danger);border-color:var(--danger)" }, `${errs} to fix`) : null),
+          h("td", null, a.herd_n ?? "\u2014"),
+          h("td", null, `${d.hours_stable || 0} / ${d.hours_pen || 0} / ${d.hours_onfarm || 0} / ${d.hours_offfarm || 0}`),
+          h("td", null, h("a", { class: "btn-sm", href: ICL.router.hashFor("animals", a.id) }, "Edit"))));
+      }
+      tbl.append(tb);
+      fs.append(h("div", { class: "tablewrap" }, tbl), h("p", { class: "small" }, `${groups.length} group${groups.length === 1 ? "" : "s"} \u00b7 ${ICL.fmt(head, 0)} animals. Hours are shed / pen / grazing ${ICL.dict.words().onfarm} / grazing ${ICL.dict.words().offfarm}.`));
+    }
+    const adding = state.ui.addGroupTo === e.id;
+    fs.append(adding
+      ? h("div", { class: "card soft" }, h("div", { class: "card-head" }, h("h3", null, "Add a group to " + (e.herd_name || "this herd")), h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.update("ui.addGroupTo", null) }, "Cancel")), groupPicker(state, e.id))
+      : h("button", { type: "button", class: "btn secondary", onclick: () => ICL.store.update("ui.addGroupTo", e.id) }, "+ Add an animal group"));
+    frag.append(fs);
+    frag.append(ICL.fields.renderFields("herds", ctx, (f) => f.group === "Manure in this herd"));
+    if (groups.length) frag.append(h("p", { class: "small" }, "Manure handling applies to every group in this herd. A group that is handled differently can override it on its own card."));
+    else frag.append(h("p", { class: "small" }, "Add a group first: which manure questions apply depends on where the animals spend their day."));
+    return frag;
+  }
+
   function animalCard(e, ctx, state) {
     const frag = document.createDocumentFragment();
     frag.append(ICL.fields.renderFields("animals", ctx, (f) => ["Group", "Numbers", "Weights", "Milk", "Growth", "Work"].includes(f.group)));
@@ -103,7 +158,20 @@
     frag.append(fs);
     const manureMode = (state.ui.variant.V5 || "A");
     if (manureMode === "B") frag.append(h("div", { class: "callout" }, "Variant B would show the full IPCC list of 28 manure systems with definitions here. Shown as the plain-language version for now."));
-    frag.append(ICL.fields.renderFields("animals", ctx, (f) => ["Manure", "Collected manure"].includes(f.group)));
+    const herd = state.herds.find((x) => x.id === e.herd_ref);
+    const mf = ["hmanure_stable", "hmanure_pen", "hmanure_onfarm", "hmanure_offfarm"].filter((id) => {
+      const hf = D.field(id); const hd = herd ? D.decorate(herd, "herd", state) : null;
+      return hd && ICL.cond.visible(hf, { system: state.system, farm: state.farm, ui: state.ui, entity: hd });
+    });
+    const inherited = h("div", { class: "callout", dataset: { fb: `animal:manure:${e.id}`, fbLabel: "Manure inherited from the herd" } },
+      h("strong", null, "Manure: "),
+      herd
+        ? [`handled as set for the herd `, h("a", { href: ICL.router.hashFor("herds", herd.id) }, herd.herd_name || "this herd"), ". ",
+           h("div", { class: "small" }, mf.map((id) => { const hf = D.field(id); const v = D.effective(hf, D.decorate(herd, "herd", state), state, `herds[${herd.id}]`).value || hf.default; const opt = window.ICL_SCHEMA.manureOptions.find((o) => o.value === (v || {}).handling); return `${ICL.t(hf.label)}: ${opt ? ICL.t(opt.label) : "not set"}${hf.noCollect ? "" : ` (${(v || {}).collected ?? 0}% collected)`}`; }).join(" \u00b7 ") || "nothing to handle: this group is never in a shed, pen or paddock you control."),
+           h("div", { class: "small" }, `Of the collected manure, ${D.effective(D.field("hmanure_kept_share"), D.decorate(herd, "herd", state), state, `herds[${herd.id}]`).value ?? 100}% stays ${ICL.dict.words().onfarm}.`)]
+        : "no herd set for this group.");
+    frag.append(inherited);
+    frag.append(ICL.fields.renderFields("animals", ctx, (f) => ["Manure for this group only", "Collected manure"].includes(f.group)));
     frag.append(ICL.fields.renderFields("animals", ctx, (f) => f.group === "Values from the parameter set"));
     frag.append(h("p", { class: "small" }, "Values marked \"from database\" come from the parameter set ", h("a", { href: "#parameters" }, state.meta.param_set), ". Overriding here changes this scenario only; edit the parameter set to change every scenario."));
     return frag;
@@ -113,8 +181,43 @@
     const frag = document.createDocumentFragment();
     if (e._feedItem) frag.append(h("div", { class: "callout" }, h("strong", null, D.displayFeedName(e._feedItem.feed_item_name)), ` · dry matter ${e._feedItem.dm_content}% · energy ${e._feedItem.me_content} MJ/kg DM · protein ${e._feedItem.cp_content}% `, h("span", { class: "chip c-db" }, "from database"), e._crop ? h("div", { class: "small" }, `Crop: ${e._crop.crop_name} (${e._crop.category}) · typical yield ${e._crop.dry_yield} t DM/ha, residue ${e._crop.residue_dry_yield} t DM/ha`) : null));
     if (e.feed_origin === "grown" && !state.plots.length) frag.append(h("div", { class: "callout warn" }, ICL.t("This feed is grown on the {farm} but no {plot}s exist yet. "), h("a", { href: "#plots-new" }, ICL.t("Add a {plot}"))));
-    frag.append(ICL.fields.renderFields("feeds", ctx, (f) => f.id !== "feed_item"));
+    frag.append(ICL.fields.renderFields("feeds", ctx, (f) => f.id !== "feed_item" && f.group !== "Nutritional parameters"));
+    frag.append(nutritionFolder(e, ctx, state));
     return frag;
+  }
+
+  /** Feed quality: shown read-only in a folder, unlockable for this scenario or in the parameter set. */
+  function nutritionFolder(e, ctx, state) {
+    const unlocked = state.ui.unlockFeed === e.id;
+    const fields = D.fieldsFor("feeds").filter((f) => f.group === "Nutritional parameters");
+    const box = h("details", { class: "advanced", open: unlocked || undefined, dataset: { fb: `feed:nutrition:${e.id}`, fbLabel: "Nutritional parameters folder" } },
+      h("summary", null, "Nutritional parameters ", unlocked ? h("span", { class: "chip c-user" }, "\u270e unlocked") : h("span", { class: "chip c-db" }, "\ud83d\udd12 from the parameter set")));
+    box.append(h("p", { class: "small" }, `Feed quality and nitrogen content for ${e._feedItem ? D.displayFeedName(e._feedItem.feed_item_name) : "this feed"}, from "${state.meta.param_set}". The model is sensitive to these, so they are locked until you choose where the change should apply.`));
+    if (!unlocked) {
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Value"), h("th", null, "Now"), h("th", null, "Where it comes from"))));
+      const tb = h("tbody");
+      for (const f of fields) {
+        if (!ICL.cond.visible(f, { system: state.system, farm: state.farm, ui: state.ui, entity: e })) continue;
+        const eff = D.effective(f, e, state, `feeds[${e.id}]`);
+        tb.append(h("tr", null,
+          h("td", null, ICL.t(f.label), f.unit ? h("span", { class: "unit" }, " " + f.unit) : null),
+          h("td", null, eff.value == null ? "\u2014" : ICL.fmt(eff.value, 2)),
+          h("td", null, ICL.fields.provChip(eff.prov, f))));
+      }
+      t.append(tb);
+      box.append(h("div", { class: "tablewrap" }, t));
+    } else {
+      box.append(ICL.fields.renderFields("feeds", ctx, (f) => f.group === "Nutritional parameters"));
+      box.append(h("p", { class: "small" }, "These values now apply to ", h("strong", null, "this scenario only"), ". The parameter set is untouched, and the chip on each value shows the change."));
+    }
+    const fi = e._feedItem;
+    box.append(h("div", { class: "control" },
+      h("button", { type: "button", class: unlocked ? "btn-sm" : "btn secondary", onclick: () => ICL.store.update("ui.unlockFeed", unlocked ? null : e.id) },
+        unlocked ? "Lock again" : "Unlock for this scenario only"),
+      fi ? h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.set((s) => { s.ui.paramTab = "Feeds & crops"; s.ui.paramRow = { table: "feeditems", key: String(fi.feed_item_code) }; s.ui.paramUnlocked = true; return s; }); ICL.router.go("parameters"); } }, "Edit in the parameter set") : null,
+      e._crop ? h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.set((s) => { s.ui.paramTab = "Feeds & crops"; s.ui.paramRow = { table: "crops", key: String(e._crop.crop_code) }; s.ui.paramUnlocked = true; return s; }); ICL.router.go("parameters"); } }, `Edit the crop row (${e._crop.crop_name})`) : null));
+    box.append(h("p", { class: "small" }, "Scenario only \u2192 this feed in this scenario. Parameter set \u2192 every scenario of yours that uses the set, and anyone you share the set with; it needs your own copy of the set, and each change is listed so colleagues can see what differs."));
+    return box;
   }
 
   function seasonCard(e, ctx, state) {

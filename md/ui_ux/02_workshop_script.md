@@ -66,6 +66,14 @@ Give each pair a printed card with one task at a time. The facilitator only give
 
 Every step and heading in the mockup is numbered (`7. Animals` → `7.1 Cows, local breed` → `7.1.2 Numbers`). Ask participants to quote the number when they say anything: "7.1.2 is confusing" beats "the animals page". The numbers are also stored with every comment, so the export maps straight onto issues. Tell them the numbers renumber if we add a step, so quote them in the session, not weeks later.
 
+## 4b. What to test in the redesign mockup
+
+The mockup is where the redesign is tested; the task cards above are for the live app. Two flows are new in v0.7 and worth a task each:
+
+- **Herd then animals.** Ask a pair to add a second herd and put one animal group in it, starting from the herd card rather than the Animals step. Watch whether they expect manure handling to be asked on the herd (it is) and whether they notice a group can override it.
+- **Feeding plan per herd.** With a two-herd scenario (Rungwe commercial or Tanzania national), ask for the dry-season diet of the second herd. Watch whether the Herd tabs are read as tabs, and whether anyone tries to plan both herds in one grid.
+- **Defaults they disagree with.** Ask a pair to change the dry matter of one feed. Watch which of the two routes they take — "this scenario only" or "in the parameter set" — and whether they can say afterwards who else their change affects.
+
 ## 5. Observation checklist (one per pair per task)
 
 Use a tick or a short note, and record the time in minutes.

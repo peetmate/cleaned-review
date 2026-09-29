@@ -26,6 +26,7 @@
 
     root.append(h("div", { class: "card soft", style: "margin-top:18px" },
       h("h2", null, "Projects"),
+      h("p", { class: "small" }, h("strong", null, "A project groups related scenarios"), " \u2014 one study, one district, one piece of work \u2014 and the people who may see them. A scenario is one description of an enterprise; a project is the folder it sits in. Scenarios in a project can be compared with each other."),
       ...(state.library.projects || []).map((p) => h("p", { class: "small", style: "margin:2px 0" }, h("strong", null, p.name), " · ", p.members.join(", "))),
       h("p", { class: "small" }, "Everyone in a project sees its scenarios and any parameter set shared with it."),
       h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague by email.") }, "Invite a colleague")));

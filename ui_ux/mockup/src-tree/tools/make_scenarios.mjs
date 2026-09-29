@@ -37,7 +37,17 @@ function build(spec) {
     s.plots.push(Object.assign({ id: `p${i + 1}`, plot_soil: null }, p));
   });
   spec.seasons.forEach((se, i) => s.seasons.push({ id: `s${i + 1}`, season_name: se.name, season_months: se.months }));
-  spec.herds.forEach((hd, i) => s.herds.push(Object.assign({ id: `h${i + 1}` }, hd)));
+  spec.herds.forEach((hd, i) => {
+    const { manure, keptShare, ...rest } = hd;
+    const m = manure || {};
+    s.herds.push(Object.assign({ id: `h${i + 1}` }, rest, {
+      hmanure_stable: m.stable || { handling: "piled", collected: 100, followups: {} },
+      hmanure_pen: m.pen || { handling: "drylot", collected: 80, followups: {} },
+      hmanure_onfarm: m.onfarm || { handling: "left", collected: 0, followups: {} },
+      hmanure_offfarm: m.offfarm || { handling: "left", collected: 0, followups: {} },
+      hmanure_kept_share: keptShare ?? 100,
+    }));
+  });
   spec.animals.forEach((a, i) => {
     const hours = a.hours; // [shed, pen, onfarm, offfarm]
     s.animals.push({
@@ -45,11 +55,12 @@ function build(spec) {
       body_weight: a.bodyWeight ?? null, adult_weight: a.adultWeight ?? null,
       milk_l_day: a.milkLday ?? null, lactation_days: a.lactationDays ?? null, growth_kg_yr: a.growth ?? null,
       hours_stable: hours[0], hours_pen: hours[1], hours_onfarm: hours[2], hours_offfarm: hours[3],
-      manure_stable: a.manure && a.manure.stable ? a.manure.stable : { handling: "piled", collected: 100, followups: {} },
-      manure_pen: a.manure && a.manure.pen ? a.manure.pen : { handling: "drylot", collected: 80, followups: {} },
-      manure_onfarm: { handling: "left", collected: 0, followups: {} },
-      manure_offfarm: { handling: "left", collected: 0, followups: {} },
-      manure_kept_share: a.keptShare ?? 100,
+      // Manure follows the herd; these are only set when this group is handled differently.
+      manure_stable: (a.manure || {}).stable || null,
+      manure_pen: (a.manure || {}).pen || null,
+      manure_onfarm: (a.manure || {}).onfarm || null,
+      manure_offfarm: (a.manure || {}).offfarm || null,
+      manure_kept_share: a.keptShare ?? null,
     });
     const hrs = hours.reduce((t, x) => t + x, 0);
     if (Math.abs(hrs - 24) > 0.001) throw new Error(`${spec.id}: animal ${i + 1} hours sum to ${hrs}`);
@@ -117,10 +128,10 @@ const specs = [
       { plot_name: "Lower field", plot_area_ha: 1.5, plot_use: "crops", slope_class: "Hilly (5-20%)", slope_length_m: 50, land_cover: "Maize", tillage: "reduced", orgmatter: "high_manure" },
       { plot_name: "Hill pasture", plot_area_ha: 2, plot_use: "grazing", slope_class: "Steep (20-30%)", slope_length_m: 80, land_cover: "Dense grass", grass_condition: "improved", grass_inputs: "Medium" },
     ],
-    seasons: TWO_SEASONS, herds: [{ herd_name: "Home herd", herd_pattern: "zero", herd_plots: [] }],
+    seasons: TWO_SEASONS, herds: [{ herd_name: "Home herd", herd_pattern: "zero", herd_plots: [], manure: { stable: { handling: "biogas", collected: 100, followups: {} } }, keptShare: 100 }],
     animals: [
-      { livetype: 1, n: 12, milkLday: 6.5, lactationDays: 270, hours: [24, 0, 0, 0], manure: { stable: { handling: "biogas", collected: 100, followups: {} } }, keptShare: 100 },
-      { livetype: 7, n: 8, growth: 75, hours: [24, 0, 0, 0], manure: { stable: { handling: "biogas", collected: 100, followups: {} } } },
+      { livetype: 1, n: 12, milkLday: 6.5, lactationDays: 270, hours: [24, 0, 0, 0] },
+      { livetype: 7, n: 8, growth: 75, hours: [24, 0, 0, 0] },
     ],
     feeds: [
       { item: 10, origin: "grown", part: "main", plot: "p1", fedShare: 100, manureShare: 55, fert: { NPK: { mode: "kg_ha", value: 120 } } },
@@ -139,9 +150,9 @@ const specs = [
       { plot_name: "Silage maize", plot_area_ha: 30, plot_use: "crops", slope_class: "Flat (0-5%)", slope_length_m: 150, land_cover: "Maize", tillage: "full", orgmatter: "high_manure" },
       { plot_name: "Hay paddocks", plot_area_ha: 22, plot_use: "crops", slope_class: "Hilly (5-20%)", slope_length_m: 90, land_cover: "Dense grass", tillage: "none", orgmatter: "high" },
     ],
-    seasons: TWO_SEASONS, herds: [{ herd_name: "Milking herd", herd_pattern: "night_shed", herd_plots: ["p1"] }, { herd_name: "Young stock", herd_pattern: "mostly_grazing", herd_plots: ["p1"] }],
+    seasons: TWO_SEASONS, herds: [{ herd_name: "Milking herd", herd_pattern: "night_shed", herd_plots: ["p1"], manure: { stable: { handling: "pit", collected: 100, followups: { pit_months: "3" } }, pen: { handling: "drylot", collected: 90, followups: {} } }, keptShare: 70 }, { herd_name: "Young stock", herd_pattern: "mostly_grazing", herd_plots: ["p1"], keptShare: 70 }],
     animals: [
-      { livetype: 2, n: 180, milkLday: 16, lactationDays: 305, hours: [12, 2, 10, 0], manure: { stable: { handling: "pit", collected: 100, followups: { pit_months: "3" } }, pen: { handling: "drylot", collected: 90, followups: {} } }, keptShare: 70 },
+      { livetype: 2, n: 180, milkLday: 16, lactationDays: 305, hours: [12, 2, 10, 0] },
       { livetype: 6, herd: "h2", n: 95, growth: 160, hours: [6, 0, 18, 0] },
       { livetype: 8, herd: "h2", n: 70, growth: 95, hours: [8, 2, 14, 0] },
     ],
@@ -161,10 +172,10 @@ const specs = [
       { plot_name: "Napier strip", plot_area_ha: 0.25, plot_use: "crops", slope_class: "Flat (0-5%)", slope_length_m: 20, land_cover: "Dense grass", tillage: "reduced", orgmatter: "high_manure" },
       { plot_name: "Maize shamba", plot_area_ha: 0.4, plot_use: "crops", slope_class: "Hilly (5-20%)", slope_length_m: 25, land_cover: "Maize", tillage: "full", orgmatter: "medium" },
     ],
-    seasons: ONE_SEASON, herds: [{ herd_name: "Zero-grazing unit", herd_pattern: "zero", herd_plots: [] }],
+    seasons: ONE_SEASON, herds: [{ herd_name: "Zero-grazing unit", herd_pattern: "zero", herd_plots: [], manure: { stable: { handling: "piled", collected: 100, followups: { covered: true } } }, keptShare: 100 }],
     animals: [
-      { livetype: 2, n: 2, milkLday: 10, lactationDays: 300, hours: [24, 0, 0, 0], manure: { stable: { handling: "piled", collected: 100, followups: { covered: true } } }, keptShare: 100 },
-      { livetype: 8, n: 1, growth: 90, hours: [24, 0, 0, 0], manure: { stable: { handling: "piled", collected: 100, followups: { covered: true } } } },
+      { livetype: 2, n: 2, milkLday: 10, lactationDays: 300, hours: [24, 0, 0, 0] },
+      { livetype: 8, n: 1, growth: 90, hours: [24, 0, 0, 0] },
     ],
     feeds: [
       { item: 10, origin: "grown", part: "main", plot: "p1", fedShare: 100, manureShare: 70 },
@@ -183,11 +194,11 @@ const specs = [
       { plot_name: "Cropland providing residues", plot_area_ha: 420000, plot_use: "crops", slope_class: "Hilly (5-20%)", slope_length_m: 100, land_cover: "Maize", tillage: "full", orgmatter: "low" },
       { plot_name: "Planted fodder", plot_area_ha: 18000, plot_use: "crops", slope_class: "Flat (0-5%)", slope_length_m: 60, land_cover: "Dense grass", tillage: "reduced", orgmatter: "medium" },
     ],
-    seasons: TWO_SEASONS, herds: [{ herd_name: "Indigenous herd", herd_pattern: "mostly_grazing", herd_plots: ["p1"] }, { herd_name: "Improved dairy herd", herd_pattern: "night_shed", herd_plots: ["p1"] }],
+    seasons: TWO_SEASONS, herds: [{ herd_name: "Indigenous herd", herd_pattern: "mostly_grazing", herd_plots: ["p1"], manure: { stable: { handling: "piled", collected: 40, followups: {} }, pen: { handling: "drylot", collected: 30, followups: {} } }, keptShare: 40 }, { herd_name: "Improved dairy herd", herd_pattern: "night_shed", herd_plots: ["p1"], keptShare: 80 }],
     animals: [
-      { livetype: 1, n: 2800000, groupName: "Indigenous cows (national)", milkLday: 1.8, lactationDays: 200, hours: [2, 2, 20, 0], keptShare: 40, manure: { stable: { handling: "piled", collected: 40, followups: {} }, pen: { handling: "drylot", collected: 30, followups: {} } } },
+      { livetype: 1, n: 2800000, groupName: "Indigenous cows (national)", milkLday: 1.8, lactationDays: 200, hours: [2, 2, 20, 0] },
       { livetype: 7, n: 1150000, groupName: "Indigenous calves (national)", growth: 45, hours: [2, 2, 20, 0] },
-      { livetype: 2, herd: "h2", n: 780000, groupName: "Improved cows (national)", milkLday: 8, lactationDays: 290, hours: [12, 2, 10, 0], keptShare: 80 },
+      { livetype: 2, herd: "h2", n: 780000, groupName: "Improved cows (national)", milkLday: 8, lactationDays: 290, hours: [12, 2, 10, 0] },
     ],
     feeds: [
       { item: 9, origin: "grown", part: "main", plot: "p1", fedShare: 100, manureShare: 20 },

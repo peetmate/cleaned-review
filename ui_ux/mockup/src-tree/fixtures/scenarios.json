@@ -147,7 +147,28 @@
      "herd_pattern": "night_shed",
      "herd_plots": [
       "p3"
-     ]
+     ],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 100
     }
    ],
    "animals": [
@@ -166,27 +187,11 @@
      "hours_pen": 4,
      "hours_onfarm": 8,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -203,27 +208,11 @@
      "hours_pen": 4,
      "hours_onfarm": 8,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [
@@ -448,7 +437,28 @@
      "id": "h1",
      "herd_name": "Home herd",
      "herd_pattern": "zero",
-     "herd_plots": []
+     "herd_plots": [],
+     "hmanure_stable": {
+      "handling": "biogas",
+      "collected": 100,
+      "followups": {}
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 100
     }
    ],
    "animals": [
@@ -467,27 +477,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "biogas",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -504,27 +498,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "biogas",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [
@@ -760,7 +738,30 @@
      "herd_pattern": "night_shed",
      "herd_plots": [
       "p1"
-     ]
+     ],
+     "hmanure_stable": {
+      "handling": "pit",
+      "collected": 100,
+      "followups": {
+       "pit_months": "3"
+      }
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 90,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 70
     },
     {
      "id": "h2",
@@ -768,7 +769,28 @@
      "herd_pattern": "mostly_grazing",
      "herd_plots": [
       "p1"
-     ]
+     ],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 70
     }
    ],
    "animals": [
@@ -787,29 +809,11 @@
      "hours_pen": 2,
      "hours_onfarm": 10,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "pit",
-      "collected": 100,
-      "followups": {
-       "pit_months": "3"
-      }
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 90,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 70
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -826,27 +830,11 @@
      "hours_pen": 0,
      "hours_onfarm": 18,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a3",
@@ -863,27 +851,11 @@
      "hours_pen": 2,
      "hours_onfarm": 14,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [
@@ -1115,7 +1087,30 @@
      "id": "h1",
      "herd_name": "Zero-grazing unit",
      "herd_pattern": "zero",
-     "herd_plots": []
+     "herd_plots": [],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 100
     }
    ],
    "animals": [
@@ -1134,29 +1129,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {
-       "covered": true
-      }
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -1173,29 +1150,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {
-       "covered": true
-      }
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [
@@ -1402,7 +1361,28 @@
      "herd_pattern": "mostly_grazing",
      "herd_plots": [
       "p1"
-     ]
+     ],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 40,
+      "followups": {}
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 30,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 40
     },
     {
      "id": "h2",
@@ -1410,7 +1390,28 @@
      "herd_pattern": "night_shed",
      "herd_plots": [
       "p1"
-     ]
+     ],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 80
     }
    ],
    "animals": [
@@ -1429,27 +1430,11 @@
      "hours_pen": 2,
      "hours_onfarm": 20,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 40,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 30,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 40
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -1466,27 +1451,11 @@
      "hours_pen": 2,
      "hours_onfarm": 20,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a3",
@@ -1503,27 +1472,11 @@
      "hours_pen": 2,
      "hours_onfarm": 10,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {}
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 80
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [
@@ -1745,7 +1698,30 @@
      "id": "h1",
      "herd_name": "Zero-grazing unit",
      "herd_pattern": "zero",
-     "herd_plots": []
+     "herd_plots": [],
+     "hmanure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "hmanure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "hmanure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "hmanure_kept_share": 100
     }
    ],
    "animals": [
@@ -1764,29 +1740,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {
-       "covered": true
-      }
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     },
     {
      "id": "a2",
@@ -1803,29 +1761,11 @@
      "hours_pen": 0,
      "hours_onfarm": 0,
      "hours_offfarm": 0,
-     "manure_stable": {
-      "handling": "piled",
-      "collected": 100,
-      "followups": {
-       "covered": true
-      }
-     },
-     "manure_pen": {
-      "handling": "drylot",
-      "collected": 80,
-      "followups": {}
-     },
-     "manure_onfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_offfarm": {
-      "handling": "left",
-      "collected": 0,
-      "followups": {}
-     },
-     "manure_kept_share": 100
+     "manure_stable": null,
+     "manure_pen": null,
+     "manure_onfarm": null,
+     "manure_offfarm": null,
+     "manure_kept_share": null
     }
    ],
    "feeds": [

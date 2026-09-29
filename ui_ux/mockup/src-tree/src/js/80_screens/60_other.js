@@ -4,13 +4,25 @@
 
   ICL.screens.fertiliser = function (root, { state, val }) {
     root.append(screenHead(D.section("fertiliser")));
-    const used = new Set(); for (const f of state.feeds) for (const [n, r] of Object.entries(f.fert_rates || {})) if (r && Number(r.value) > 0) used.add(n);
+    const used = new Map(); // product -> feeds it is used on
+    for (const fe of state.feeds) for (const [n, r] of Object.entries(fe.fert_rates || {})) if (r && Number(r.value) > 0) used.set(n, [...(used.get(n) || []), fe]);
+    root.append(h("div", { class: "callout", dataset: { fb: "fert:what", fbLabel: "What this screen is for", noNumber: "" } },
+      h("strong", null, "How much you spread, and on what, is on the feed cards. "),
+      "This screen asks only what is ", h("em", null, "in"), " each product, because the model works in kilograms of nitrogen, not kilograms of fertiliser. ",
+      "Two crops fertilised with the same product share one nitrogen content, so it is asked once here instead of on every feed. ",
+      h("a", { href: "#feeds" }, "Go to Feeds to change rates")));
     if (!used.size) { root.append(h("div", { class: "empty" }, "No fertiliser is applied to any crop yet. Add amounts on the feed cards under Feeds; the products you use will appear here.")); return; }
     const f = D.field("fert_n_pct");
-    for (const name of used) {
+    for (const [name, feedsUsing] of used) {
       const ctx = { state, entity: { id: name, fert_n_pct: state.fertilizer[name] }, entityId: name, collection: null, errors: val.errors.map((e) => e.entityId === "NPK" && name === "NPK" ? Object.assign({}, e, { fieldId: "fert_n_pct" }) : e), warnings: [], onChange: (fid, v, prov) => ICL.store.update("fertilizer." + name, v, prov) };
       const fld = ICL.fields.renderField(Object.assign({}, f, { label: `${name}: nitrogen % on the bag` }), ctx);
-      root.append(h("div", { class: "card", dataset: { fb: "fert:" + name, fbLabel: "Fertiliser " + name } }, fld));
+      const rates = feedsUsing.map((fe) => { const d = D.decorate(fe, "feed", state); const r = fe.fert_rates[name]; return `${d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "a feed"}: ${ICL.fmt(Number(r.value), 0)} kg/ha`; });
+      const nPct = state.fertilizer[name];
+      const kgN = nPct ? feedsUsing.reduce((t, fe) => t + Number(fe.fert_rates[name].value) * Number(nPct) / 100, 0) : null;
+      root.append(h("div", { class: "card", dataset: { fb: "fert:" + name, fbLabel: "Fertiliser " + name } },
+        h("p", { class: "small" }, "Used on \u2014 ", rates.join(" \u00b7 "), h("a", { href: "#feeds", style: "margin-left:6px" }, "change")),
+        fld,
+        kgN != null ? h("p", { class: "small" }, `\u2248 ${ICL.fmt(kgN, 1)} kg of nitrogen per hectare in total from this product.`) : null));
     }
   };
 
@@ -36,14 +48,32 @@
     const season = state.seasons.find((s) => s.id === sid); const si = state.seasons.indexOf(season);
     const tabs = h("div", { class: "tabs", role: "tablist" }); for (const s of state.seasons) { const errs = val.errors.filter((e) => e.screen === "feeding" && e.entityId === s.id).length; tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(s.id === sid), onclick: () => { ICL.store.update("ui.feedingSeason", s.id); if (state.route.entity) ICL.router.go("feeding", s.id); } }, s.season_name || "Season", errs ? h("span", { class: "badge", style: "margin-left:6px" }, errs) : null)); }
     root.append(tabs);
-    const herdFilter = state.herds.length > 1 ? h("select", { "aria-label": "Herd", onchange: (ev) => ICL.store.update("ui.feedingHerd", ev.target.value || null) }, h("option", { value: "" }, "All herds"), ...state.herds.map((hd) => h("option", { value: hd.id, selected: state.ui.feedingHerd === hd.id }, hd.herd_name))) : null;
-    const animals = state.animals.filter((a) => !state.ui.feedingHerd || a.herd_ref === state.ui.feedingHerd);
+    // Herds come first: each herd eats its own diet, so the plan is one grid per herd per season.
+    const multiHerd = state.herds.length > 1;
+    const hid = multiHerd ? (state.herds.some((x) => x.id === state.ui.feedingHerd) ? state.ui.feedingHerd : (state.ui.feedingHerd === "all" ? "all" : state.herds[0].id)) : null;
+    const inHerd = (a, id) => !id || id === "all" || a.herd_ref === id;
+    if (multiHerd) {
+      const hrow = h("div", { class: "tabs", role: "tablist", dataset: { fb: "feeding:herds", fbLabel: "Herd tabs" } });
+      for (const hd of state.herds) {
+        const groups = state.animals.filter((a) => a.herd_ref === hd.id);
+        const bad = groups.filter((a) => Math.abs(state.feeds.reduce((t, f) => t + (Number((((state.allocation[sid] || {})[a.id]) || {})[f.id]) || 0), 0) - 100) >= 0.5).length;
+        hrow.append(h("button", { type: "button", role: "tab", "aria-selected": String(hd.id === hid), onclick: () => ICL.store.update("ui.feedingHerd", hd.id) },
+          hd.herd_name || "Herd", h("span", { class: "small" }, ` ${groups.length} group${groups.length === 1 ? "" : "s"}`), bad ? h("span", { class: "badge", style: "margin-left:6px" }, bad) : null));
+      }
+      hrow.append(h("button", { type: "button", role: "tab", "aria-selected": String(hid === "all"), onclick: () => ICL.store.update("ui.feedingHerd", "all") }, "All herds together"));
+      root.insertBefore(h("div", { class: "field-label" }, "Herd"), tabs);
+      root.insertBefore(hrow, tabs);
+      root.insertBefore(h("p", { class: "small" }, `Each herd gets its own plan for each season: ${state.herds.length} herds \u00d7 ${state.seasons.length} season${state.seasons.length === 1 ? "" : "s"} = ${state.herds.length * state.seasons.length} grids. Every group's column must add up to 100% in every season.`), tabs);
+      root.insertBefore(h("div", { class: "field-label" }, "Season"), tabs);
+    }
+    const animals = state.animals.filter((a) => inHerd(a, hid));
+    if (!animals.length) { root.append(h("div", { class: "empty" }, "This herd has no animal groups yet.", h("div", { class: "control", style: "justify-content:center;margin-top:8px" }, h("a", { class: "btn-sm", href: ICL.router.hashFor("herds", hid) }, "Add a group to this herd")))); return; }
     const dm = !!state.ui.dmMode;
     const modeBtn = h("button", { type: "button", class: "btn-sm", "aria-pressed": String(dm), onclick: () => ICL.store.update("ui.dmMode", !dm) }, dm ? "Showing: dry-matter shares" : "Showing: as-fed shares (fresh weight)");
-    const tools = h("div", { class: "control", style: "margin-bottom:10px" }, herdFilter, modeBtn, h("span", { class: "small" }, dm ? "Shares of the dry matter eaten. Stored as as-fed using each feed's DM%." : "Shares of the fresh weight eaten. Toggle to enter dry-matter shares instead."),
-      si > 0 ? ICL.common.confirmButton(`Copy from ${state.seasons[si - 1].season_name}`, () => { ICL.store.set((s) => { s.allocation[sid] = JSON.parse(JSON.stringify(s.allocation[state.seasons[si - 1].id] || {})); return s; }); ICL.toast(`Copied the ${state.seasons[si - 1].season_name} plan into ${season.season_name}.`); }, "btn-sm") : null,
+    const tools = h("div", { class: "control", style: "margin-bottom:10px" }, modeBtn, h("span", { class: "small" }, dm ? "Shares of the dry matter eaten. Stored as as-fed using each feed's DM%." : "Shares of the fresh weight eaten. Toggle to enter dry-matter shares instead."),
+      si > 0 ? ICL.common.confirmButton(`Copy from ${state.seasons[si - 1].season_name}`, () => { ICL.store.set((s) => { const prev = s.allocation[state.seasons[si - 1].id] || {}; if (!multiHerd || hid === "all") s.allocation[sid] = JSON.parse(JSON.stringify(prev)); else { s.allocation[sid] = s.allocation[sid] || {}; for (const a of animals) s.allocation[sid][a.id] = JSON.parse(JSON.stringify(prev[a.id] || {})); } return s; }); ICL.toast(`Copied the ${state.seasons[si - 1].season_name} plan into ${season.season_name}${multiHerd && hid !== "all" ? " for this herd" : ""}.`); }, "btn-sm") : null,
       animals.length > 1 ? ICL.common.confirmButton("Same for all groups", () => { ICL.store.set((s) => { const first = ((s.allocation[sid] || {})[animals[0].id]) || {}; s.allocation[sid] = s.allocation[sid] || {}; for (const a of animals) s.allocation[sid][a.id] = Object.assign({}, first); return s; }); ICL.toast("Copied the first group's shares to every group in this season."); }, "btn-sm") : null,
-      ICL.common.confirmButton("Clear season", () => { ICL.store.set((s) => { delete s.allocation[sid]; return s; }); ICL.toast(`Cleared the ${season.season_name} plan.`); }, "btn-sm"));
+      ICL.common.confirmButton(multiHerd && hid !== "all" ? "Clear this herd's season" : "Clear season", () => { ICL.store.set((s) => { if (!multiHerd || hid === "all") delete s.allocation[sid]; else { const row = s.allocation[sid] || {}; for (const a of animals) delete row[a.id]; } return s; }); ICL.toast(`Cleared the ${season.season_name} plan.`); }, "btn-sm"));
     root.append(tools);
     const cell = (a, f) => Number((((state.allocation[sid] || {})[a.id]) || {})[f.id]);
     const dmOf = (f) => { const d = D.decorate(f, "feed", state); return d._feedItem ? d._feedItem.dm_content / 100 : 1; };
@@ -64,7 +94,7 @@
     } else {
       for (const a of animals) { const d = D.decorate(a, "animal", state); const card = h("div", { class: "card", dataset: { fb: "feeding:bars:" + a.id, fbLabel: "Feeding plan bars" } }, h("h3", null, D.livetypeLabel(d._desc))); const bar = h("div", { class: "bar" }); state.feeds.forEach((f, i) => bar.append(h("span", { class: "b" + (i % 4), style: `width:${Number(shown(a, f)) || 0}%` }))); card.append(bar); for (const [i, f] of state.feeds.entries()) { const fd = D.decorate(f, "feed", state); const rng = h("input", { type: "range", min: 0, max: 100, step: 1, value: Number(shown(a, f)) || 0, "aria-label": fd._feedItem ? D.displayFeedName(fd._feedItem.feed_item_name) : "feed" }); const out = h("output", null, (Number(shown(a, f)) || 0) + "%"); rng.addEventListener("input", () => (out.value = rng.value + "%")); rng.addEventListener("change", () => write(a, f, Number(rng.value))); card.append(h("div", { class: "slider-row" }, h("span", { class: "b" + (i % 4), style: "width:10px;height:10px;display:inline-block;border-radius:2px" }), h("span", { style: "min-width:160px" }, fd._feedItem ? D.displayFeedName(fd._feedItem.feed_item_name) : "?"), rng, out)); } const t = state.feeds.reduce((s, f) => s + (Number(shown(a, f)) || 0), 0); card.append(h("div", { class: "total " + (Math.abs(t - 100) < 0.5 ? "ok" : "bad") }, `Total ${fmt(t)}%`)); root.append(card); }
     }
-    root.append(h("p", { class: "small" }, "Each column must add up to 100% for every season. A feed that is never fed anywhere will be flagged on the Check screen."));
+    root.append(h("p", { class: "small" }, multiHerd ? "Each column must add up to 100% for this herd in every season. Switch herd above to plan the next one. A feed that is never fed anywhere will be flagged on the Check screen." : "Each column must add up to 100% for every season. A feed that is never fed anywhere will be flagged on the Check screen."));
   };
 
   // ---- check & run ---------------------------------------------------------------
@@ -84,10 +114,26 @@
   };
   const tile = (n, l, color) => h("div", { class: "tile" }, h("b", { style: color ? `color:${color}` : "" }, String(n)), h("span", { class: "small" }, l));
 
-  ICL.screens.results = function (root, { state }) {
+  ICL.screens.results = function (root, { state, compiled }) {
     root.append(screenHead(D.section("results")));
-    const tabs = h("div", { class: "tabs" }); for (const t of ["Emissions", "Land", "Water", "Soil", "Nitrogen", "Compare"]) tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(t === "Emissions") }, t));
-    root.append(tabs, h("div", { class: "empty", dataset: { fb: "results:placeholder", fbLabel: "Results placeholder" } }, h("p", null, "Results will appear here after running: per-hectare and per-kg-milk indicators, each with a one-line meaning, the assumptions that fed it, and a link back to the inputs that drive it."), h("p", { class: "small" }, "Out of scope for this mockup. Tell us in a comment what you would want to see first.")));
+    root.append(h("div", { class: "callout", dataset: { fb: "results:what", fbLabel: "Where results come from", noNumber: "" } },
+      h("strong", null, "This mockup does not run the model. "),
+      "In the real app, Check & run sends the description you built to the ", h("em", null, "cleaned"), " model and the answers land on this screen: greenhouse gases, land needed, water, soil loss and the nitrogen balance, per hectare and per kilogram of milk, with a link from every number back to the inputs that drive it. ",
+      "What the mockup can show you now is exactly what would be sent \u2014 see ", h("a", { href: "#check" }, "Check & run"), "."));
+    const tabs = h("div", { class: "tabs" }); for (const t of ["Emissions", "Land", "Water", "Soil", "Nitrogen", "Compare"]) tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(t === "Emissions"), onclick: () => ICL.toast(`Mocked: the ${t} tab would show the model output plus the assumptions behind it.`) }, t));
+    root.append(tabs);
+    // What we can state without the model: the size of what was described.
+    const head = state.animals.reduce((t, a) => t + (Number(a.herd_n) || 0), 0);
+    const area = state.plots.reduce((t, p) => t + (Number(p.plot_area_ha) || 0), 0);
+    const milk = (compiled && compiled.input && compiled.input.livestock || []).reduce((t, l) => t + (Number(l.annual_milk) || 0) * (Number(l.herd_composition) || 0), 0);
+    root.append(h("div", { class: "tile-row", dataset: { fb: "results:size", fbLabel: "Size of the description" } },
+      tile(ICL.fmt(head, 0), "animals"), tile(ICL.fmt(area, area < 100 ? 1 : 0), "ha of land"),
+      tile(ICL.fmt(milk, 0), "kg of milk a year"), tile(state.herds.length, state.herds.length === 1 ? "herd" : "herds"),
+      tile(state.feeds.length, "feeds"), tile(state.seasons.length, state.seasons.length === 1 ? "season" : "seasons")));
+    root.append(h("p", { class: "small" }, "These are your inputs added up, not model results \u2014 they are here so you can check the scale of what you described before running. Milk is the annual figure the model would receive for the whole herd."));
+    root.append(h("div", { class: "empty", dataset: { fb: "results:placeholder", fbLabel: "Results placeholder" } },
+      h("p", null, "Which result would you want to see first, and in what unit?"),
+      h("p", { class: "small" }, "Turn on Comment at the bottom right and tell us here \u2014 this screen is deliberately empty so the workshop decides what goes on it.")));
   };
 
   // ---- parameter set -----------------------------------------------------------
@@ -139,14 +185,112 @@
       if (ch) td.append(h("span", { class: "was" }, `was ${raw}`, h("button", { type: "button", onclick: () => revert(copy.value, tableName, rowKey, col) }, "revert")));
       return td;
     };
+    const rowsOf = (spec) => spec.table === "fertilizer_default_n_pct" ? Object.keys(RAW.fertilizer_default_n_pct).map((n) => ({ name: n, n: V.fertilizer_default_n_pct[n] })) : V[spec.table];
+    const keyOf = (spec) => spec.table === "fertilizer_default_n_pct" ? "name" : D.TABLE_KEY[spec.table];
+    // Plain labels + units for the transposed row view, so the panel reads like a form and not a database dump.
+    const PARAM_LABEL = {
+      code: ["Code in the parameter set", ""], desc: ["Animal group", ""], species: ["Species", ""],
+      body_weight: ["Live weight", "kg"], adult_weight: ["Weight when fully grown", "kg"],
+      body_weight_weaning: ["Weight at weaning", "kg"], body_weight_year_one: ["Weight at one year", "kg"],
+      litter_size: ["Litter size", "young per birth"], lactation_length: ["Lactation length", "days"],
+      proportion_growth_piglets_milk: ["Piglet growth from milk", "fraction"], lw_gain_piglets: ["Piglet weight gain", "kg/day"],
+      cp_maintenance: ["Crude protein for maintenance", "factor"], cp_lys_pregnancy: ["Crude protein for pregnancy", "factor"],
+      cp_lactmilk: ["Crude protein per kg of milk", "factor"], cp_lys_growth: ["Crude protein for growth", "factor"],
+      birth_interval: ["Calving interval", "years"], protein_milkcontent: ["Protein in milk", "%"], fat_milkcontent: ["Fat in milk", "%"],
+      energy_milkcontent: ["Energy in milk", "kJ/kg"], energy_meatcontent: ["Energy in meat", "kJ/kg"], protein_meatcontent: ["Protein in meat", "%"],
+      carcass_fraction: ["Carcass as a share of live weight", "fraction"], n_manure_content: ["Nitrogen in manure", "kg N per kg"],
+      meat_product: ["Meat product name", ""], milk_product: ["Milk product name", ""],
+      ipcc_ef_category_t1: ["IPCC Tier 1 category", ""], ipcc_ef_category_t2: ["IPCC Tier 2 category", ""],
+      ipcc_meth_man_category: ["IPCC manure category", ""], ipcc_n_exc_category: ["IPCC nitrogen excretion category", ""],
+      dm_content: ["Dry matter", "% of fresh weight"], me_content: ["Metabolisable energy", "MJ/kg DM"], cp_content: ["Crude protein", "% of DM"],
+      dry_yield: ["Typical yield", "t DM/ha"], residue_dry_yield: ["Typical residue yield", "t DM/ha"],
+      main_n: ["Nitrogen in the main product", "fraction"], residue_n: ["Nitrogen in the residue", "fraction"],
+      kc_initial: ["Crop water factor Kc, early", ""], kc_mid: ["Crop water factor Kc, mid-season", ""], kc_end: ["Crop water factor Kc, late", ""],
+      k: ["Soil erodibility K", ""], p: ["Slope practice factor P", ""], c: ["Cover factor C", "lower = more protected"],
+      n: ["Nitrogen content", "%"], name: ["Product", ""], category: ["Type", ""],
+      feed_item_name: ["Feed", ""], feed_item_code: ["Code in the parameter set", ""], crop_name: ["Crop", ""], crop_code: ["Crop code", ""],
+    };
+    const OTHER_SPECIES_COLS = ["litter_size", "lactation_length", "proportion_growth_piglets_milk", "lw_gain_piglets"];
+    const LOCKED_COLS = ["code", "desc", "species", "category", "ipcc_ef_category_t1", "ipcc_ef_category_t2", "ipcc_meth_man_category", "ipcc_n_exc_category", "feed_item_code", "feed_item_name", "crop_code", "crop_name", "name"];
+    const sel = state.ui.paramRow && state.ui.paramRow.table ? state.ui.paramRow : null;
+    const select = (tableName, rowKey) => ICL.store.update("ui.paramRow", { table: tableName, key: String(rowKey) });
+
+    /** The one row you are looking at, transposed, with a lock you can open. */
+    const selectedPanel = (spec) => {
+      const rows = rowsOf(spec), key = keyOf(spec);
+      const active = sel && sel.table === spec.table ? rows.find((r) => String(r[key]) === sel.key) : null;
+      const box = h("div", { class: "card", dataset: { fb: "params:selected:" + spec.table, fbLabel: "Selected parameter row" } });
+      if (!active) { box.append(h("p", { class: "small" }, "Click any row in the table below to see it on its own, value by value, with its units and where each number is used.")); return box; }
+      const unlocked = !!state.ui.paramUnlocked && editable;
+      const label = active.desc || active.feed_item_name || active.crop_name || active.name || String(active[key]);
+      const colLabel = {}; for (const sp of [spec, spec.second].filter(Boolean)) for (const c of sp.cols) colLabel[c[0]] = c[1];
+      box.append(h("div", { class: "card-head" },
+        h("h3", null, "Selected: ", label, " ", unlocked ? h("span", { class: "chip c-user" }, "\u270e unlocked") : h("span", { class: "chip c-fixed" }, "\ud83d\udd12 locked")),
+        h("div", { class: "actions" },
+          editable
+            ? h("button", { type: "button", class: unlocked ? "btn-sm" : "btn", onclick: () => ICL.store.update("ui.paramUnlocked", !unlocked) }, unlocked ? "Lock again" : "Unlock to edit")
+            : h("button", { type: "button", class: "btn", onclick: () => makeCopy(shipped) }, "Make my own copy to edit"),
+          h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.update("ui.paramRow", null) }, "Clear"))));
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Value"), h("th", null, "In this set"), h("th", null, "Shipped"), h("th", null, ""))));
+      const body = h("tbody");
+      const rawRow = Array.isArray(RAW[spec.table]) ? (RAW[spec.table].find((r) => String(r[key]) === String(active[key])) || {}) : { n: RAW.fertilizer_default_n_pct[String(active[key])] };
+      const later = [];
+      for (const col of Object.keys(active)) {
+        if (col.startsWith("_")) continue;
+        const parked = OTHER_SPECIES_COLS.includes(col) && !Number(active[col]);
+        const isNum = typeof active[col] === "number";
+        const locked = LOCKED_COLS.includes(col) || !isNum;
+        const ch = copy && copy.changes && copy.changes[spec.table] && copy.changes[spec.table][String(active[key])] && copy.changes[spec.table][String(active[key])][col];
+        const show = (v) => typeof v === "number" ? String(Math.round(v * 1000) / 1000) : String(v ?? "");
+        let valCell;
+        if (locked) valCell = h("td", { class: "cell-locked" }, (LOCKED_COLS.includes(col) && !isNum ? "" : "\ud83d\udd12 ") + show(active[col]));
+        else if (!unlocked) valCell = h("td", { class: ch ? "cell-changed" : "" }, show(active[col]));
+        else {
+          const inp = h("input", { type: "text", inputmode: "decimal", value: active[col] ?? "", "aria-label": `${label} ${col}` });
+          inp.addEventListener("change", () => { const pr = ICL.parseNumber(inp.value); if (pr.value == null || Number.isNaN(pr.value)) return; setChange(copy.value, spec.table, String(active[key]), col, rawRow[col], pr.value); });
+          valCell = h("td", { class: "cell-edit" + (ch ? " cell-changed" : "") }, inp);
+        }
+        const pl = PARAM_LABEL[col];
+        const tr = h("tr", null,
+          h("td", null, (pl ? pl[0] : colLabel[col] || col.replace(/_/g, " ")), pl && pl[1] ? h("span", { class: "unit" }, " " + pl[1]) : null),
+          valCell,
+          h("td", { class: "small" }, show(rawRow[col])),
+          h("td", null, ch ? h("button", { type: "button", class: "btn-sm", onclick: () => revert(copy.value, spec.table, String(active[key]), col) }, "Revert") : locked ? h("span", { class: "small" }, LOCKED_COLS.includes(col) && !isNum ? "matched by name" : "fixed") : null));
+        if (parked) later.push(tr); else body.append(tr);
+      }
+      t.append(body);
+      box.append(h("div", { class: "tablewrap" }, t));
+      if (later.length) {
+        const t2 = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Value"), h("th", null, "In this set"), h("th", null, "Shipped"), h("th", null, ""))), h("tbody", null, ...later));
+        box.append(h("details", { class: "advanced" }, h("summary", null, `${later.length} values that do not apply to this animal (pigs and other species)`), h("div", { class: "tablewrap" }, t2)));
+      }
+      box.append(h("p", { class: "small" }, unlocked
+        ? `Editing here changes the parameter set "${copy.label} \u00b7 my copy" \u2014 every scenario of yours that uses it. To change one scenario only, override the value on the card that uses it.`
+        : editable ? "Locked so a stray keypress cannot move a default. Unlock to edit." : "Shipped sets are read-only so results stay comparable. Make a copy to edit, or override the value on the card that uses it."));
+      return box;
+    };
+
     const table = (spec) => {
-      const rows = spec.table === "fertilizer_default_n_pct" ? Object.keys(RAW.fertilizer_default_n_pct).map((n) => ({ name: n, n: V.fertilizer_default_n_pct[n] })) : V[spec.table];
-      const key = spec.table === "fertilizer_default_n_pct" ? "name" : D.TABLE_KEY[spec.table];
+      const rows = rowsOf(spec), key = keyOf(spec);
       const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, ...spec.cols.map((c) => h("th", null, c[1])))));
-      const body = h("tbody"); for (const r of rows) body.append(h("tr", null, ...spec.cols.map((c) => cell(spec.table, r, key, c[0], c[2])))); t.append(body);
+      const body = h("tbody");
+      for (const r of rows) {
+        const isSel = sel && sel.table === spec.table && sel.key === String(r[key]);
+        const tr = h("tr", { class: isSel ? "row-sel" : "", tabindex: "0", role: "button", "aria-pressed": String(!!isSel), title: "Show this row on its own" }, ...spec.cols.map((c) => cell(spec.table, r, key, c[0], c[2])));
+        tr.addEventListener("click", (ev) => { if (ev.target.tagName !== "INPUT") select(spec.table, r[key]); });
+        tr.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(spec.table, r[key]); } });
+        body.append(tr);
+      }
+      t.append(body);
       return h("div", { class: "tablewrap card", dataset: { fb: "params:" + spec.table, fbLabel: "Parameter table " + spec.table } }, t);
     };
-    if (TABLES[cur]) { const spec = TABLES[cur]; if (spec.note) root.append(h("p", { class: "small" }, spec.note, editable ? " Edit a cell and press Enter; changed cells are highlighted and can be reverted." : " Make your own copy to edit.")); root.append(table(spec)); if (spec.second) root.append(table(spec.second)); }
+    if (TABLES[cur]) {
+      const spec = TABLES[cur];
+      if (!sel || sel.table === spec.table) root.append(selectedPanel(spec));
+      if (spec.note) root.append(h("p", { class: "small" }, spec.note, editable ? " Click a row to open it above; edit a cell and press Enter. Changed cells are highlighted and can be reverted." : " Click a row to open it above. Make your own copy to edit."));
+      root.append(table(spec));
+      if (spec.second) { if (sel && sel.table === spec.second.table) root.append(selectedPanel(spec.second)); root.append(table(spec.second)); }
+    }
     if (cur === "Manure systems") root.append(h("p", { class: "small" }, "The plain-language choices on the Animals screen map to these IPCC systems. The mapping is fixed; the factors behind each system are under Fixed constants."), h("div", { class: "tablewrap card" }, h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "You see"), h("th", null, "Model uses"), h("th", null, "Meaning"))), h("tbody", null, ...window.ICL_SCHEMA.manureOptions.map((o) => h("tr", null, h("td", null, o.label), h("td", { class: "cell-locked" }, "🔒 " + o.ipcc), h("td", null, o.definition)))))));
     if (cur === "Land-use factors") root.append(h("p", { class: "small" }, "IPCC stock-change labels the model recognises. Derived from your climate and plot answers; the labels themselves are fixed."), ...Object.entries(V.stock_change).map(([k, arr]) => h("div", { class: "card" }, h("h3", null, k), h("div", { class: "small" }, arr.join(" · ")))));
     if (cur === "Fixed constants") {

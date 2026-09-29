@@ -1,22 +1,24 @@
 /* Field renderer: dictionary entry → labelled control with help, unit, provenance chip, validation message. */
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
-  const PROV_LABEL = { user: "you entered", default: "assumed", db: "from database", derived: "calculated", blank: "not entered", map: "from maps" };
+  const PROV_LABEL = { user: "you entered", default: "assumed", db: "from database", derived: "calculated", blank: "not entered", map: "from maps", herd: "from the herd" };
 
   const PARAM_TAB = { animal: "Animal types", feed: "Feeds & crops", farm: "Soils & slopes", plot: "Land cover" };
   function provChip(prov, f, onReset, opts) {
     const fromDb = f.default_source && f.default_source.startsWith("db:");
     const cls = prov === "blank" ? "blank" : prov === "default" && fromDb ? "db" : prov;
+    const fromHerd = f.default_source && f.default_source.startsWith("herd:");
     const label = prov === "default" && f.default_source === "map" ? "from maps" : prov === "default" && fromDb ? "from database" : PROV_LABEL[prov] || prov;
     const wrap = h("span", { class: "chipwrap" });
-    const chip = h("button", { type: "button", class: "chip c-" + cls + " chip-menu", "aria-haspopup": "menu", "aria-expanded": "false", title: (f.default_source ? "Source: " + f.default_source + ". " : "") + "How is this value set?" }, (cls === "db" ? "🗄 " : prov === "user" ? "✎ " : prov === "default" ? "≈ " : "○ ") + label, h("span", { "aria-hidden": "true" }, " ▾"));
+    const chip = h("button", { type: "button", class: "chip c-" + cls + " chip-menu", "aria-haspopup": "menu", "aria-expanded": "false", title: (f.default_source ? "Source: " + f.default_source + ". " : "") + "How is this value set?" }, (cls === "db" ? "🗄 " : prov === "herd" ? "⇣ " : prov === "user" ? "✎ " : prov === "default" ? "≈ " : "○ ") + label, h("span", { "aria-hidden": "true" }, " ▾"));
     const menu = h("div", { class: "prov-menu", role: "menu", hidden: true });
     const item = (txt, fn, note) => h("button", { type: "button", role: "menuitem", onclick: () => { menu.hidden = true; chip.setAttribute("aria-expanded", "false"); fn(); } }, h("span", null, txt), note ? h("small", null, note) : null);
     const focusInput = () => { const box = wrap.closest(".field, fieldset") || wrap.parentElement; const inp = box && box.querySelector("input:not([type=radio]):not([type=checkbox]), select, textarea, input"); if (inp) { inp.focus(); inp.select && inp.select(); } };
     if (prov !== "user") menu.append(item("Enter my own value", focusInput, "for this scenario only"));
     if (opts && opts.onKeep) menu.append(item("Looks right — keep it", opts.onKeep, "confirms the value as yours"));
-    if (prov === "user" && onReset && (f.default !== undefined || f.default_source)) menu.append(item(fromDb ? "Use the value from the parameter set" : f.default_source === "map" ? "Use the value from maps" : "Use the default", onReset, "removes your override"));
+    if (prov === "user" && onReset && (f.default !== undefined || f.default_source)) menu.append(item(fromDb ? "Use the value from the parameter set" : fromHerd ? "Follow the herd again" : f.default_source === "map" ? "Use the value from maps" : "Use the default", onReset, "removes your override"));
     if (prov === "user" && onReset && !(f.default !== undefined || f.default_source)) menu.append(item("Clear the value", onReset, "leave it blank"));
+    if (fromHerd && opts && opts.herdId) menu.append(item("Change it on the herd", () => ICL.router.go("herds", opts.herdId), "affects every group in the herd"));
     if (fromDb) menu.append(item("Change it in the parameter set", () => { ICL.store.update("ui.paramTab", PARAM_TAB[f.entity] || "Animal types"); ICL.router.go("parameters"); }, "affects every scenario that uses it"));
     menu.append(h("div", { class: "prov-legend" }, h("span", { class: "chip c-user" }, "✎ you entered"), h("span", { class: "chip c-db" }, "🗄 from database"), h("span", { class: "chip c-default" }, "≈ assumed / maps"), h("span", { class: "chip c-fixed" }, "🔒 fixed")));
     chip.addEventListener("click", () => { const open = menu.hidden; document.querySelectorAll(".prov-menu").forEach((m) => (m.hidden = true)); menu.hidden = !open; chip.setAttribute("aria-expanded", String(open)); });
@@ -119,6 +121,13 @@
         const cur = eff.value || f.default; const S = window.ICL_SCHEMA; const g = h("div", { class: "radios" });
         for (const o of S.manureOptions) { const r = h("input", { type: "radio", name: inputId, value: o.value }); r.checked = cur.handling === o.value; r.addEventListener("change", () => setVal(Object.assign({}, cur, { handling: o.value, followups: {} }))); g.append(h("label", { class: "radio" }, r, h("span", null, o.label, h("span", { class: "def" }, o.definition)))); }
         control.append(g); wrap.append(control); controlAppended = true;
+        if (f.default_source && f.default_source.startsWith("herd:")) {
+          const herd = entity && (state.herds || []).find((x) => x.id === entity.herd_ref);
+          wrap.append(h("div", { class: "small" },
+            eff.prov === "herd"
+              ? [h("span", { class: "chip c-herd" }, "⇣ from the herd"), ` Following ${herd ? herd.herd_name || "the herd" : "the herd"}. Picking something here changes this group only. `, herd ? h("a", { href: ICL.router.hashFor("herds", herd.id) }, "Change it for the whole herd") : null]
+              : [h("span", { class: "chip c-user" }, "✎ this group only"), " ", h("button", { type: "button", class: "btn-sm", onclick: () => reset() }, "Follow the herd again")]));
+        }
         const opt = S.manureOptions.find((o) => o.value === cur.handling);
         if (opt && opt.followups) for (const fu of opt.followups) {
           const cv = (cur.followups || {})[fu.id];
@@ -160,7 +169,7 @@
     }
     if (control.childNodes.length && !controlAppended) wrap.append(control);
     if (!["manure", "rice", "fert_rates", "triple_pct", "quantity_n", "text", "month_set", "livetype", "feed", "location"].includes(f.type) || (f.type === "month_set" && f.default_source)) {
-      if (!(f.type === "text")) wrap.append(provChip(eff.prov, f, reset, { onKeep: eff.prov === "default" && eff.value != null ? () => setVal(eff.value, "user") : null, hasDefault: !!(f.default !== undefined || f.default_source) }));
+      if (!(f.type === "text")) wrap.append(provChip(eff.prov, f, reset, { herdId: entity && entity.herd_ref, onKeep: eff.prov === "default" && eff.value != null ? () => setVal(eff.value, "user") : null, hasDefault: !!(f.default !== undefined || f.default_source) }));
     }
     if (err) { msgSlot.textContent = err.msg; msgSlot.className = "msg err"; } else if (warn) { msgSlot.textContent = warn.msg; msgSlot.className = "msg warn"; }
     wrap.append(msgSlot);

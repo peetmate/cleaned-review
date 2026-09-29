@@ -48,6 +48,14 @@
       e._pattern = pat;
       for (const k of ["hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm"]) if (e[k] == null) { const d = defaultFor(field(k), e, state); e[k] = d ? d.value : null; e._hoursDefaulted = true; }
     }
+    if (entityType === "herd") {
+      const pat = S().herdPatterns.find((p) => p.value === e.herd_pattern);
+      const groups = (state.animals || []).filter((a) => a.herd_ref === e.id).map((a) => decorate(a, "animal", state));
+      const any = (k) => groups.length ? groups.some((g) => Number(g[k]) > 0) : !!(pat && pat.hours[k.replace("hours_", "")] > 0);
+      e._anyStable = any("hours_stable"); e._anyPen = any("hours_pen");
+      e._anyOnfarm = any("hours_onfarm"); e._anyOfffarm = any("hours_offfarm");
+      e._groups = groups.length; e._head = groups.reduce((t, g) => t + (Number(g.herd_n) || 0), 0);
+    }
     if (entityType === "feed") {
       const fi = feedItemOf(e.feed_item);
       const crop = fi ? cropOf(fi.crop_code) : null;
@@ -79,6 +87,15 @@
     if (ds.startsWith("db:crop.")) {
       const fi = entity && feedItemOf(entity.feed_item); const crop = fi && cropOf(fi.crop_code); const k = ds.split(".")[1];
       return crop && crop[k] != null ? { value: crop[k], source: "db" } : null;
+    }
+    if (ds.startsWith("herd:")) {
+      const herd = entity && (state.herds || []).find((x) => x.id === entity.herd_ref);
+      if (!herd) return null;
+      const hf = field(ds.slice(5));
+      const raw = herd[hf.id];
+      if (raw !== undefined && raw !== null && raw !== "") return { value: raw, source: "herd" };
+      const hd = defaultFor(hf, decorate(herd, "herd", state), state);
+      return hd ? { value: hd.value, source: hd.source } : null;
     }
     if (ds === "herd pattern") {
       const herd = entity && state.herds.find((h) => h.id === entity.herd_ref);

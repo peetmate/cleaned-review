@@ -102,6 +102,7 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .chip.c-user { border-color: var(--prov-user); color: var(--prov-user); background: transparent; } .chip.c-default { border-color: var(--prov-default); color: var(--prov-default); background: transparent; }
 .chip.c-db { border-color: var(--prov-db); color: var(--prov-db); } .chip.c-derived { border-color: var(--prov-derived); color: var(--prov-derived); background: transparent; }
 .chip.c-blank { border-style: dashed; }
+.chip.c-herd { border-color: var(--prov-derived); color: var(--prov-derived); background: transparent; }
 .chip button { all: unset; cursor: pointer; text-decoration: underline; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
 .card.soft { background: var(--surface-2); border-color: transparent; }
@@ -203,6 +204,10 @@ table.grid tfoot td { font-weight: 600; } .tablewrap { overflow-x: auto; }
 .prov-legend { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px 2px; border-top: 1px solid var(--border); margin-top: 4px; }
 .states { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
 .states .st { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: .88rem; } .states .st strong { display: block; margin-bottom: 4px; }
+table.grid tbody tr[role="button"] { cursor: pointer; }
+table.grid tbody tr[role="button"]:hover td { background: var(--surface-2); }
+table.grid tbody tr.row-sel td { background: rgba(0,154,219,.10); box-shadow: inset 0 0 0 1px var(--prov-db); }
+table.grid tbody tr[role="button"]:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
 td.cell-edit input { width: 90px; max-width: 90px; padding: 3px 6px; } td.cell-changed { background: rgba(242,193,78,.22); } td.cell-changed .was { display: block; font-size: .72rem; color: var(--muted); } td.cell-changed .was button { all: unset; text-decoration: underline; cursor: pointer; color: var(--primary); margin-left: 4px; }
 td.cell-locked { color: var(--muted); } .lock { color: var(--muted); font-size: .8rem; }
 

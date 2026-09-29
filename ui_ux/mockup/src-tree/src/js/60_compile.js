@@ -74,7 +74,7 @@
       const heads0 = list.map((a) => Number(a.herd_n) || 0); const heads = heads0.some((x) => x > 0) ? heads0 : list.map(() => 1); const N = heads.reduce((s, x) => s + x, 0) || 1;
       const w = (fn) => list.reduce((s, a, i) => s + fn(a) * heads[i], 0) / N; // head-weighted mean
       const merged = list.length > 1;
-      const P = (p) => (merged ? "derived" : p);
+      const P = (p) => (merged ? "derived" : p === "herd" ? "user" : p);
       const row = {}; const pf = (k, v, p) => set(row, k, v, p, `livestock[${idx}].${k}`);
       pf("livetype_code", lt.code, "db"); pf("livetype_desc", lt.desc, "db");
       pf("herd_composition", N, "user");
@@ -108,7 +108,7 @@
         // dominant handling by head; collected weighted
         const vals = active.map((a) => { const e = eff(fid, a, `animals[${a.id}]`); const v = Object.assign({}, e.value || f.default); if (v.handling === "left") v.collected = 0; return { v, prov: e.prov, n: Number(a.herd_n) || 0 }; });
         const dom = vals.slice().sort((x, y) => y.n - x.n)[0];
-        pf(mmKey, ipccManure(dom.v), dom.prov === "user" ? "derived" : "default");
+        pf(mmKey, ipccManure(dom.v), ["user", "herd"].includes(dom.prov) ? "derived" : "default");
         if (collKey) pf(collKey, r4(vals.reduce((s, x) => s + (Number(x.v.collected) || 0) / 100 * x.n, 0) / (vals.reduce((s, x) => s + x.n, 0) || 1)), dom.prov === "user" ? "derived" : "default");
       }
       const kept = list.map((a) => eff("manure_kept_share", a, `animals[${a.id}]`)); const keptV = w((a) => Number(kept[list.indexOf(a)].value) || 0) / 100;
