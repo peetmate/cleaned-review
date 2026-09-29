@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iCLEANED UX Review</title><meta name="description" content="Adversarial UI/UX review of the iCLEANED web app, workshop run sheet and feedback form (2026-09-29).">
+<style>
+:root{--bg:#f7f8f9;--surface:#fff;--text:#1d2329;--muted:#5b6670;--border:#dde2e6;--accent:#005275;--accent-soft:#e3eef3;
+--blocker-bg:#b3261e;--blocker-fg:#fff;--high-bg:#e35230;--high-fg:#fff;--medium-bg:#f2c14e;--medium-fg:#2a2100;--low-bg:#d7dde2;--low-fg:#1d2329;--code-bg:#eef1f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161a;--surface:#1a2026;--text:#e6eaee;--muted:#9aa6b1;--border:#2c353d;--accent:#6cc3e8;--accent-soft:#1f3440;
+--blocker-bg:#ff6b61;--blocker-fg:#1a0000;--high-bg:#ff9a6b;--high-fg:#1f0a00;--medium-bg:#f2c14e;--medium-fg:#1f1700;--low-bg:#3a444d;--low-fg:#e6eaee;--code-bg:#242c33}}
+:root[data-theme="dark"]{--bg:#12161a;--surface:#1a2026;--text:#e6eaee;--muted:#9aa6b1;--border:#2c353d;--accent:#6cc3e8;--accent-soft:#1f3440;
+--blocker-bg:#ff6b61;--blocker-fg:#1a0000;--high-bg:#ff9a6b;--high-fg:#1f0a00;--medium-bg:#f2c14e;--medium-fg:#1f1700;--low-bg:#3a444d;--low-fg:#e6eaee;--code-bg:#242c33}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border)}
+.bar{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.bar h1{font-size:1.05rem;margin:0 12px 0 0;color:var(--accent)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:6px 12px;border-radius:6px;cursor:pointer;font:inherit;font-size:.9rem}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tab:focus-visible,.filters button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.theme{margin-left:auto}
+main{max-width:1280px;margin:0 auto;padding:16px}
+.doc{display:none;grid-template-columns:220px minmax(0,1fr);gap:24px}
+.doc.active{display:grid}
+.toc{position:sticky;top:64px;align-self:start;font-size:.85rem;max-height:calc(100vh - 80px);overflow:auto}
+.toc ul{list-style:none;padding:0;margin:8px 0}.toc li{margin:4px 0}.toc a{color:var(--muted);text-decoration:none}.toc a:hover{color:var(--accent)}
+article{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 28px 28px;min-width:0}
+h1,h2,h3{line-height:1.25}article h1{font-size:1.6rem}article h2{font-size:1.3rem;margin-top:2em;padding-top:.4em;border-top:1px solid var(--border);scroll-margin-top:70px}
+article h3{font-size:1.08rem;margin-top:1.6em}
+a{color:var(--accent)}
+code{background:var(--code-bg);padding:.1em .35em;border-radius:4px;font-size:.86em;word-break:break-word}
+pre{background:var(--code-bg);padding:12px;border-radius:8px;overflow:auto}pre code{padding:0;background:none}
+.tablewrap{overflow-x:auto;margin:1em 0;border:1px solid var(--border);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{border-bottom:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+.sev{display:inline-block;padding:1px 8px;border-radius:999px;font-weight:600;font-size:.78rem;white-space:nowrap}
+.sev-blocker{background:var(--blocker-bg);color:var(--blocker-fg)}.sev-high{background:var(--high-bg);color:var(--high-fg)}
+.sev-medium{background:var(--medium-bg);color:var(--medium-fg)}.sev-low{background:var(--low-bg);color:var(--low-fg)}
+.ver{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;font-size:.85rem}
+.filters button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit}
+.filters button[aria-pressed="true"]{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.filters input{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;padding:4px 8px;font:inherit;min-width:200px}
+.count{color:var(--muted)}
+td:first-child{white-space:nowrap}
+@media (max-width:860px){.doc.active{display:block}.toc{position:static;max-height:none;margin-bottom:12px}article{padding:4px 16px 20px}.theme{margin-left:0}}
+@media print{header,.toc,.filters{display:none}.doc{display:block!important}article{border:0}}
+</style></head><body>
+<header><div class="bar"><h1>iCLEANED UX review &middot; 29 Sep 2026</h1><div class="tabs" role="tablist"><button class="tab" data-target="review" role="tab">UI/UX review</button><button class="tab" data-target="workshop" role="tab">Workshop run sheet</button><button class="tab" data-target="feedback" role="tab">Feedback form</button></div>
+<button class="tab theme" type="button" aria-label="Toggle dark mode">&#9680; Theme</button></div></header>
+<main><section class="doc" id="doc-review" data-doc="review"><nav class="toc"><strong>On this page</strong><ul><li><a href="#review-verdict-5-sentences">Verdict (5 sentences)</a></li><li><a href="#review-findings-table">Findings table</a></li><li><a href="#review-live-walkthrough-log-2026-09-29-chrome-1036-px-window">Live walkthrough log (2026-09-29, Chrome, 1036 px window)</a></li><li><a href="#review-redesign-directions-from-your-notes-cross-checked-against-the-code-and-the-live-walkthrough">Redesign directions (from your notes, cross-checked against the code and the live walkthrough)</a></li><li><a href="#review-detailed-findings">Detailed findings</a></li><li><a href="#review-done-well-max-5">Done well (max 5)</a></li></ul></nav><article><h1>iCLEANED web app: adversarial UI/UX review before the user-testing workshop</h1>
+<ul>
+<li><strong>Date:</strong> 2026-09-29</li>
+<li><strong>Source reviewed:</strong> <code>icleaned_review_src</code> at <code>fb8498c</code> (CIAT/icleaned; merge of APPLITICS#16).</li>
+<li><strong>Live app:</strong> <a href="https://icleaned.alliance.cgiar.org/">https://icleaned.alliance.cgiar.org/</a>.
+<ul>
+<li>First pass: login page only; the reviewer may not enter credentials.</li>
+<li>Second pass: a full walkthrough in your logged-in Chrome session, from New Scenario to Run (four runs). See &quot;Live walkthrough log&quot; below.</li>
+</ul>
+</li>
+<li><strong>Model issues:</strong> cross-referenced to <code>../01_climate_ghg.md</code>, <code>../02_livestock.md</code>, <code>../03_landuse.md</code> and <code>../04_package_code.md</code>. <code>00_summary.md</code> and <code>05_app_relevance_and_workshop.md</code> did not exist when this was written.</li>
+<li><strong>Paths:</strong> every file path below is relative to <code>icleaned_review_src/</code>. Package paths are relative to <code>cleaned_review_src/</code>.</li>
+</ul>
+<p><strong>Verdict labels</strong></p>
+<ul>
+<li><strong>CONFIRMED</strong> means observed live on icleaned.alliance.cgiar.org by the reviewer (login page only, first pass).</li>
+<li><strong>CONFIRMED (live)</strong> means reproduced by the reviewer in a live walkthrough on 2026-09-29, in your logged-in Chrome session, using the approved throwaway scenario <code>ZZ_UXREVIEW_DELETE_ME</code> (Southern Highland Tanzania Dairy DB, 2 seasons, 12 local cows + 8 calves, Rhodes grass, NPK). Four runs were made. No other scenarios were touched, and consent was declined.</li>
+<li><strong>CONFIRMED (user)</strong> means reported by you from your own live walkthrough on the same day.</li>
+<li><strong>REFUTED (live)</strong> means a code-based claim that the live app contradicted.</li>
+<li><strong>PLAUSIBLE</strong> means found in the code only.</li>
+<li><strong>PLAUSIBLE + probe</strong> means the input behaviour was also reproduced in a throwaway local Shiny/DT app. That app used the same DT 0.33 widgets, ran on localhost in Chromium with an English locale, and has since been stopped.</li>
+</ul>
+<p>For every finding the reviewer searched for a refutation, meaning handling code elsewhere. The result is recorded under &quot;Refutation&quot; wherever it changed the verdict or the severity.</p>
+<h2 id="review-verdict-5-sentences">Verdict (5 sentences)</h2>
+<ol>
+<li>A first-time user can click through Farm → Livestock → Feed Production → Livestock Feeding → Run, but <strong>the result is wrong or empty unless they override hidden defaults</strong>. In the live walkthrough, a complete-looking scenario built with the app's own defaults produced <strong>four empty charts</strong> (all indicators 0, including enteric CH₄), with no message:
+<ul>
+<li>all validation is advisory, and nothing blocks a run;</li>
+<li>a comma decimal became a 10× value (<code>200,5</code> → 2005);</li>
+<li>&quot;first row of the lookup&quot; defaults silently zero model terms: manure CH₄ (&quot;Pasture / range / paddock&quot;), land area (removal 0), erosion (land cover &quot;Dense forest&quot;);</li>
+<li>the climate list lacks Cool Temperate and Boreal, even for the Mongolia and Uzbekistan DBs.</li>
+</ul>
+</li>
+<li>The app has <strong>no error handling at all</strong>: <code>tryCatch</code>, <code>validate</code> and <code>need</code> appear nowhere. The model run is synchronous in the Shiny process. So one participant's bad input can grey-screen their session, and with ~20 people clicking &quot;Run&quot; together every session on the same R worker will freeze.</li>
+<li>The comparison dashboard can mislead experts as well as novices. Relative (%) charts keep the absolute unit on the y-axis. A zero baseline shows as &quot;0 %&quot;. A negative baseline (N balance, carbon balance) flips the sign of the change. The GHG axis is literally labelled &quot;ghg_emission&quot;.</li>
+<li>Two guide steps have no UI at all: extrapolation (§3.2) and benchmarks (§3.4). &quot;New Parameters Database&quot; ignores the database the guide tells users to pick. Help is hover-only and there is almost none of it: 0 &quot;?&quot; icons on the Farm › Area slide and none on any table column. There is no data dictionary, no &quot;don't know&quot; option, and no geospatial prefill. A first-time user will not finish a meaningful scenario without the PDF and a facilitator (see &quot;Redesign directions&quot;).</li>
+<li>Recommendation: run the workshop on <strong>pre-built template scenarios</strong>, announce the known issues below, stagger the runs, and treat numeric results as illustrative. The Blocker fixes are mostly small and local (UX-01 to UX-09, UX-76, UX-77). The three &quot;first row of lookup&quot; defaults and the climate list are one-line data or code fixes that should go in before the session.</li>
+</ol>
+<h2 id="review-findings-table">Findings table</h2>
+<p><strong>Counts:</strong> 12 Blocker, 33 High, 32 Medium, 10 Low, plus 1 refuted (88 rows). CONFIRMED (live), from the reviewer's walkthrough: UX-03, 05, 08, 09, 10, 13, 16, 17, 19, 26, 36, 39, 50, 74–88. CONFIRMED (user): UX-28, 30, 61–75. CONFIRMED: UX-58/59 (login page). REFUTED (live): UX-27. All others are PLAUSIBLE (code only).</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>Verdict</th>
+<th>Screen / step</th>
+<th>file:line</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UX-01</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Dashboard › Run; Compare; load scenario</td>
+<td><code>R/10_mod_board_simulation_server.R:160-355</code>; <code>R/20_mod_board_comparison_server.R:133-203</code>; no <code>tryCatch</code> anywhere</td>
+<td>Any model or JSON error is uncaught inside an observer. The session dies (grey &quot;disconnected&quot; screen), or a raw R error shows in the plot area</td>
+</tr>
+<tr>
+<td>UX-02</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Dashboard › Run (many users)</td>
+<td><code>R/10_mod_board_simulation_server.R:174-300</code></td>
+<td>The run is synchronous, with no <code>ExtendedTask</code>/<code>future</code>. It blocks every session sharing the R process, which is fatal when a whole room clicks Run together</td>
+</tr>
+<tr>
+<td>UX-03</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Livestock › Add livestock</td>
+<td><code>R/30_mod_scenario_server.R:987,997-1005</code>; pkg <code>R/ghg_emission.R:185-194,237-245</code></td>
+<td>Every new animal defaults to manure system <code>&quot;Pasture / range / paddock&quot;</code>. IPCC tables join on <code>&quot;Pasture/Range/Paddock&quot;</code>, so the join returns NA and the manure CH₄/N₂O term is silently lost <strong>Live:</strong> manure bar = 0 with default; switching stable system to &quot;Solid storage&quot; made it appear (41 px vs ~4 px expected for a real PRP MCF).</td>
+</tr>
+<tr>
+<td>UX-04</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock table</td>
+<td><code>R/30_mod_scenario_init.R:72</code>; <code>R/30_mod_scenario_server.R:1007</code></td>
+<td><code>manure_onfarm_fraction</code> is labelled &quot;Collection of manure during off-farm grazing&quot;. It multiplies <strong>all</strong> collected manure, and its default of 0 zeroes manure N</td>
+</tr>
+<tr>
+<td>UX-05</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>All numeric inputs and DT cells</td>
+<td><code>R/helpers_shiny.R:201-203</code>; <code>R/30_mod_scenario_server.R:2567</code></td>
+<td>Blank DT cell → 0. Blank numericInput → the string <code>&quot;NA&quot;</code> in the JSON. <code>&quot;1,5&quot;</code> → <strong>15</strong> (probe). No <code>min</code>/<code>max</code> on any of 28 numericInputs <strong>Live:</strong> <code>200,5</code> in a Days cell → 2005; <code>1,5</code> in compost numericInput → 15; all 28 numeric fields start at 0.</td>
+</tr>
+<tr>
+<td>UX-06</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Feed Production › edit table</td>
+<td><code>R/30_mod_scenario_server.R:2527-2533</code>, <code>1860-1871</code></td>
+<td>Duplicate feed/crop name → autosave is silently skipped (stderr only). Run then simulates the <strong>stale</strong> saved JSON, although the banner says the simulation &quot;will fail&quot;</td>
+</tr>
+<tr>
+<td>UX-07</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Comparison › relative mode</td>
+<td><code>R/20_mod_board_comparison_ui.R:201-206</code>; <code>R/graphs.R:373-375</code>; pkg <code>R/compare_scenario.R:50-54</code></td>
+<td>The y-axis keeps the absolute unit on % bars. Baseline 0 → &quot;0 %&quot;. A negative baseline flips the sign (divides by <code>base</code>, not <code>abs(base)</code>)</td>
+</tr>
+<tr>
+<td>UX-08</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Dashboard › Run / Compare</td>
+<td><code>R/30_mod_scenario_validation.R:200-257</code>; <code>R/10_mod_board_simulation_server.R:160-170</code></td>
+<td>All validation (seasons ≠ 365 days, feeding ≠ 100 %, time fractions ≠ 1) is a banner only. Run never checks validity <strong>Live:</strong> ran with calves at 0 % feed in Short rains and 100 000 kg milk; no block.</td>
+</tr>
+<tr>
+<td>UX-09</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Feed Production › Add feed</td>
+<td><code>R/30_mod_scenario_server.R:1449,1546-1548</code></td>
+<td>New feed: <code>main_product_removal = 0</code>. For non-residue rows, residue removal is forced to 0. So land requirement = 0 ha, with no warning <strong>Live:</strong> complete scenario with default removal = 0 produced four empty charts (GHG, N, land, water all 0, incl. enteric CH₄); setting 0.9 gave GHG ≈ 7.3, land ≈ 4 ha, N ≈ −840 kg.</td>
+</tr>
+<tr>
+<td>UX-10</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Farm › Area</td>
+<td><code>R/30_mod_scenario_ui.R:614-630</code>; <code>R/30_mod_scenario_validation.R:50-91</code></td>
+<td>Precipitation and rainy-season length default to 0 and have no validation. Erosivity divides by <code>rain_length</code>, giving NaN/Inf, then 0 <strong>Live:</strong> rainy season = 14 months and precipitation = 0 accepted, no warning.</td>
+</tr>
+<tr>
+<td>UX-11</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Farm › Area (soil)</td>
+<td><code>R/30_mod_scenario_validation.R:50-91</code></td>
+<td>Soil N/C/clay/bulk density/depth are checked only for ≥ 0, and default to 0. SOC stock = 0 without a warning</td>
+</tr>
+<tr>
+<td>UX-12</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock / Feed tables (orange columns)</td>
+<td><code>R/30_mod_scenario_init.R:265-305</code>; <code>R/helpers_shiny.R:276-303</code></td>
+<td>DB-parameter columns look editable, but they are overwritten from the parameters DB on load or DB change. User edits are silently reverted</td>
+</tr>
+<tr>
+<td>UX-13</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Farm › Fertilizer</td>
+<td><code>R/30_mod_scenario_server.R:783-784,865-878</code></td>
+<td>NPK gets %N = 0 by default, with no warning. Removing a fertilizer leaves its kg/ha in the crop inputs, and the stale amounts are saved <strong>Live:</strong> NPK added with 0 % N, no warning.</td>
+</tr>
+<tr>
+<td>UX-14</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Deployment</td>
+<td><code>renv.lock:717-762</code>; <code>global.R:15-17</code></td>
+<td>renv pins a fork (<code>M-Emmanuel/cleaned-staging-v2</code>, labelled 0.6.0), and <code>global.R</code> falls back to <code>CIAT/cleaned@cleaned_v0.6.0</code>. The field names the app writes match v0.7.0 only. On true 0.6.0, fertilizer N reads the hidden <code>fraction</code> = 0</td>
+</tr>
+<tr>
+<td>UX-15</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock Feeding</td>
+<td><code>R/30_mod_scenario_validation.R:547-552</code>; <code>R/30_mod_scenario_server.R:2417-2453</code></td>
+<td>Negative %s are accepted (−50 + 150 = 100 passes). Renaming a season, feed or animal silently resets its allocations to 0, and can error in <code>rbind</code></td>
+</tr>
+<tr>
+<td>UX-16</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Dashboard › Run picker</td>
+<td><code>R/10_mod_board_simulation_server.R:15-24</code></td>
+<td>The Run picker preselects the alphabetically first scenario, not the one just edited, so participants run the wrong scenario <strong>Live:</strong> Dashboard preselected <code>New_file.json</code> after editing ZZ scenario.</td>
+</tr>
+<tr>
+<td>UX-17</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Dashboard › GHG chart</td>
+<td><code>data/iCLEANED - Graphs Information.xlsx</code> sheet 2 row 1; <code>R/10_mod_board_simulation_ui.R:167-170</code>; <code>R/graphs.R:48-58</code></td>
+<td>The y-axis/unit text reads &quot;ghg_emission&quot;. The values are t CO₂e <strong>per ha</strong>, which is not stated</td>
+</tr>
+<tr>
+<td>UX-18</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Dashboard › Water pie</td>
+<td><code>R/graphs.R:303-305</code>; <code>R/10_mod_board_simulation_server.R:577-585</code></td>
+<td>Unnamed <code>scale_fill_manual</code> gives alphabetical colour order, while the HTML legend uses data order. Legend colours can point to the wrong feed</td>
+</tr>
+<tr>
+<td>UX-19</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Scenario › Share to pool</td>
+<td><code>R/30_mod_scenario_server.R:263,274-279</code>; <code>R/helpers_shiny.R:348-363</code></td>
+<td>Share overwrites another user's pooled JSON (<code>overwrite = TRUE</code>). If a DB of the same name exists, the DB is <strong>not</strong> copied, so the JSON is paired with someone else's DB <strong>Live:</strong> the app's own tooltip warns &quot;someone could overwrite your file&quot;.</td>
+</tr>
+<tr>
+<td>UX-20</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Scenario › Rename; DB rename</td>
+<td><code>R/30_mod_scenario_server.R:336-349</code>; <code>R/40_mod_params_db_server.R:224-240</code></td>
+<td>The new name is not sanitised (<code>../</code>, <code>/</code>), which allows path traversal into other users' folders. Renaming a DB silently unbinds its scenarios (they fall back to the default DB, with a 5 s toast)</td>
+</tr>
+<tr>
+<td>UX-21</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Guide §3.2 / §3.4</td>
+<td>grep: 0 hits</td>
+<td>Extrapolation and benchmarks are described in the guide but absent from the UI. The guide does not say they are manual or offline</td>
+</tr>
+<tr>
+<td>UX-22</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Edit Parameters › New Parameters Database</td>
+<td><code>R/40_mod_params_db_server.R:189-199</code>; <code>global.R:49</code></td>
+<td>It always clones &quot;Southern Highland Tanzania Dairy&quot;, whatever DB the user selected. The guide says to select a regional DB, then click New</td>
+</tr>
+<tr>
+<td>UX-23</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>First load / consent</td>
+<td><code>www/js/bg-modal.js:164</code>; <code>server.R:120-134,296-305</code>; <code>R/helpers_shiny.R:224-238</code></td>
+<td>Every visitor's IP goes to api.ipify.org before consent. Consent is re-asked every session. On &quot;Yes&quot;, email + IP are stored together, which the consent text does not disclose</td>
+</tr>
+<tr>
+<td>UX-24</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Whole app, keyboard</td>
+<td><code>ui.R:33-35,52-66</code>; <code>R/30_mod_scenario_ui.R:23-29</code></td>
+<td>Nav links, the logo and &quot;Edit Parameters&quot; are <code>&lt;a&gt;</code>/<code>&lt;div onclick&gt;</code> with no <code>href</code> or <code>tabindex</code>, so they are not keyboard-reachable. There are 0 <code>aria-</code>/<code>role</code> attributes in the app</td>
+</tr>
+<tr>
+<td>UX-25</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>All &quot;?&quot; help</td>
+<td><code>www/sass/app.scss:255-308</code></td>
+<td>Tooltips appear on CSS <code>:hover</code> only. They cannot be opened by touch or keyboard, and they are <code>display:none</code> to assistive tech</td>
+</tr>
+<tr>
+<td>UX-26</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Farm/Livestock forms</td>
+<td><code>R/30_mod_scenario_ui.R</code> (~45× <code>label = NULL</code>, e.g. <code>:301-306</code>, <code>:384-389</code>)</td>
+<td>Visible labels are <code>h2</code>s, not <code>&lt;label&gt;</code>s. Screen readers get unlabelled fields and ~80 fake headings <strong>Live:</strong> Add-season textbox exposes accessible name &quot;(no name)&quot;.</td>
+</tr>
+<tr>
+<td>UX-27</td>
+<td>—</td>
+<td><span class="ver">REFUTED (live)</span></td>
+<td>Scenario input screens</td>
+<td><code>R/helpers_shiny.R:16-22</code></td>
+<td>The GUIDE button is hidden on the Scenario and Edit Parameters screens, which is exactly where users need it <strong>Live:</strong> GUIDE button visible on Scenario (at load and after returning from Dashboard) and on Dashboard; may still hide on Edit Parameters (not tested).</td>
+</tr>
+<tr>
+<td>UX-28</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Tables (Livestock ~50 cols, Feed ~30)</td>
+<td><code>R/30_mod_scenario_init.R:3-103</code>; <code>R/30_mod_scenario_server.R:1086-1141</code></td>
+<td>Data-entry columns have no tooltips (0 on any table header). Units are missing on several columns (see UX-33). Constraints such as &quot;fractions sum to 1&quot; appear only after the error</td>
+</tr>
+<tr>
+<td>UX-29</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock</td>
+<td><code>R/30_mod_scenario_server.R:1010-1011</code></td>
+<td>Small-ruminant weaning and one-year weights default to 0. They are styled as DB parameters but not synced, and there is no warning</td>
+</tr>
+<tr>
+<td>UX-30</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm › Seasons</td>
+<td><code>R/30_mod_scenario_server.R:648-651,734-741</code></td>
+<td>A sum ≠ 365 is only warned. A new season gets <code>max(365 − sum, 0)</code>, so a 0-day season is added silently. Duplicate names typed into a cell are accepted</td>
+</tr>
+<tr>
+<td>UX-31</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock / Feed › Add</td>
+<td><code>R/30_mod_scenario_server.R:985,1435</code></td>
+<td>A duplicate add is silently ignored, with no toast</td>
+</tr>
+<tr>
+<td>UX-32</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Livestock (pigs)</td>
+<td><code>R/30_mod_scenario_init.R:83</code>; pkg <code>R/energy_requirement.R:134</code></td>
+<td>&quot;Proportion growth piglets covered by milk (%)&quot; is entered as 60, but the package uses it as a fraction, so CP comes out ~100×</td>
+</tr>
+<tr>
+<td>UX-33</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Tables</td>
+<td><code>R/30_mod_scenario_init.R:19,25,56,91-92</code></td>
+<td>Units are missing or misleading: &quot;Number&quot; (herd), &quot;Average N content manure&quot; (a fraction), &quot;Cultivation period&quot;, &quot;Energy content milk/meat&quot;, &quot;Trees DBH&quot;, &quot;dry yield (t DM/ha)&quot; without &quot;/year&quot;</td>
+</tr>
+<tr>
+<td>UX-34</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Feed Production › Rice</td>
+<td><code>R/30_mod_scenario_server.R:1535,2090</code></td>
+<td>Rice inputs only apply when <code>crop_name == &quot;Rice&quot;</code> exactly. Two rice feeds are allowed, and they crash the model (pkg F16)</td>
+</tr>
+<tr>
+<td>UX-35</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Farm carousel</td>
+<td><code>R/30_mod_scenario_ui.R:291-910</code>; <code>www/sass/app.scss:795-798</code></td>
+<td>The 5 Farm sub-sections are carousel slides, reached only by arrows, with no indicators or slide count. Validation banners sit on individual slides and are easy to miss</td>
+</tr>
+<tr>
+<td>UX-36</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Tables</td>
+<td><code>R/30_mod_scenario_server.R:1086,1605,1910</code></td>
+<td>Cells are edited by double-click only, with no KeyTable. Nothing on screen says &quot;double-click to edit&quot; <strong>Live:</strong> Enter does not commit a DT edit; value commits only on blur.</td>
+</tr>
+<tr>
+<td>UX-37</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Autosave</td>
+<td><code>R/30_mod_scenario_server.R:2516-2659</code></td>
+<td>The whole JSON is rewritten on every keystroke, with no debounce and no &quot;saved&quot; indicator. On a slow link every edit is a round trip plus a disk write</td>
+</tr>
+<tr>
+<td>UX-38</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Switching scenario</td>
+<td><code>R/30_mod_scenario_server.R:2669-2736,2889</code></td>
+<td>Possible race: autosave writes the new file name with the old scenario's scalar inputs. <code>basket_data &lt;- list()</code> is local, so stale allocations persist</td>
+</tr>
+<tr>
+<td>UX-39</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Disconnect / reload / back</td>
+<td><code>ui.R:154-156</code>; <code>R/helpers_shiny.R:13-27</code>; <code>www/js/auth-url-cleanup.js:13</code></td>
+<td>No reconnect or bookmarking. A reload lands on Scenario with nothing selected. The URL never changes, so the browser Back button leaves the app <strong>Live:</strong> URL stays <code>/</code> across all screens.</td>
+</tr>
+<tr>
+<td>UX-40</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Two tabs, same user</td>
+<td><code>R/30_mod_scenario_server.R:2646-2650</code></td>
+<td>Last writer wins. A stale tab overwrites newer edits on its next keystroke</td>
+</tr>
+<tr>
+<td>UX-41</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Params DB tables</td>
+<td><code>R/40_mod_params_db_server.R:812-829,965-995</code></td>
+<td>Row delete has no confirmation. Cell edits are written to disk immediately. No undo anywhere, and JSON deletes are permanent</td>
+</tr>
+<tr>
+<td>UX-42</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Dashboard › traceability</td>
+<td><code>R/10_mod_board_simulation_server.R:38-48</code>; <code>server.R:187-194</code></td>
+<td>No run timestamp, input version or DB is shown with the results. &quot;Last scenario created&quot; is really the autosave mtime. Comparisons go stale silently after a re-run</td>
+</tr>
+<tr>
+<td>UX-43</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Downloads</td>
+<td><code>R/10_mod_board_simulation_server.R:358-432</code>; <code>R/20_mod_board_comparison_server.R:207-264</code></td>
+<td>The ZIP omits the input JSON, includes an internal <code>.rds</code>, and offers no CSV. The comparison ZIP/PNG names don't encode the base scenario (abs vs %)</td>
+</tr>
+<tr>
+<td>UX-44</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Dashboard (single run)</td>
+<td><code>R/10_mod_board_simulation_ui.R:131-317</code> vs guide ~L1077</td>
+<td>The guide promises an indicator dropdown per run. The single-run view has 4 fixed charts; the 44 indicators exist only in Comparison</td>
+</tr>
+<tr>
+<td>UX-45</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>N balance chart</td>
+<td><code>R/graphs.R:136-140</code></td>
+<td>A non-interactive <code>geom_bar</code> drawn over the interactive layer blocks the tooltips</td>
+</tr>
+<tr>
+<td>UX-46</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Charts, colour</td>
+<td><code>R/graphs.R:10-15</code></td>
+<td>The 20-colour palette is not colour-blind safe (red/green, near-duplicate greens and blues). More than 20 feeds gives NA colours</td>
+</tr>
+<tr>
+<td>UX-47</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Contrast</td>
+<td><code>www/sass/app.scss:6,48-49,422,801-810</code>; <code>typo.scss:86</code></td>
+<td>Nav links 2.2:1, inactive tabs 2.0:1, placeholder 1.6:1, GUIDE button 3.2:1, success button 3.25:1, focus ring 1.6:1 (all WCAG AA failures)</td>
+</tr>
+<tr>
+<td>UX-48</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Small screens</td>
+<td><code>www/sass/app.scss:209-212,1003-1008,809</code>; <code>typo.scss:61</code></td>
+<td>Modals are 60 % wide with 100 px side padding, tabs are 290 px wide and buttons have 80 px padding, so the layout is unusable below ~900 px. Only 2 media queries</td>
+</tr>
+<tr>
+<td>UX-49</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Onboarding</td>
+<td><code>server.R:88-119</code></td>
+<td>The user folder is created before the modal, so a reload skips onboarding forever. Empty answers are accepted</td>
+</tr>
+<tr>
+<td>UX-50</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Translation</td>
+<td>whole app</td>
+<td>No i18n layer. ~150 UI strings and ~125 messages are hard-coded English. <code>LC_TIME=&quot;C&quot;</code> forced. No <code>lang</code> attribute <strong>Live:</strong> <code>&lt;html lang=&quot;&quot;&gt;</code>.</td>
+</tr>
+<tr>
+<td>UX-51</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Comparison config</td>
+<td><code>R/20_mod_board_comparison_server.R:238,356,391</code>; <code>_ui.R:126,176</code></td>
+<td><code>indicator[5:48]</code> is hard-coded, while the xlsx says rows may be reordered. Editing the xlsx silently breaks the charts shown</td>
+</tr>
+<tr>
+<td>UX-52</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Progress bar</td>
+<td><code>R/10_mod_board_simulation_server.R:178</code></td>
+<td><code>incProgress</code> runs before each scenario, so the bar shows 100 % while the last run is still computing</td>
+</tr>
+<tr>
+<td>UX-53</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Help modal</td>
+<td><code>www/html/helper.html:3,7,17</code></td>
+<td>Describes a &quot;desktop application&quot;. No guide link, no contact email. MS Form iframe is 720 px fixed</td>
+</tr>
+<tr>
+<td>UX-54</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Guide wording</td>
+<td>guide ~L531, 673, 807, 877</td>
+<td>Labels differ: &quot;farm code&quot; (absent), &quot;Herd composition&quot; vs &quot;Number&quot;, &quot;Calving interval&quot; vs &quot;Parturition interval&quot;, &quot;Feeding Periods&quot; vs &quot;Seasons&quot;, &quot;JSON Input&quot; (not on screen)</td>
+</tr>
+<tr>
+<td>UX-55</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Shared pool search</td>
+<td><code>R/30_mod_scenario_server.R:519-522</code></td>
+<td>Requires the exact file name; no browsing</td>
+</tr>
+<tr>
+<td>UX-56</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Payload</td>
+<td><code>www/img/logo.png</code> (72 KB at 1037 px, shown ~82 px); <code>ui.R:20-27</code></td>
+<td>CSS/JS are inlined, so not cacheable. The oversized logo doubles as the favicon</td>
+</tr>
+<tr>
+<td>UX-57</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Copy</td>
+<td><code>R/10_mod_board_simulation_ui.R:29</code>; <code>ui.R:180</code></td>
+<td>&quot;andclick&quot; typo; &quot;Copyright ©&quot; with no year or holder; &quot;click here&quot; link text</td>
+</tr>
+<tr>
+<td>UX-76</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live) + code</span></td>
+<td>Farm › Climate</td>
+<td>all 14 <code>data/primary_database/*/lkp_climate.csv</code>; pkg <code>inst/extdata/ghg_parameters.json</code> Table 10.17</td>
+<td>The climate picker offers only 6 zones (Tropical ×4, Warm Temperate ×2) in <strong>every</strong> DB, including Mongolia, Uzbekistan and Nepal. The package supports Cool Temperate and Boreal (moist/dry). Users in those systems must pick a wrong zone, which gives wrong MCFs</td>
+</tr>
+<tr>
+<td>UX-77</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (live) + code</span></td>
+<td>Feed Production › Add feed</td>
+<td><code>R/30_mod_scenario_server.R:1445,1460,1488</code> (<code>lkp_landcover[1]</code>)</td>
+<td>Every new feed/crop defaults to land cover <strong>&quot;Dense forest&quot;</strong> (C factor 0.001), e.g. Rhodes grass forage. Soil erosion is driven to ~0 unless the user finds column 7 of a 50-column table. Same &quot;first row of lookup&quot; anti-pattern as UX-03</td>
+</tr>
+<tr>
+<td>UX-78</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Dashboard › results</td>
+<td><code>R/graphs.R:74-82</code>; <code>R/10_mod_board_simulation_server.R:488-590</code></td>
+<td>All-zero results render as blank charts on a default 0–0.100 axis, with no message, empty state or diagnostic (&quot;land requirement is 0 ha: check main product removal&quot;). A user cannot tell &quot;no emissions&quot; from &quot;model got nothing&quot;</td>
+</tr>
+<tr>
+<td>UX-79</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live) + code</span></td>
+<td>Feed Production › feed list (Southern Highland Tanzania Dairy)</td>
+<td><code>data/primary_database/Southern Highland Tanzania Dairy/lkp_feeditem.csv</code></td>
+<td>The default dairy DB offers 11 feeds and <strong>no Napier grass</strong>, the dominant planted forage in that system. Rhodes grass forage DM = 93.97 % (hay-like, not fresh), so as-fed/DM confusion is baked into the defaults. File as a data issue</td>
+</tr>
+<tr>
+<td>UX-80</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Scenario › New Scenario</td>
+<td><code>R/30_mod_scenario_server.R</code> (create_new_json)</td>
+<td>&quot;New Scenario&quot; instantly creates <code>New_file (1).json</code>, with no name or purpose prompt and no template choice. The DB is silently set to Southern Highland Tanzania Dairy. The toast says &quot;The JSON has been created successfully!&quot; (file-format jargon)</td>
+</tr>
+<tr>
+<td>UX-81</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Scenario picker / top bar</td>
+<td><code>ui.R:130-133</code>; picker rendering</td>
+<td>Underscores display doubled (<code>ZZ__UXREVIEW__DELETE__M…</code>) and names are truncated. &quot;Last scenario created: <existing scenario>.json&quot; did not change after a new scenario was created and renamed</td>
+</tr>
+<tr>
+<td>UX-82</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Whole app (1036 px window)</td>
+<td><code>www/sass/app.scss</code> (alerts, <code>.help</code>, carousel overflow)</td>
+<td>Unstable layout causes misclicks. Validation banners grow and shrink above tables, shifting every row. The &quot;?&quot; tooltip covers the scenario picker and Rename button. The Climate dropdown is clipped inside the carousel (3 of 6 options visible), doesn't close on Esc, and hides the Farm-name field. Header nav wraps into a vertical stack. Tabs wrap 2×2 at half width, and more than one tab can look active</td>
+</tr>
+<tr>
+<td>UX-83</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Farm › Area (soil, land management)</td>
+<td><code>lkp_soil.csv</code>, <code>lkp_croplandsystem.csv</code>, <code>lkp_tillageregime.csv</code></td>
+<td>Only 9 soil types (no Ferralsol, Luvisol, Arenosol, Leptosol, Gleysol, which are common in SSA and SE Asia), plus the obsolete FAO-74 &quot;Xerosol&quot;. &quot;Estimated K Value&quot; is unexplained (it is USLE erodibility). Cropland system and tillage options restate the climate (&quot;tropical, moist/wet&quot;, &quot;temperate/boreal, dry&quot;), but nothing checks them against the Climate picker</td>
+</tr>
+<tr>
+<td>UX-84</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Farm › Fertilizer; Feed Production › Crop inputs</td>
+<td><code>R/30_mod_scenario_init.R:334-341</code>; <code>R/30_mod_scenario_server.R:1878-1937</code></td>
+<td>7 fertiliser types (no CAN, TSP/SSP, MOP, &quot;other&quot;). The Farm tab collects only type and % N; application rates (kg/ha) sit in a &quot;Crop inputs&quot; table on another tab, with no signposting. All 7 product columns appear there whatever was selected</td>
+</tr>
+<tr>
+<td>UX-85</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Livestock / Feed tables</td>
+<td>validation <code>R/30_mod_scenario_server.R:1177-1290</code></td>
+<td>No cross-field logic. Accepted without comment: 100 % of time in stable with 0 % manure collected and a &quot;Pasture&quot; system for stable manure; milk for calves; 14 tree/DBH columns for a grass forage; &quot;Main product&quot; source with 0 removal</td>
+</tr>
+<tr>
+<td>UX-86</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Feed Production</td>
+<td><code>R/30_mod_scenario_ui.R:1020-1080</code></td>
+<td>The table headed &quot;Crop areas and residue management&quot; has no area field. Area is only derived from demand ÷ yield. Users who know their plot sizes can neither enter nor check them</td>
+</tr>
+<tr>
+<td>UX-87</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Copy / labels</td>
+<td>various</td>
+<td>&quot;Selected a Feed&quot; / &quot;Selected a Crop&quot;; &quot;coefficiencies&quot;; row label &quot;…forage of Rhodes&quot;; season re-cased (&quot;Long rains&quot; → &quot;Long Rains&quot;); &quot;Soil&quot; appears twice on the GHG x-axis; &quot;Feed Item&quot; axis title floats under the N chart; lower-case &quot;water regime&quot;, &quot;rice ecosystem type&quot;; inconsistent &quot;(kgs)&quot;</td>
+</tr>
+<tr>
+<td>UX-88</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Dashboard › DMI warning</td>
+<td><code>R/10_mod_board_simulation_server.R:251-269</code></td>
+<td>&quot;daily dry matter intake greater than 4% of their body weight: Cattle – Cows (local)&quot; gives no cause, consequence or fix. It did not fire for calves producing 100 000 kg milk</td>
+</tr>
+<tr>
+<td>UX-58</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED</span></td>
+<td>Login</td>
+<td>live: Auth0 login page</td>
+<td>Every participant needs their own account (email+password sign-up or Google). Production runs on an Auth0 tenant whose name starts with <code>dev-</code>; its rate/email limits need checking</td>
+</tr>
+<tr>
+<td>UX-59</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">CONFIRMED</span></td>
+<td>Login</td>
+<td>live</td>
+<td>The login page carries the tagline only: no app name or purpose, no link to the guide, no language choice</td>
+</tr>
+<tr>
+<td>UX-60</td>
+<td><span class="sev sev-low">Low</span></td>
+<td><span class="ver">PLAUSIBLE</span></td>
+<td>Code hygiene</td>
+<td><code>R/20_mod_board_comparison_server.R:355-386</code>; <code>global.R:14-17,86-92</code>; <code>R/sass.R</code></td>
+<td>44 copy-paste observers; startup <code>install_github</code>; SCSS recompiled at every start; dead globals; leftover dev comments (<code>R/graphs.R:206</code>)</td>
+</tr>
+<tr>
+<td>UX-61</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Landing / first screen</td>
+<td><code>R/30_mod_scenario_ui.R:30-60</code>; <code>ui.R:130-148</code></td>
+<td>The first screen after login is a file manager: &quot;Choose a file option&quot;, &quot;New Scenario&quot;, &quot;Select Scenario&quot;, Clone/Rename/Share. Nothing says what iCLEANED is, which decisions it informs, who it is for, who built it, where it has been used, or what is new. Help is a CGSpace PDF that goes stale with every release</td>
+</tr>
+<tr>
+<td>UX-62</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm › Climate</td>
+<td><code>R/30_mod_scenario_ui.R:311-320</code>; <code>data/primary_database/*/lkp_climate.csv</code> (<code>climate_code == climate_desc</code>)</td>
+<td>IPCC climate zone is a bare picker with no definition, criteria (MAT/MAP/PET) or map. The zone keys the manure MCF lookup (pkg <code>R/ghg_emission.R:185</code>), so a guessed zone gives wrong CH₄ unknowingly</td>
+</tr>
+<tr>
+<td>UX-63</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>All pickers and fields</td>
+<td>whole UI; no dictionary in repo</td>
+<td>No data dictionary or controlled vocabulary behind labels, units, definitions, ranges and defaults. Selected values show no definition (tillage, cropland system, organic-matter input, grassland management, input level, manure systems, soil types). This single gap underlies UX-28, UX-33, UX-50 and UX-72</td>
+</tr>
+<tr>
+<td>UX-64</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm › Seasons</td>
+<td><code>R/30_mod_scenario_server.R:636-657,734-741</code></td>
+<td>The Add-season modal asks for a name only; days are auto-filled with the remainder. Editing days means double-clicking a table cell (not discoverable). No running total is shown, only &quot;must be 365&quot;. No explanation of what seasons are for (feed-basket periods). Not linked to location</td>
+</tr>
+<tr>
+<td>UX-65</td>
+<td><span class="sev sev-blocker">Blocker</span></td>
+<td><span class="ver">CONFIRMED (user) + code</span></td>
+<td>Farm › Manure/Fertilizer</td>
+<td><code>R/30_mod_scenario_ui.R:384-450</code>; pkg <code>R/ghg_emission.R:343-359</code>, <code>R/nitrogen_balance.R:151-153</code></td>
+<td>&quot;Annual purchase of manure / compost / other organic N / bedding (kg N)&quot; asks for nitrogen mass, which no farmer knows. Users will type kg of material, and the package uses it as kg N with no conversion, overstating N inputs ~50–200× (fresh manure ≈ 0.5–2 % N). Bedding &quot;kg N&quot; is especially opaque</td>
+</tr>
+<tr>
+<td>UX-66</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm (whole tab)</td>
+<td><code>R/30_mod_scenario_ui.R:288-330</code></td>
+<td>The unit of analysis is undefined: the whole farm, or only the land and inputs serving the livestock enterprise? The answer changes land, N and GHG results. No on-screen definition; the guide's &quot;enterprise&quot; framing is not repeated in the UI</td>
+</tr>
+<tr>
+<td>UX-67</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm › Manure vs Feed Production</td>
+<td><code>R/30_mod_scenario_server.R:1878-1937</code>; pkg <code>R/ghg_emission.R:359</code></td>
+<td>Purchased organic N is one farm-level lump. Per-field rates (pasture vs fodder) must be pre-aggregated by the user, while manure <em>produced</em> is split per crop via &quot;fraction of manure used as fertilizer&quot;. Two different allocation models, and neither is explained</td>
+</tr>
+<tr>
+<td>UX-68</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user) + code</span></td>
+<td>Farm › Waste of milk and meat</td>
+<td><code>R/30_mod_scenario_ui.R:453-600</code>; pkg <code>R/merge_outputs.R:1095-1104</code></td>
+<td>Eight % fields with no explanation, source or &quot;don't know&quot; option. They only feed the output summary (food-loss adjusted products), not emissions or N, but nothing says they are optional. Participants stall here</td>
+</tr>
+<tr>
+<td>UX-69</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Farm › Area</td>
+<td><code>R/30_mod_scenario_ui.R:607-910</code></td>
+<td>Precipitation, rainy-season months, soil type and properties, and ET₀ are typed by hand, with no prefill from location. &quot;Rainy season (months/year)&quot; gives no instruction for bimodal rainfall; erosivity divides P by it (pkg <code>R/soil_health.R:28</code>), so the answer matters. No &quot;I have my own soil test&quot; override pattern; selected cropland, tillage, OM and grassland options show no description</td>
+</tr>
+<tr>
+<td>UX-70</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Whole scenario flow</td>
+<td><code>R/30_mod_scenario_ui.R</code> (all tabs rendered at once)</td>
+<td>No progressive disclosure. Every field for every system is shown to every user. A few system questions (species, grazing vs zero-grazing, grows own feed?, buys manure/fertiliser?, rice?) could hide irrelevant fields</td>
+</tr>
+<tr>
+<td>UX-71</td>
+<td><span class="sev sev-medium">Medium</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Navigation</td>
+<td><code>R/30_mod_scenario_ui.R:289,913,982,1125</code>; carousel <code>:291-910</code></td>
+<td>Four fixed-width tabs plus a hidden 5-slide carousel inside Farm. A hierarchical sidebar (Farm › General / Seasons / Manure / Waste / Area; Livestock › per category …) with completion and error status per node would show where the user is and what is left</td>
+</tr>
+<tr>
+<td>UX-72</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>All inputs</td>
+<td>no <code>required</code> markers anywhere; validation <code>R/30_mod_scenario_validation.R:213</code></td>
+<td>Required vs optional is never indicated, and there is no &quot;I don't know / use default&quot; option. Users either stall or type guesses; neither is recorded as such</td>
+</tr>
+<tr>
+<td>UX-73</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (user)</span></td>
+<td>Livestock</td>
+<td><code>R/30_mod_scenario_init.R:53-103</code>; <code>R/30_mod_scenario_server.R:958-1141</code></td>
+<td>One flat picker of ~22 species×category labels, then a ~50-column wide table (min 250 px per column, <code>www/sass/app.scss:651-692</code>). Fields such as &quot;Average annual live weight gain (kg/animal)&quot; have no guidance, default source or &quot;not applicable&quot; for mature animals. Species → category two-level choice and one form (card) per category would fit the screen and the mental model</td>
+</tr>
+<tr>
+<td>UX-74</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>Livestock › milk, weights</td>
+<td><code>R/30_mod_scenario_server.R:992</code>; pkg <code>R/energy_requirement.R:109-111,144</code></td>
+<td>Milk can be entered for any category (calves, bulls, steers) and any size (100 000 kg/animal/yr is accepted). The package adds lactation energy and CP for any category with <code>annual_milk &gt; 0</code>, so impossible entries change results. No per-category applicability or plausible range</td>
+</tr>
+<tr>
+<td>UX-75</td>
+<td><span class="sev sev-high">High</span></td>
+<td><span class="ver">CONFIRMED (live)</span></td>
+<td>All numeric fields</td>
+<td>defaults in <code>data/primary_json.json</code>; <code>R/30_mod_scenario_server.R:991-1015</code></td>
+<td>Fields show 0 rather than blank, so &quot;not entered&quot;, &quot;unknown&quot; and &quot;true zero&quot; are indistinguishable. A fix needs explicit NA semantics end to end: UI blank → stored <code>null</code> → model applies a documented default with a provenance flag, or refuses to run. See UX-05</td>
+</tr>
+</tbody>
+</table>
+<h2 id="review-live-walkthrough-log-2026-09-29-chrome-1036-px-window">Live walkthrough log (2026-09-29, Chrome, 1036 px window)</h2>
+<p>This is the step-by-step record of the approved throwaway scenario <code>ZZ_UXREVIEW_DELETE_ME</code>. The scenario and its results are still in your User Folder; delete them when you are done.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>What happened</th>
+<th>Findings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Load app</td>
+<td>The navigation-consent sweetalert appears before anything else (declined). The landing screen is a file manager: &quot;Choose a file option&quot;, New Scenario, Select Scenario, Rename/Share/Clone/Delete. Header nav wraps vertically</td>
+<td>UX-23, UX-61, UX-82</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Hover &quot;?&quot; by Select Scenario</td>
+<td>The tooltip covers the picker and the Rename button, and its own text warns that pooled files can be overwritten</td>
+<td>UX-19, UX-25, UX-82</td>
+</tr>
+<tr>
+<td>3</td>
+<td>New Scenario</td>
+<td>Creates <code>New_file (1).json</code> immediately. The DB silently becomes Southern Highland Tanzania Dairy. The toast says &quot;The JSON has been created successfully!&quot;</td>
+<td>UX-80, UX-22</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Rename</td>
+<td>Works, but the picker shows <code>ZZ__UXREVIEW__DELETE__M…</code>, and &quot;Last scenario created&quot; still says <existing scenario>.json</td>
+<td>UX-81</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Farm › General</td>
+<td>Region lists AFRICA/ASIA/LATIN AMERICA. Climate lists 6 zones with no definitions or map. The dropdown is clipped, won't close on Esc, and hides Farm name</td>
+<td>UX-62, UX-76, UX-82</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Farm › Seasons</td>
+<td>The modal asks for a name only. The first season gets 365 days, the second 0, silently. <code>200,5</code> → <strong>2005</strong>. The warning doesn't show the total. Enter doesn't commit an edit. A blank cell shows empty (the code stores 0)</td>
+<td>UX-05, UX-30, UX-36, UX-64</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Farm › Manure/Fertilizer</td>
+<td>Fields are kg <strong>N</strong>. <code>-500</code> → banner only. <code>1,5</code> → <strong>15</strong>. NPK added at 0 % N with no warning. 7 fertiliser types; the amounts live on another tab</td>
+<td>UX-05, UX-13, UX-65, UX-84</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Farm › Waste</td>
+<td>8 × &quot;0&quot; % fields with no explanation or &quot;optional&quot; marker</td>
+<td>UX-68</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Farm › Area</td>
+<td>Precipitation 0 and <strong>14 rainy months</strong> accepted. 9 soil types (Xerosol, no Ferralsol). K unexplained. 0 help icons</td>
+<td>UX-10, UX-69, UX-83</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Livestock › Add</td>
+<td>22 flat species–category labels, default &quot;Buffalo - Calves&quot;. Each new row: every numeric field 0, all 4 manure systems &quot;Pasture / range / paddock&quot;. ~50 columns; 3 visible at 1036 px; frozen column overlaps headers</td>
+<td>UX-03, UX-73, UX-75, UX-82</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Livestock edits</td>
+<td>Calves 100 000 kg milk accepted. Time fractions validated (banner). Stable 100 % with 0 collection and a &quot;Pasture&quot; system accepted</td>
+<td>UX-74, UX-85</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Feed Production › Add</td>
+<td>Tanzania DB: 11 feeds, no Napier. &quot;Selected a Feed&quot;. Rhodes grass defaults: land cover <strong>Dense forest</strong>, removal <strong>0</strong>, DM 93.97 %, 14 tree columns. No area field despite the heading</td>
+<td>UX-09, UX-77, UX-79, UX-86, UX-87</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Livestock Feeding</td>
+<td>There is a Total row (good). The banner lists missing 100 % allocations; the banner resizing shifts the table. Left calves/Short rains at 0 % on purpose</td>
+<td>UX-15, UX-82</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Dashboard › Run #1</td>
+<td>Preselected <code>New_file.json</code>, not the edited scenario. Ran in &lt;3 s despite invalid feeding. Result: <strong>all four charts empty</strong> (axis 0–0.100), plus a cryptic DMI &gt; 4 % BW note for cows only</td>
+<td>UX-08, UX-16, UX-78, UX-88</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Set removal 0.9 → Run #2</td>
+<td>GHG ≈ 7.3 (enteric only; axis &quot;ghg_emission&quot;). Land ≈ 4 ha. N balance ≈ −840 kg N/yr. Manure bar 0</td>
+<td>UX-09 → Blocker, UX-17</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Stable collection 1 → Run #3</td>
+<td>Manure bar still 0</td>
+<td>UX-03</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Stable system &quot;Solid storage&quot; → Run #4</td>
+<td>Manure bar appears (41 px). Confirms the default label drops manure CH₄</td>
+<td>UX-03</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Not tested live</td>
+<td>Comparison (needs a second scenario), Download (saves a file), Edit Parameters, Share/Clone, disconnect</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="review-redesign-directions-from-your-notes-cross-checked-against-the-code-and-the-live-walkthrough">Redesign directions (from your notes, cross-checked against the code and the live walkthrough)</h2>
+<p>These are structural changes, not bug fixes. Together they answer notes 1–14. Build order is suggested at the end.</p>
+<ol>
+<li>
+<p><strong>A public front door.</strong> The landing page should say what iCLEANED is and which decisions it informs (e.g. feed interventions, manure management, herd changes). It should also cover who it is for, the team and partners, where it has been used (case studies or testimonials), news and roadmap, and a &quot;Try an example&quot; button that opens a read-only demo scenario, with no login needed to look around. Move the file manager behind &quot;My scenarios&quot;. (UX-61)</p>
+</li>
+<li>
+<p><strong>Help that lives in the app and is versioned with it.</strong> Replace the CGSpace PDF as the primary help with in-app docs, e.g. a Quarto or pkgdown site served at <code>/docs</code> and built in CI from the same repo. Then every release ships matching help. Add contextual &quot;Learn more&quot; links from each section to its doc anchor, and keep the PDF as an export of the docs, not the source. (UX-27 refuted, but the GUIDE button still points at a static PDF; UX-53)</p>
+</li>
+<li>
+<p><strong>A data dictionary / controlled vocabulary as the single source of truth.</strong> One table (YAML/CSV) per input and per lookup value, with these fields:</p>
+<ul>
+<li><code>id</code> and <code>package_field</code></li>
+<li><code>label</code> and <code>label_fr/pt/sw/vi/id…</code></li>
+<li><code>definition</code></li>
+<li><code>unit</code> and <code>unit_display</code></li>
+<li><code>type</code></li>
+<li><code>min</code> / <code>max</code> / <code>typical_range</code></li>
+<li><code>default</code> and <code>default_source</code> (DB / region / IPCC / user)</li>
+<li><code>required_if</code> (a condition on system answers)</li>
+<li><code>na_policy</code> (block / use default with flag / allowed)</li>
+<li><code>help_url</code></li>
+<li><code>applies_to</code> (species / category / feed type)</li>
+</ul>
+<p>From it, generate the labels, tooltips, validation, units, the translations, the &quot;definition shown on selection&quot; for every picker (climate zones with IPCC criteria, tillage, cropland system, OM input, grassland management, manure systems, soils), and the docs pages. This fixes UX-28, 33, 50, 63, 72 and 87 in one mechanism, and gives multilingual access almost for free.</p>
+</li>
+<li>
+<p><strong>Ask first, then show only what matters (progressive disclosure).</strong> Start with 6–8 system questions:</p>
+<ul>
+<li>species kept</li>
+<li>production aim (milk / meat / both / draught)</li>
+<li>grazing regime (zero-grazing / semi / free / off-farm)</li>
+<li>grows own feed?</li>
+<li>buys feed, manure or fertiliser?</li>
+<li>rice?</li>
+<li>trees in the feed system?</li>
+<li>number of distinct seasons</li>
+</ul>
+<p>Use the answers to hide irrelevant sections: tree columns, rice columns, off-farm grazing, milk for non-lactating categories, waste. They also set sensible defaults (e.g. zero-grazing → stable time = 1, manure system ≠ pasture). (UX-70, UX-74, UX-85)</p>
+</li>
+<li>
+<p><strong>Location-first prefill, with override and provenance.</strong> Ask for a point: a map click, GPS, or an admin-area picker. Then prefill:</p>
+<ul>
+<li>IPCC climate zone from the JRC/ESDAC IPCC climate-zone raster;</li>
+<li>annual precipitation and rainy months from a CHIRPS/TerraClimate climatology;</li>
+<li>bimodal detection → propose seasons with day counts;</li>
+<li>ET₀ from TerraClimate or FAO;</li>
+<li>soil type and soil C, N, clay and bulk density from SoilGrids (ISRIC REST API);</li>
+<li>K factor derived from soil.</li>
+</ul>
+<p>Each value shows its source and an &quot;I have my own measurement&quot; override that is stored with provenance. Cache the lookups server-side and keep an offline fallback, because of slow connections. (UX-10, 11, 62, 64, 69, 76, 83)</p>
+</li>
+<li>
+<p><strong>Ask for what users know, convert server-side.</strong> For each purchased input, ask for the quantity and form: manure (kg fresh, or bags/cart-loads with a mass per unit), compost, bedding (kg straw, sawdust or other). Apply an editable default N content from the dictionary and show the resulting kg N. Allow inputs per field or feed (pasture vs fodder) and aggregate for the model, instead of asking the user to pre-sum. Apply the same idea to milk: litres per day × lactation days, converted to kg per year. (UX-65, UX-67)</p>
+</li>
+<li>
+<p><strong>Define the system boundary on screen.</strong> Add one sentence and a diagram at the top of Farm, e.g. &quot;Describe only the land, animals and inputs of this livestock enterprise; crops sold off-farm are excluded&quot;, with examples. (UX-66)</p>
+</li>
+<li>
+<p><strong>Livestock as species → category → card.</strong> Use a two-level picker (species, then category, with definitions of &quot;local / improved / high productive&quot;). Give each category its own card or form with grouped sections (herd &amp; production, housing &amp; time budget, manure, advanced parameters collapsed). This replaces the 50-column table. Fields that don't apply are hidden (e.g. live-weight gain for mature animals, milk for calves). Each field shows its DB default with a &quot;use default&quot; chip, rather than 0. (UX-12, UX-29, UX-73, UX-74)</p>
+</li>
+<li>
+<p><strong>Hierarchical sidebar navigation with status.</strong> Replace the 4 tabs and hidden carousel with a left sidebar: Farm › General / Seasons / Manure &amp; fertiliser / Waste / Soil &amp; climate; Livestock › [each category]; Feeds › [each feed]; Feeding › [each season]; Run &amp; results. Each node shows ✓ complete, ! needs attention or ○ optional, plus a running summary: season days total, herd size, feed-basket totals. (UX-35, UX-64, UX-71, UX-82)</p>
+</li>
+<li>
+<p><strong>Blank means unknown; never show 0 as a default.</strong> Empty fields stay empty. The dictionary's <code>na_policy</code> decides what happens: block the run, fill a documented default flagged &quot;assumed&quot; in the results, or treat as not applicable. The model receives <code>null</code>, not 0, and the package gains explicit NA handling instead of NA→0 coercion. The results page lists every assumed value, so a number can be traced back. (UX-05, UX-42, UX-72, UX-75, UX-78; package <code>04_package_code.md</code> §F04)</p>
+</li>
+<li>
+<p><strong>Pre-run check and meaningful empty states.</strong> Run opens a checklist of blocking errors and warnings, each with a &quot;go to field&quot; link. A result that is 0 or empty says why (&quot;0 ha of land: main product removal is 0 for Rhodes grass&quot;). (UX-08, UX-78, UX-88)</p>
+</li>
+</ol>
+<p><strong>Suggested build order:</strong></p>
+<ul>
+<li><strong>Before the workshop:</strong> dictionary skeleton for Farm and Livestock (labels, units, definitions, ranges); fix the three &quot;first row&quot; defaults and the climate list; blank-not-zero on new rows; pre-run check.</li>
+<li><strong>Next release:</strong> system questions and progressive disclosure; purchased-input conversions; livestock cards; sidebar.</li>
+<li><strong>Later:</strong> geospatial prefill; landing site; versioned in-app docs; translations.</li>
+</ul>
+<h2 id="review-detailed-findings">Detailed findings</h2>
+<h3>Blockers</h3>
+<h4>UX-01: Errors kill the session; raw R errors can reach users</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>grep tryCatch|validate(|need(|safeError</code> over <code>R/</code>, <code>server.R</code> and <code>global.R</code> returns nothing. The reviewer re-ran this personally.</li>
+<li>The run observer calls <code>fromJSON</code> and the whole model chain directly (<code>R/10_mod_board_simulation_server.R:160-300</code>). An uncaught error in an <code>observeEvent</code> ends the Shiny session.</li>
+<li>Inside <code>renderGirafe</code> the error text is printed in place of the plot, because <code>shiny.sanitize.errors</code> is not set in <code>global.R:20-26</code>.</li>
+</ul>
+</li>
+<li><strong>Known triggers:</strong>
+<ul>
+<li>two rice feeds (package <code>04_package_code.md</code> §F16);</li>
+<li>duplicate feed×crop display names, which raise &quot;duplicate 'row.names' are not allowed&quot; at <code>R/30_mod_scenario_server.R:2417-2421</code>;</li>
+<li>a missing results <code>.rds</code> (<code>10_…:144,488</code>).</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>Only up-front guards exist: at least one scenario (<code>:163</code>) and at least two for Compare (<code>20_…:125</code>).</li>
+<li>Autosave limits data loss, but not the context loss.</li>
+<li>Not refuted.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> a participant sees the screen grey out with no explanation and has to reload. They land back on the Scenario tab with nothing selected (UX-39) and assume their work is gone.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Wrap each scenario run in <code>tryCatch</code>, and show a <code>showModal</code> naming the scenario and a plain-language cause.</li>
+<li>Continue with the other scenarios when one fails.</li>
+<li>Set <code>options(shiny.sanitize.errors = TRUE)</code>.</li>
+<li>Validate before running (see UX-08).</li>
+</ul>
+</li>
+</ul>
+<h4>UX-02: The synchronous model run blocks everyone</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>observeEvent(input$run_scenario)</code> → <code>withProgress</code> → <code>lapply</code> over the scenarios, running <code>feed_quality</code> … <code>combineOutputs</code> in-process (<code>R/10_mod_board_simulation_server.R:174-300</code>).</li>
+<li>There is no <code>future</code>, <code>promises</code> or <code>ExtendedTask</code> in the app.</li>
+<li>Comparison (<code>20_…:133-203</code>) and ZIP creation (<code>10_…:364</code>, <code>20_…:215</code>) are also synchronous.</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>A spinner and a progress bar exist (<code>10_…:171-178</code>), so the running user gets feedback.</li>
+<li>The hosting setup (Posit Connect or Shiny Server workers, processes per app) was not visible. If each user gets their own process, the impact drops to that user's session.</li>
+<li>Kept at Blocker until the deployment is confirmed, because a room of 20 on one worker is the default risk.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> during the &quot;run your scenario&quot; task, runs queue behind each other. Participants on slow links see frozen UIs and click Run again.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Short term: confirm the worker settings and raise <code>max processes</code>/<code>min processes</code> for the session. Stagger the runs by table.</li>
+<li>Real fix: <code>ExtendedTask</code> + <code>mirai</code>/<code>future</code> with a disabled Run button while a run is in progress.</li>
+</ul>
+</li>
+</ul>
+<h4>UX-03: The default manure-management system does not match the IPCC tables</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li><code>manureman_selection &lt;- lkp_manureman()$manureman_desc[1]</code> is used for all four systems (<code>R/30_mod_scenario_server.R:987,997-1005</code>). In the primary DBs, row 1 is <code>&quot;Pasture / range / paddock&quot;</code> (e.g. <code>data/primary_database/Central Uganda - Livestock General/lkp_manureman.csv</code>).</li>
+<li>The package joins on <code>Table 10.17$Manure_management_systems</code> and <code>Table 10.21$system</code> (<code>cleaned_review_src/R/ghg_emission.R:188-194,239-245</code>). Their value is <code>&quot;Pasture/Range/Paddock&quot;</code>. The reviewer checked this in R: the spaced label exists only in the descriptive second column.</li>
+<li>There is no <code>trimws</code>/<code>tolower</code>/normalisation in the app or the package. The unmatched join gives MCF NA, which becomes 0.</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>Users who change every manure system in the picker avoid the problem.</li>
+<li>But the picker itself lists both spellings, and &quot;Solid storage&quot; twice.</li>
+<li>Other labels also fail: &quot;Anaer digester … HQ tec.&quot; has a trailing dot.</li>
+<li>Related package notes: <code>01_climate_ghg.md</code> §F07/F08.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> manure CH₄/N₂O is silently understated for every animal left on the default, so manure-management scenario comparisons show &quot;no effect&quot;.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Store <code>manureman_code</code> rather than the description.</li>
+<li>Harmonise the <code>lkp_manureman.csv</code> labels with the IPCC keys.</li>
+<li>Default to a blank value that validation must flag.</li>
+<li>Add a post-run check that warns when any MCF/EF is NA.</li>
+</ul>
+</li>
+</ul>
+<h4>UX-04: The mislabelled <code>manure_onfarm_fraction</code> zeroes collected manure</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>The label &quot;Collection of manure during off-farm grazing (fraction)&quot; is at <code>R/30_mod_scenario_init.R:72</code>, with default 0 (<code>R/30_mod_scenario_server.R:1007</code>).</li>
+<li>The package multiplies all collected manure by it (<code>02_livestock.md</code> §H-05; <code>03_landuse.md</code> N-05).</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong> there is no validation or tooltip. Not refuted.</li>
+<li><strong>Workshop impact:</strong> a user who &quot;doesn't collect off-farm&quot; enters 0 and gets no manure N for crops. This is invisible in the outputs.</li>
+<li><strong>Fix:</strong> relabel the field to match the package semantics (or fix the package), and warn when it is 0 while <code>manure_in_*</code> &gt; 0.</li>
+</ul>
+<h4>UX-05: Blanks, commas and out-of-range numbers are accepted silently</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>DT cells: <code>update_cell</code> does <code>ifelse(new_value == &quot;&quot;, 0, new_value)</code> (<code>R/helpers_shiny.R:201-203</code>).</li>
+<li>numericInputs: blank → <code>NA</code> → <code>as.numeric</code> → <code>toJSON</code> writes <code>&quot;NA&quot;</code> (<code>R/30_mod_scenario_server.R:2567</code>), and validation treats NA as acceptable (<code>R/30_mod_scenario_validation.R:213</code>).</li>
+<li>None of the 28 numericInputs has <code>min</code>, <code>max</code> or <code>step</code> (<code>R/30_mod_scenario_ui.R</code>).</li>
+<li>In the local probe (Chromium, en locale), typing <code>1,5</code> produced <strong>15</strong> in both widget types.</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>Browsers in a French, Portuguese, Indonesian or Vietnamese locale may parse <code>1,5</code> as 1.5 in <code>&lt;input type=number&gt;</code>. The probe did not test this, so the behaviour is locale-dependent.</li>
+<li>DT's numeric coercion itself is correct: the probe refuted an earlier crash hypothesis.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> many participants (francophone Africa, Indonesia, Vietnam) habitually type comma decimals. A 10× yield or weight error produces plausible-looking charts.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Add <code>min</code>/<code>max</code>/<code>step</code> to the numericInputs.</li>
+<li>Server-side, reject non-finite values and blanks with a field-level message.</li>
+<li>Normalise <code>,</code> → <code>.</code> explicitly, or reject it with a message.</li>
+<li>Never coerce blank to 0 silently.</li>
+</ul>
+</li>
+</ul>
+<h4>UX-06: Duplicate names silently stop saving, and Run uses stale data</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>The autosave observer returns early with only <code>cat(file = stderr(), &quot;20 - Skipping JSON save…&quot;)</code> (<code>R/30_mod_scenario_server.R:2527-2533</code>).</li>
+<li>The banner says the simulation will fail (<code>R/30_mod_scenario_validation.R:486-488</code>). But Run reads the last saved JSON (<code>10_…:181</code>), so it <strong>succeeds with old inputs</strong>.</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>A banner exists, but its content is false.</li>
+<li>Package <code>04_package_code.md</code> §F18 notes the underlying fragility.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> a participant copies a feed row and edits it. Every edit after that point is lost, and their results do not change. They conclude the intervention has no effect.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Block Run while <code>has_errors</code>.</li>
+<li>Show &quot;Not saved: fix duplicate names&quot; beside the tab.</li>
+<li>Or save anyway and block only the run.</li>
+</ul>
+</li>
+</ul>
+<h4>UX-07: Comparison charts mislead about relative change</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>The static y-axis span holds <code>graphs_desc$unit</code> (e.g. &quot;kg FPCM/year&quot;) even when the bars show <code>scales::percent</code> (<code>R/20_mod_board_comparison_ui.R:201-206</code>; <code>R/graphs.R:373-375</code>).</li>
+<li>The package computes <code>(scen − base)/base*100</code> and maps non-finite results to 0 (<code>cleaned_review_src/R/compare_scenario.R:50-54</code> and following).
+<ul>
+<li>Baseline 0 therefore shows as &quot;0 %&quot;.</li>
+<li>A negative base (N balance, carbon stock change, carbon balance) flips the direction of the change.</li>
+</ul>
+</li>
+<li>The base scenario itself is excluded from the plot (<code>:41-42</code>).</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong>
+<ul>
+<li>The package's <code>y_title</code> (&quot;% change in …&quot;) is used in the PNG export only.</li>
+<li>The short description does switch to relative text (<code>20_…:327-349</code>), but the axis does not.</li>
+</ul>
+</li>
+<li><strong>Workshop impact:</strong> &quot;Carbon balance improved by −40 %&quot; gets read as worse. A zero-emission baseline shows as &quot;no change&quot;.</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Switch the axis label to &quot;% change vs <base>&quot;.</li>
+<li>Divide by <code>abs(base)</code>.</li>
+<li>Show &quot;n/a&quot; (not 0) when base = 0.</li>
+<li>Display the absolute base value in the tooltip.</li>
+</ul>
+</li>
+</ul>
+<h4>UX-08: Validation never blocks a run</h4>
+<ul>
+<li><strong>Evidence:</strong>
+<ul>
+<li>Every check renders an inline <code>alert-danger</code> (<code>R/30_mod_scenario_validation.R:200-257</code>; server <code>:734-741,1177-1290,1731-1875,2363-2370</code>).</li>
+<li><code>run_scenario</code> checks only that a scenario is selected (<code>10_…:163</code>).</li>
+<li>After the run, the only check is DMI &gt; 4 % BW (<code>10_…:251-269</code>).</li>
+</ul>
+</li>
+<li><strong>Refutation:</strong> none found.</li>
+<li><strong>Workshop impact:</strong> these all run silently:
+<ul>
+<li>seasons summing to 300 days (package <code>02_livestock.md</code> L-08: shares are not normalised);</li>
+<li>feeding columns at 80 %;</li>
+<li>time fractions summing to 0.</li>
+</ul>
+</li>
+<li><strong>Fix:</strong>
+<ul>
+<li>Add a pre-run validator over the saved JSON that lists all errors per tab, with &quot;Go to field&quot; links. Refuse to run while errors exist.</li>
+<li>Show a red dot on the tab labels.</li>
+</ul>
+</li>
+</ul>
+<h3>High (condensed)</h3>
+<ul>
+<li><strong>UX-09 (zero land for new feeds).</strong>
+<ul>
+<li><strong>Evidence:</strong> <code>main_product_removal = 0</code> on add (<code>30_…server:1449</code>), and the validator accepts 0 (<code>:1829-1832</code>). &quot;Purchased&quot; feeds always get 0 ha, which is correct but not explained. See <code>03_landuse.md</code> §LU-01.</li>
+<li><strong>Fix:</strong> default removal to NA and require it for &quot;Main&quot; rows; show the ha per feed after the run.</li>
+</ul>
+</li>
+<li><strong>UX-10 / UX-11 (rain and soil defaults of 0).</strong>
+<ul>
+<li><strong>Evidence:</strong> erosion and SOC are silently lost (<code>03_landuse.md</code> SE-01/02, S-03, N-07/08).</li>
+<li><strong>Refutation:</strong> the default templates may carry real values, but a new scenario from <code>primary_json.json</code> does not.</li>
+<li><strong>Fix:</strong> plausible ranges (P 100–4000 mm, rain months 1–12, BD 0.8–1.8, depth 0.1–2 m) with warnings; pre-fill from the region.</li>
+</ul>
+</li>
+<li><strong>UX-12 (DB-synced columns revert silently).</strong>
+<ul>
+<li><strong>Evidence:</strong> <code>sync_columns_by_key</code> (<code>helpers_shiny.R:276-303</code>) runs on load and on DB change (<code>30_…server:940-952,1356-1381,2749-2754</code>). The comment at <code>helpers_shiny.R:259-260</code> confirms that only unlisted columns are preserved.</li>
+<li><strong>Workshop impact:</strong> sensitivity edits (e.g. a changed body weight) vanish the next day.</li>
+<li><strong>Fix:</strong> make the orange columns read-only in the scenario tables, with a link to &quot;Edit Parameters&quot;.</li>
+</ul>
+</li>
+<li><strong>UX-13 (fertilizer N can be lost).</strong>
+<ul>
+<li><strong>Evidence:</strong> NPK %N is 0 by default; removing a product leaves stale kg/ha, which are then saved (<code>30_…server:783-784,865-878,2588-2593</code>). See <code>01_climate_ghg.md</code> §F10, <code>03_landuse.md</code> N-04.</li>
+<li><strong>Fix:</strong> require %N &gt; 0 for NPK; clear the amounts on remove.</li>
+</ul>
+</li>
+<li><strong>UX-14 (which package build is deployed?).</strong>
+<ul>
+<li><strong>Evidence:</strong> the renv fork vs the <code>install_github</code> fallback; the field names the app writes (<code>fat_milkcontent</code>, <code>n_manure_content</code>, <code>percentage_n</code>) are v0.7.0 names.</li>
+<li><strong>Workshop impact:</strong> if production runs genuine v0.6.0, several inputs are ignored.</li>
+<li><strong>Action:</strong> ask the host for <code>packageVersion(&quot;cleaned&quot;)</code> and <code>packageDescription(&quot;cleaned&quot;)$RemoteSha</code> before the workshop.</li>
+</ul>
+</li>
+<li><strong>UX-15 (feeding tables).</strong>
+<ul>
+<li><strong>Evidence:</strong> the column-sum check uses <code>na.rm = TRUE</code> and allows negatives (<code>validation.R:547-552</code>). Allocations are keyed by display name (<code>30_…server:2417-2453</code>), so renames reset them.</li>
+<li><strong>Fix:</strong> key allocations by code; require 0–100 per cell.</li>
+</ul>
+</li>
+<li><strong>UX-16 (wrong scenario preselected on the Dashboard).</strong>
+<ul>
+<li><strong>Evidence:</strong> <code>selected = list.files(...)[1]</code> (<code>10_…server:20-23</code>).</li>
+<li><strong>Fix:</strong> preselect the scenario currently open on the Scenario tab.</li>
+</ul>
+</li>
+<li><strong>UX-17 (GHG unit label).</strong>
+<ul>
+<li><strong>Evidence:</strong> the xlsx <code>unit</code> cell for <code>ghg_emission</code> literally reads <code>ghg_emission</code> (checked with readxl). The chart plots <code>t_CO2e_per_ha</code>.</li>
+<li><strong>Fix:</strong> a one-cell xlsx edit to &quot;t CO₂e/ha/year&quot;, and add &quot;per ha&quot; to the title.</li>
+</ul>
+</li>
+<li><strong>UX-18 (pie legend order).</strong>
+<ul>
+<li><strong>Evidence:</strong> unnamed palette (<code>graphs.R:303-305</code>) vs <code>unique(feed)</code> in the legend builder. Land-required uses a named palette and is correct.</li>
+<li><strong>Fix:</strong> <code>setNames(color_palette[seq_along(feeds)], feeds)</code>.</li>
+</ul>
+</li>
+<li><strong>UX-19 / UX-20 (shared pool and rename).</strong>
+<ul>
+<li><strong>Workshop impact:</strong> if participants are told to &quot;share your scenario&quot;, they will overwrite each other's same-named files (&quot;Baseline.json&quot;).</li>
+<li><strong>Fix:</strong> sanitise names (<code>fs::path_sanitize</code>, reject <code>/</code> and <code>..</code>); namespace pooled files by user; copy the DB on share.</li>
+</ul>
+</li>
+<li><strong>UX-21 (extrapolation and benchmarks missing).</strong>
+<ul>
+<li><strong>Evidence:</strong> guide §3.2 (~L1132-1211) prescribes multiplying the enterprise indicators by the number of enterprises and adoption rates; §3.4 (~L1416+) gives the Africa benchmarks. The app has 0 hits for either feature.</li>
+<li><strong>Workshop impact:</strong> the &quot;extrapolate&quot; task can only be done in a spreadsheet.</li>
+<li><strong>Fix:</strong> state this in the guide. Better, add a small &quot;Scale up&quot; panel (number of enterprises × adoption %) and a benchmark reference line on the per-kg charts.</li>
+</ul>
+</li>
+<li><strong>UX-22 (New Parameters Database ignores the selection).</strong>
+<ul>
+<li><strong>Evidence:</strong> it clones <code>default_parameters_database</code> (<code>40_…server:189-199</code>). A Uganda or Vietnam participant silently starts from Tanzania dairy parameters.</li>
+<li><strong>Fix:</strong> clone the selected DB (the Clone button already does this; rename or merge the buttons).</li>
+</ul>
+</li>
+<li><strong>UX-23 (privacy).</strong>
+<ul>
+<li><strong>Evidence:</strong> the ipify fetch runs on page load (<code>www/js/bg-modal.js:164</code>).</li>
+<li><strong>Workshop impact:</strong> a data-protection question you should not be answering on the day.</li>
+<li><strong>Fix:</strong> fetch only after consent, remember the consent answer, and disclose the email–IP linkage in the consent text.</li>
+</ul>
+</li>
+<li><strong>UX-24 / UX-25 / UX-26 (keyboard, hover-only help, labels).</strong>
+<ul>
+<li><strong>Fix:</strong> <code>actionLink</code>/<code>&lt;button&gt;</code>; <code>:focus-within</code> plus a click toggle for <code>.help</code>; pass <code>label =</code> and drop the <code>h2</code>s.</li>
+</ul>
+</li>
+<li><strong>UX-27 (GUIDE button hidden).</strong>
+<ul>
+<li><strong>Evidence:</strong> <code>go_to()</code> hides <code>#maj_helper_btn</code> except on the board (<code>helpers_shiny.R:16-22</code>).</li>
+<li><strong>Fix:</strong> always show it, and deep-link it to the relevant guide section per tab.</li>
+</ul>
+</li>
+<li><strong>UX-28 (no column help).</strong>
+<ul>
+<li><strong>Fix:</strong> DT <code>headerCallback</code> tooltips taken from a single dictionary (label, unit, range, meaning). The same dictionary can drive validation and translation.</li>
+</ul>
+</li>
+<li><strong>UX-29 (zero weights for small ruminants).</strong>
+<ul>
+<li><strong>Evidence:</strong> <code>30_…server:1010-1011</code>; see <code>02_livestock.md</code> §H-02.</li>
+<li><strong>Fix:</strong> sync the weights from the DB, or require them.</li>
+</ul>
+</li>
+</ul>
+<h3>Medium and Low</h3>
+<p>The table above gives the evidence for these. The ones most relevant on the workshop day:</p>
+<ul>
+<li><strong>UX-35:</strong> the carousel hides the Farm sub-sections, so tell participants there are five slides.</li>
+<li><strong>UX-36:</strong> double-click to edit.</li>
+<li><strong>UX-37:</strong> autosave with no &quot;saved&quot; indicator, which unsettles users on slow links.</li>
+<li><strong>UX-39:</strong> Back leaves the app.</li>
+<li><strong>UX-43:</strong> the download ZIP contents.</li>
+<li><strong>UX-48:</strong> laptops only; no phones.</li>
+<li><strong>UX-58:</strong> accounts must exist before the session.</li>
+</ul>
+<h2 id="review-done-well-max-5">Done well (max 5)</h2>
+<ol>
+<li><strong>Autosave to per-user JSON.</strong> Most edits survive a disconnect. Deletes of scenarios, results, comparisons and DBs ask for confirmation (<code>30_…server:201-216</code>; <code>10_…:435-451</code>; <code>20_…:267-285</code>; <code>40_…:126-158</code>).</li>
+<li><strong>Indicator explanations come from one spreadsheet</strong> (<code>data/iCLEANED - Graphs Information.xlsx</code>). There are short and long, absolute and relative texts for all 48 charts, which is a good seed for help and translation.</li>
+<li><strong>Honest axes.</strong> There is no truncation (<code>ylim</code>/<code>coord_cartesian</code>); zero baselines use <code>expansion(mult = c(0, .1))</code>, and a dashed 0-line appears when values go negative (<code>graphs.R:74-82</code>).</li>
+<li><strong>Many data-model mismatches are prevented.</strong> Livestock types are click-locked in the params DB; every feed × livestock basket row is always written, which avoids package F18; the climate and fertilizer names all match the package (refuted suspicions in the input sweep).</li>
+<li><strong>Light asset payload.</strong> <code>www/</code> is ~370 KB, the fonts are local, there is no CDN dependency for core rendering, and the tables are small.</li>
+</ol>
+</article></section>
+<section class="doc" id="doc-workshop" data-doc="workshop"><nav class="toc"><strong>On this page</strong><ul><li><a href="#workshop-1-goals">1. Goals</a></li><li><a href="#workshop-2-before-the-day-checklist">2. Before the day (checklist)</a></li><li><a href="#workshop-3-known-issues-to-announce-up-front-5-min-slide">3. Known issues to announce up front (5 min, slide)</a></li><li><a href="#workshop-4-tasks-participants-in-pairs">4. Tasks (participants, in pairs)</a></li><li><a href="#workshop-5-observation-checklist-one-per-pair-per-task">5. Observation checklist (one per pair per task)</a></li><li><a href="#workshop-6-think-aloud-prompts-neutral-don-t-lead">6. Think-aloud prompts (neutral; don't lead)</a></li><li><a href="#workshop-7-post-session-questionnaire-10-min-paper-or-form">7. Post-session questionnaire (10 min, paper or form)</a></li><li><a href="#workshop-8-debrief-15-min-whole-group">8. Debrief (15 min, whole group)</a></li><li><a href="#workshop-9-after-the-session">9. After the session</a></li></ul></nav><article><h1>iCLEANED user-testing workshop: facilitator run sheet</h1>
+<p><strong>Format:</strong> 3 h 15 min in total (a 2 h 30 min testing block plus a 45 min setup/debrief), for 8–25 participants in pairs, with one observer per 2–3 pairs.</p>
+<p><strong>Audience:</strong> researchers, NGO and extension staff, and students. They are not R users, their English varies, and they work on laptops over mixed-quality connections.</p>
+<p><strong>Companion:</strong> see <code>01_uiux_review.md</code> (UX-nn IDs), and use <code>03_feedback_form.md</code> to log issues.</p>
+<h2 id="workshop-1-goals">1. Goals</h2>
+<ol>
+<li>Find out whether first-time users can build and run a baseline scenario and an intervention scenario, and compare them, using the app plus a 1-page task card. They should not need the PDF guide.</li>
+<li>Identify where users enter wrong values without noticing: units, blanks, comma decimals, and defaults.</li>
+<li>Test whether users read the Dashboard and Comparison charts correctly (absolute vs %, direction of change, units).</li>
+<li>Collect usability (SUS) and usefulness ratings, plus concrete issues ready to file on GitHub.</li>
+<li><strong>Non-goal:</strong> validating the model's science. Treat all numbers as illustrative, and say so.</li>
+</ol>
+<h2 id="workshop-2-before-the-day-checklist">2. Before the day (checklist)</h2>
+<ul>
+<li><input type="checkbox" disabled="" /> <strong>Accounts:</strong> make sure every participant has an account before the session (UX-58). Test sign-up, Google sign-in and password reset on the Auth0 tenant (<code>dev-…</code>) with 3 test users. Check the tenant's email and login rate limits.</li>
+<li><input type="checkbox" disabled="" /> <strong>Server capacity:</strong> runs are synchronous (UX-02). Get the host to confirm the number of R processes per app and raise it for the day. Do a load test: 10 people click Run at the same time and you time it.</li>
+<li><input type="checkbox" disabled="" /> <strong>Package build:</strong> confirm the deployed <code>cleaned</code> build with <code>packageVersion(&quot;cleaned&quot;)</code> and the RemoteSha (UX-14).</li>
+<li><input type="checkbox" disabled="" /> <strong>Template scenario:</strong> prepare <code>WS_Baseline</code> in the Shared Examples folder with valid seasons (sum 365), feeding at 100 %, a manure system chosen explicitly (not the default, UX-03), <code>manure_onfarm_fraction</code> &gt; 0 (UX-04), non-zero rain and soil values (UX-10/11), and non-zero main-product removal (UX-09; with the default of 0, every chart is empty), land cover set to a real cover rather than the default &quot;Dense forest&quot; (UX-77), and a climate zone valid for the site (the list lacks Cool Temperate and Boreal, UX-76).</li>
+<li><input type="checkbox" disabled="" /> <strong>Fixes:</strong> if time allows, apply the quick fixes: the xlsx unit cell for GHG (UX-17), the manure label (UX-04), and the manure default (UX-03).</li>
+<li><input type="checkbox" disabled="" /> <strong>Materials:</strong> print the task cards (section 4), a 1-page glossary of units, and the known-issues slide (section 3).</li>
+<li><input type="checkbox" disabled="" /> <strong>Fallback:</strong> keep an offline plan: screenshots or a screen recording of a full run, in case the server or the Wi-Fi fails.</li>
+<li><input type="checkbox" disabled="" /> <strong>Observers:</strong> each observer gets the observation checklist (section 5) and the feedback forms. Assign pair IDs P01, P02 and so on.</li>
+<li><input type="checkbox" disabled="" /> <strong>Browsers:</strong> ask participants to bring a laptop with Chrome or Edge. Phones are not supported (UX-48).</li>
+</ul>
+<h2 id="workshop-3-known-issues-to-announce-up-front-5-min-slide">3. Known issues to announce up front (5 min, slide)</h2>
+<p>Keep this to one slide, in plain language:</p>
+<ol>
+<li><strong>Numbers are for learning today, not for reports.</strong> Several default values can make some results zero.</li>
+<li><strong>Decimals:</strong> type a point, not a comma, e.g. <code>1.5</code>, not <code>1,5</code>. The app may otherwise read <code>15</code> (UX-05).</li>
+<li><strong>Don't leave number cells empty.</strong> An empty cell becomes 0 (UX-05).</li>
+<li><strong>Editing tables:</strong> double-click a cell to edit it, then press Enter (UX-36). The Farm tab has 5 pages; use the arrows at the sides (UX-35).</li>
+<li><strong>Saving is automatic.</strong> There is no Save button. Red warning boxes do <strong>not</strong> stop the run, so fix them before running (UX-08).</li>
+<li><strong>Before you click Run,</strong> check that the Dashboard shows <em>your</em> scenario ticked (UX-16). Click Run <strong>once</strong> and wait, because the server is shared (UX-02).</li>
+<li>If the screen goes grey, reload the page and select your scenario again. Your inputs are usually saved (UX-01, UX-39).</li>
+<li><strong>Don't use the browser Back button.</strong> It leaves the app (UX-39).</li>
+<li>On comparison charts in &quot;%&quot; mode, the axis label still shows the original unit. Read the bars as % change (UX-07).</li>
+<li><strong>Watch three defaults.</strong> When you add a feed, set &quot;Main product removal&quot; (for example 0.9) and change &quot;Land cover&quot; from &quot;Dense forest&quot;. When you add animals, choose each manure system rather than leaving &quot;Pasture / range / paddock&quot; (UX-09, UX-77, UX-03). If all your charts are empty, it is almost always main product removal = 0.</li>
+<li><strong>Purchased manure, compost and bedding are asked in kg of nitrogen,</strong> not kg of material. Leave them at 0 today unless you know the N amount (UX-65).</li>
+<li><strong>Don't use &quot;Share to pool&quot;</strong> today. Names collide between users (UX-19).</li>
+</ol>
+<h2 id="workshop-4-tasks-participants-in-pairs">4. Tasks (participants, in pairs)</h2>
+<p>Give each pair a printed card with one task at a time. The facilitator only gives a hint after 2 minutes stuck, and the observer notes it as an &quot;assist&quot;.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Time</th>
+<th>Task (as written on the card)</th>
+<th>Success criteria</th>
+<th>Watch for (UX-ID)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>10 min</td>
+<td>Log in, answer the welcome questions, and find the GUIDE and Help.</td>
+<td>Reaches the Scenario screen. Finds Help &quot;?&quot; and the GUIDE within 2 min.</td>
+<td>Consent pop-ups; GUIDE opens a static PDF only (UX-27 refuted live: button is visible); hover-only help (UX-25)</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>10 min</td>
+<td>Make your own copy of the example scenario &quot;WS_Baseline&quot; and rename it &quot;Baseline_<your initials>&quot;.</td>
+<td>Copy exists in User Folder with the new name; no assist needed.</td>
+<td>Shared Examples vs User Folder vs Pool radios; Clone vs Rename; name collisions (UX-20)</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>15 min</td>
+<td>In <strong>Farm</strong>, check the seasons add up to one year, and set annual rainfall to 1250.5 mm.</td>
+<td>Seasons sum to 365; rainfall saved as 1250.5 (<strong>facilitator checks the JSON or the field value after reload</strong>).</td>
+<td>Carousel pages missed (UX-35); comma decimal (UX-05); units</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>15 min</td>
+<td>In <strong>Livestock</strong>, change the number of lactating cows to 12. Each cow gives 8.5 litres of milk a day for a 300-day lactation; enter that. Tell us which manure system the cows use.</td>
+<td>Herd = 12. Milk entered as annual kg per animal (≈ 2,600 kg/animal/year). Note whether they convert litres/day to kg/year unaided. Participant can find and name the manure system.</td>
+<td>Label &quot;Average annual milk production (kg/animal)&quot; (<code>R/30_mod_scenario_init.R:57</code>); double-click editing (UX-36); 50-column scroll; &quot;Number&quot; label (UX-33); manure picker duplicates (UX-03)</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>15 min</td>
+<td>In <strong>Feed Production</strong>, add one new feed grown on the farm (e.g. Rhodes grass; note that Napier is not in the Tanzania DB, UX-79).</td>
+<td>Feed added with a yield and a non-zero &quot;main product removal&quot;.</td>
+<td>Zero-removal default (UX-09); &quot;Dense forest&quot; land cover (UX-77); duplicate name trap (UX-06); orange columns reverting (UX-12)</td>
+</tr>
+<tr>
+<td>T6</td>
+<td>15 min</td>
+<td>In <strong>Livestock Feeding</strong>, give the new feed 20 % of the diet for cows in each season, and keep the totals at 100 %.</td>
+<td>Every season column sums to 100 %; red box gone.</td>
+<td>Banner discoverability; negative %s (UX-15); many seasons</td>
+</tr>
+<tr>
+<td>T7</td>
+<td>10 min</td>
+<td>Go to the <strong>Dashboard</strong>, run <em>your</em> two scenarios (Baseline and the one with the new feed), and tell us the GHG emissions. Include the unit.</td>
+<td>Runs the correct scenarios; states a value <strong>with a correct unit</strong> (t CO₂e per ha; the axis wrongly says &quot;ghg_emission&quot;).</td>
+<td>Wrong scenario preselected (UX-16); &quot;ghg_emission&quot; axis (UX-17); freeze during the run (UX-02)</td>
+</tr>
+<tr>
+<td>T8</td>
+<td>15 min</td>
+<td>Compare the two scenarios with Baseline as the base. Did milk production and GHG go up or down, and by how much?</td>
+<td>Correct direction and approximate % for both indicators.</td>
+<td>Absolute unit on % axis (UX-07); category picker; base excluded from the chart</td>
+</tr>
+<tr>
+<td>T9</td>
+<td>10 min</td>
+<td>Download your results and open them. Find the milk production number.</td>
+<td>Opens the ZIP and finds the value in the xlsx.</td>
+<td>ZIP contents, <code>.rds</code>, no CSV (UX-43); file names</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>10 min (optional)</td>
+<td>Using the guide, estimate the GHG effect if 30 % of 10,000 similar farms adopted the new feed.</td>
+<td>Any reasonable method; note how they do it.</td>
+<td>No extrapolation in the app (UX-21)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Timing:</strong> tasks T1–T9 take ~115 min. With T10, a break, the intro and the debrief, the whole session is ~3 h 15 min. If time is short, drop T10 and merge T3 into T4.</p>
+<h2 id="workshop-5-observation-checklist-one-per-pair-per-task">5. Observation checklist (one per pair per task)</h2>
+<p>Use a tick or a short note, and record the time in minutes.</p>
+<ul>
+<li><input type="checkbox" disabled="" /> <strong>Completed</strong>: unassisted, assisted, or failed</li>
+<li><input type="checkbox" disabled="" /> <strong>Time on task</strong></li>
+<li><input type="checkbox" disabled="" /> <strong>First click</strong> correct? If not, what did they click?</li>
+<li><input type="checkbox" disabled="" /> <strong>Hesitation</strong> over 20 s. Where?</li>
+<li><input type="checkbox" disabled="" /> <strong>Label or unit misread.</strong> Quote the label.</li>
+<li><input type="checkbox" disabled="" /> <strong>Wrong value entered without noticing</strong> (comma, blank, wrong unit). Record the value typed.</li>
+<li><input type="checkbox" disabled="" /> <strong>Did not see a red warning box</strong>, or ignored it</li>
+<li><input type="checkbox" disabled="" /> <strong>Lost work or grey screen.</strong> Note the time and the action just before.</li>
+<li><input type="checkbox" disabled="" /> <strong>Used the guide PDF or Help?</strong> Which section, and did it help?</li>
+<li><input type="checkbox" disabled="" /> <strong>Misread a chart</strong>: direction, unit, or % vs absolute</li>
+<li><input type="checkbox" disabled="" /> <strong>Connection issue</strong> (slow, spinner over 30 s, disconnect)</li>
+<li><input type="checkbox" disabled="" /> <strong>Language difficulty.</strong> Which word or phrase?</li>
+<li><input type="checkbox" disabled="" /> <strong>Emotional signal</strong>: frustration, confusion, delight, &quot;aha&quot;</li>
+<li><input type="checkbox" disabled="" /> <strong>Quote</strong> worth keeping (verbatim)</li>
+</ul>
+<p>Log every issue on <code>03_feedback_form.md</code> right away, with pair ID, task and screen.</p>
+<h2 id="workshop-6-think-aloud-prompts-neutral-don-t-lead">6. Think-aloud prompts (neutral; don't lead)</h2>
+<ul>
+<li>&quot;What are you looking for right now?&quot;</li>
+<li>&quot;What do you expect will happen when you click that?&quot;</li>
+<li>&quot;What does this number or label mean to you?&quot;</li>
+<li>&quot;How sure are you that this value was saved? What makes you think so?&quot;</li>
+<li>&quot;You paused there. What were you thinking?&quot;</li>
+<li>&quot;If you were alone, what would you do next?&quot;</li>
+<li>&quot;In your own words, what does this chart tell you?&quot;</li>
+<li>&quot;Is this the result you expected? Why or why not?&quot;</li>
+<li><strong>Avoid:</strong> &quot;Is that confusing?&quot;, &quot;Did you see the button?&quot;, and explaining the UI before they have tried it.</li>
+</ul>
+<h2 id="workshop-7-post-session-questionnaire-10-min-paper-or-form">7. Post-session questionnaire (10 min, paper or form)</h2>
+<h3>7a. System Usability Scale (SUS)</h3>
+<p>Rate each statement from 1 (strongly disagree) to 5 (strongly agree).</p>
+<ol>
+<li>I think that I would like to use iCLEANED frequently.</li>
+<li>I found iCLEANED unnecessarily complex.</li>
+<li>I thought iCLEANED was easy to use.</li>
+<li>I think that I would need the support of a technical person to be able to use iCLEANED.</li>
+<li>I found the various functions in iCLEANED were well integrated.</li>
+<li>I thought there was too much inconsistency in iCLEANED.</li>
+<li>I would imagine that most people would learn to use iCLEANED very quickly.</li>
+<li>I found iCLEANED very cumbersome to use.</li>
+<li>I felt very confident using iCLEANED.</li>
+<li>I needed to learn a lot of things before I could get going with iCLEANED.</li>
+</ol>
+<p><strong>Scoring:</strong></p>
+<ul>
+<li>Odd items score (response − 1).</li>
+<li>Even items score (5 − response).</li>
+<li>Sum the ten item scores and multiply by 2.5, giving a score from 0 to 100. A score around 68 is average.</li>
+</ul>
+<h3>7b. App-specific questions</h3>
+<ol>
+<li><strong>Units:</strong> how confident are you that the values you entered were in the units the app expected? (1 = not at all, 5 = fully confident)</li>
+<li><strong>Results:</strong> in your own words, what did the comparison chart tell you about your intervention? Was the direction (increase or decrease) clear? (free text + 1–5)</li>
+<li><strong>Help:</strong> when you were stuck, where did you look first: the &quot;?&quot; tooltips, the GUIDE PDF, your partner, or the facilitator? What was missing? (multiple choice + free text)</li>
+<li><strong>Connection:</strong> did the app feel too slow or freeze at any point? (yes/no; which step)</li>
+<li><strong>Use:</strong> would you use iCLEANED for your own work? What single change would make that more likely? And which language would you prefer the app in? (1–5 + free text)</li>
+</ol>
+<h2 id="workshop-8-debrief-15-min-whole-group">8. Debrief (15 min, whole group)</h2>
+<ul>
+<li>Ask each pair for the top 3 pain points, and put them on sticky notes on the wall under Farm / Livestock / Feed / Feeding / Dashboard / Compare / Other.</li>
+<li>Dot-vote on severity.</li>
+<li>The facilitator maps each note to an existing UX-ID or a new issue in <code>03_feedback_form.md</code>.</li>
+<li>Thank participants. Tell them what will happen to their feedback: it will be filed on GitHub, with no personal data.</li>
+</ul>
+<h2 id="workshop-9-after-the-session">9. After the session</h2>
+<ul>
+<li>Compute the SUS mean and SD, and the task success rates (unassisted, assisted, failed) and median times.</li>
+<li>Deduplicate the feedback forms, and map them to UX-IDs and to the GitHub forms (see <code>03_feedback_form.md</code>).</li>
+<li>Delete the test scenarios and the throwaway accounts. Participants' onboarding answers are stored in <code>DATA_DIR/Onboarding/onboarding.csv</code>; handle that file according to your consent statement.</li>
+</ul>
+</article></section>
+<section class="doc" id="doc-feedback" data-doc="feedback"><nav class="toc"><strong>On this page</strong><ul><li><a href="#feedback-where-issues-go-routing">Where issues go (routing)</a></li><li><a href="#feedback-issue-capture-block-copy-one-per-issue">Issue capture block (copy one per issue)</a></li><li><a href="#feedback-field-mapping-to-github-forms-for-the-facilitator-when-filing">Field mapping to GitHub forms (for the facilitator when filing)</a></li><li><a href="#feedback-privacy-reminder">Privacy reminder</a></li></ul></nav><article><h1>iCLEANED workshop: participant issue capture form</h1>
+<p>Observers fill in one block per issue during the session. The facilitator triages the blocks afterwards and files them on GitHub.</p>
+<h2 id="feedback-where-issues-go-routing">Where issues go (routing)</h2>
+<p>The GitHub issue forms (<code>bug_report.yml</code>, <code>data_issue.yml</code>, <code>feature_request.yml</code>, <code>question.yml</code>, with <code>blank_issues_enabled: false</code>) currently exist in the <strong>CIAT/cleaned</strong> package repository. The web app lives in a separate repository, <strong>CIAT/icleaned</strong>, which has no issue templates. The package forms are written for R users. The bug form <strong>requires</strong> a component from the package-function list, an R reproducible example, and <code>packageVersion(&quot;cleaned&quot;)</code>, and workshop participants cannot supply any of those.</p>
+<p>Route each issue as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Issue is about…</th>
+<th>File in</th>
+<th>Form</th>
+<th>Who completes the required fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App screens, buttons, saving, crashes, charts and labels, downloads, login, speed, accessibility</td>
+<td><strong>CIAT/icleaned</strong></td>
+<td>No form there. Use the &quot;App bug / UX&quot; block below as the issue body. Suggestion: add issue forms to icleaned too</td>
+<td>Facilitator</td>
+</tr>
+<tr>
+<td>Wrong or implausible <em>result</em> that persists when the same JSON is run through the package</td>
+<td>CIAT/cleaned</td>
+<td><strong>Bug report</strong> (<code>[Bug]: </code>). Component = the model function; attach the scenario JSON exported from the user folder as the reprex</td>
+<td>Facilitator/dev (needs R)</td>
+</tr>
+<tr>
+<td>A parameter, emission factor, feed value or lookup entry that looks wrong or is missing (e.g. manure-system labels, a missing fertilizer such as CAN)</td>
+<td>CIAT/cleaned (package data) or CIAT/icleaned (<code>data/primary_database/*.csv</code>)</td>
+<td><strong>Data or parameter issue</strong> (<code>[Data]: </code>)</td>
+<td>Facilitator + participant (source/reference)</td>
+</tr>
+<tr>
+<td>Missing capability (extrapolation, benchmarks, translation, CSV export)</td>
+<td>icleaned for UI; cleaned for new calculations</td>
+<td><strong>Feature request</strong> (<code>[Feature]: </code>)</td>
+<td>Facilitator</td>
+</tr>
+<tr>
+<td>&quot;How do I…&quot; / &quot;what does this mean&quot;</td>
+<td>cleaned (method) or icleaned (UI)</td>
+<td><strong>Question</strong> (<code>[Question]: </code>)</td>
+<td>Facilitator</td>
+</tr>
+</tbody>
+</table>
+<p>Before filing, check <code>01_uiux_review.md</code>. If the issue matches a UX-nn finding, add the participant evidence to that finding rather than opening a duplicate.</p>
+<h2 id="feedback-issue-capture-block-copy-one-per-issue">Issue capture block (copy one per issue)</h2>
+<pre><code>Issue #: WS-___            Pair ID: P__        Observer: ____
+Task (T1–T10): __          Time into task (min): __
+Screen / tab:  [ ] Login/onboarding  [ ] Scenario select  [ ] Farm (page __/5)
+               [ ] Livestock  [ ] Feed Production  [ ] Livestock Feeding
+               [ ] Edit Parameters  [ ] Dashboard – run  [ ] Dashboard – compare
+               [ ] Download  [ ] Help / Guide  [ ] Other: ____
+Field / label / chart (exact text on screen): &quot;________________&quot;
+
+TYPE (pick one → GitHub form):
+  [ ] A. Bug – app (crash, grey screen, didn't save, wrong button behaviour) → icleaned
+  [ ] B. Bug – result (number wrong/implausible)                          → cleaned Bug report
+  [ ] C. Data / parameter (value, label, missing item in a list)          → Data or parameter issue
+  [ ] D. Usability / wording / unit confusion                             → icleaned (UX)
+  [ ] E. Feature request                                                  → Feature request
+  [ ] F. Question / didn't understand                                     → Question
+
+WHAT HAPPENED (participant's words, verbatim quote if possible):
+______________________________________________________________
+
+WHAT THEY EXPECTED:
+______________________________________________________________
+
+STEPS JUST BEFORE (clicks / values typed, incl. exact value e.g. &quot;1,5&quot;, blank):
+1. ____  2. ____  3. ____
+
+EVIDENCE: [ ] screenshot/photo #___  [ ] error text copied: &quot;________&quot;
+          [ ] scenario name: ________  (JSON retrievable from user folder: Y/N)
+
+OUTCOME: [ ] recovered alone  [ ] recovered with help  [ ] blocked task  [ ] didn't notice (observer spotted)
+IMPACT:  [ ] Blocker (couldn't finish / wrong result unknowingly)  [ ] High  [ ] Medium  [ ] Low
+Matches known issue UX-__ ? [ ] yes  [ ] new
+
+ENVIRONMENT: Browser ____  OS ____  Screen: laptop / tablet / phone
+             Connection: good / slow / dropped   Browser language/locale: ____
+</code></pre>
+<h2 id="feedback-field-mapping-to-github-forms-for-the-facilitator-when-filing">Field mapping to GitHub forms (for the facilitator when filing)</h2>
+<h3>→ <code>bug_report.yml</code> (CIAT/cleaned) — type B only</h3>
+<table>
+<thead>
+<tr>
+<th>Form field (id)</th>
+<th>Required</th>
+<th>Fill from capture block</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title</td>
+<td>—</td>
+<td><code>[Bug]: &lt;indicator&gt; &lt;wrong how&gt; when &lt;input condition&gt;</code></td>
+</tr>
+<tr>
+<td><code>component</code> (dropdown)</td>
+<td>yes</td>
+<td>Map the chart or indicator to its function: GHG → <code>ghg_emission</code>; N balance → <code>n_balance</code>; land required → <code>land_requirement</code>; water → <code>water_requirement</code>; soil/erosion → <code>soil_health</code>; comparison % → <code>compare_scenario / calculate_differences</code>; otherwise <code>Not sure / other</code></td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>yes</td>
+<td>&quot;What happened&quot;, plus the error text</td>
+</tr>
+<tr>
+<td><code>expected</code></td>
+<td>yes</td>
+<td>&quot;What they expected&quot;</td>
+</tr>
+<tr>
+<td><code>reprex</code></td>
+<td>yes</td>
+<td>R code: <code>para &lt;- jsonlite::fromJSON(&quot;&lt;scenario&gt;.json&quot;)</code> followed by the call chain. <strong>Attach the scenario JSON</strong> from <code>Users/&lt;user&gt;/study_objects/</code></td>
+</tr>
+<tr>
+<td><code>pkg-version</code></td>
+<td>yes</td>
+<td>Deployed build, i.e. <code>packageVersion(&quot;cleaned&quot;)</code> + RemoteSha on the server (UX-14)</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>no</td>
+<td>Server <code>sessionInfo()</code></td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td>no</td>
+<td>Pair ID (no names), task, screenshot, UX-ID link, &quot;found via iCLEANED web app&quot;</td>
+</tr>
+</tbody>
+</table>
+<h3>→ <code>data_issue.yml</code> (CIAT/cleaned) — type C</h3>
+<table>
+<thead>
+<tr>
+<th>Form field (id)</th>
+<th>Required</th>
+<th>Fill from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title</td>
+<td>—</td>
+<td><code>[Data]: &lt;table/entry&gt; &lt;problem&gt;</code></td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td>yes</td>
+<td><code>ghg_parameters.json</code> / <code>energy_parameters.json</code> / <code>stock_change_parameters.json</code> / Feed library / Input mappings / Other. For app DB CSVs (<code>lkp_*.csv</code>) choose &quot;Other package data&quot; and state that it is an app DB, or file in icleaned</td>
+</tr>
+<tr>
+<td><code>current</code></td>
+<td>yes</td>
+<td>Exact entry and value as seen on screen, e.g. <code>lkp_manureman: &quot;Pasture / range / paddock&quot;</code></td>
+</tr>
+<tr>
+<td><code>proposed</code></td>
+<td>no</td>
+<td>Participant's value, if known</td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td>yes</td>
+<td>Participant's source (national statistics, paper). If none, write &quot;participant field knowledge – needs source&quot;</td>
+</tr>
+<tr>
+<td><code>impact</code></td>
+<td>no</td>
+<td>Which charts looked wrong</td>
+</tr>
+<tr>
+<td><code>pkg-version</code></td>
+<td>no</td>
+<td>Deployed build</td>
+</tr>
+</tbody>
+</table>
+<h3>→ <code>feature_request.yml</code> — type E</h3>
+<table>
+<thead>
+<tr>
+<th>Form field (id)</th>
+<th>Required</th>
+<th>Fill from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>problem</code></td>
+<td>yes</td>
+<td>&quot;What happened&quot; / &quot;What they expected&quot;, written as a user need (&quot;As an extension officer I need to…&quot;)</td>
+</tr>
+<tr>
+<td><code>solution</code></td>
+<td>yes</td>
+<td>Participant's suggestion, or the fix from the UX-ID</td>
+</tr>
+<tr>
+<td><code>alternatives</code></td>
+<td>no</td>
+<td>Current workaround (e.g. &quot;extrapolated in Excel&quot;)</td>
+</tr>
+<tr>
+<td><code>methods</code></td>
+<td>no</td>
+<td>Guide section, e.g. §3.2 extrapolation, §3.4 benchmarks</td>
+</tr>
+<tr>
+<td><code>contribute</code></td>
+<td>no</td>
+<td>&quot;I can help test or provide data&quot; if the participant offered</td>
+</tr>
+</tbody>
+</table>
+<h3>→ <code>question.yml</code> — type F</h3>
+<table>
+<thead>
+<tr>
+<th>Form field (id)</th>
+<th>Required</th>
+<th>Fill from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>question</code></td>
+<td>yes</td>
+<td>Participant's question, verbatim</td>
+</tr>
+<tr>
+<td><code>tried</code></td>
+<td>no</td>
+<td>What they clicked or read (guide section, &quot;?&quot; tooltip). This field renders as R code, so wrap plain text in comments <code># ...</code></td>
+</tr>
+</tbody>
+</table>
+<p>Note: a question that several participants ask about the same screen is a <strong>usability issue</strong> (type D), not just a question. File one UX issue in icleaned, and add the count.</p>
+<h3>→ CIAT/icleaned (no forms) — types A and D, suggested body</h3>
+<pre><code>**Screen / step:** &lt;tab › section › field&gt;   **Workshop task:** T_   **Pairs affected:** n / N
+**What happened:** …
+**Expected:** …
+**Steps:** 1. … 2. … 3. …
+**Input used:** (exact values, e.g. &quot;1,5&quot;, blank)
+**Environment:** browser / OS / screen / connection / locale
+**Severity:** Blocker | High | Medium | Low
+**Related review finding:** UX-__ (cleaned_review/ui_ux/01_uiux_review.md)
+**Evidence:** screenshots, error text (no participant names/emails)
+</code></pre>
+<p>Suggested labels: <code>ux</code>, <code>bug</code>, <code>validation</code>, <code>dashboard</code>, <code>accessibility</code>, <code>i18n</code>, <code>performance</code>, <code>workshop-2026</code>.</p>
+<h2 id="feedback-privacy-reminder">Privacy reminder</h2>
+<ul>
+<li>Do not put participant names, emails or IPs in issues. Use pair IDs only.</li>
+<li>Scenario JSONs attached to issues must not contain identifying farm names. Rename <code>farm_name</code> before attaching.</li>
+</ul>
+</article></section></main><script>
+const tabs=[...document.querySelectorAll(".tab")],docs=[...document.querySelectorAll(".doc")];
+function show(k){tabs.forEach(t=>t.setAttribute("aria-selected",t.dataset.target===k));docs.forEach(d=>d.classList.toggle("active",d.dataset.doc===k));try{localStorage.setItem("uiux-tab",k)}catch(e){}}
+tabs.forEach(t=>t.addEventListener("click",()=>{show(t.dataset.target);history.replaceState(null,"","#"+t.dataset.target)}));
+let start=(location.hash||"").slice(1).split("-")[0];if(!docs.some(d=>d.dataset.doc===start)){try{start=localStorage.getItem("uiux-tab")}catch(e){}}
+show(docs.some(d=>d.dataset.doc===start)?start:"review");
+document.querySelectorAll("article table").forEach(t=>{const w=document.createElement("div");w.className="tablewrap";t.parentNode.insertBefore(w,t);w.appendChild(t)});
+// findings filter on the first table whose header starts with ID and Sev
+const ft=[...document.querySelectorAll("#doc-review table")].find(t=>{const h=[...t.querySelectorAll("th")].map(x=>x.textContent.trim());return h[0]==="ID"&&h[1]==="Sev"});
+if(ft){const rows=[...ft.tBodies[0].rows];const f=document.createElement("div");f.className="filters";
+ const sevs=["Blocker","High","Medium","Low"];let on=new Set(sevs);let q="";let liveOnly=false;
+ f.innerHTML="<strong>Filter:</strong> "+sevs.map(s=>`<button aria-pressed="true" data-s="${s}">${s} (${rows.filter(r=>r.cells[1].textContent.trim()===s).length})</button>`).join("")+
+ `<button aria-pressed="false" data-live="1">Confirmed only</button><input type="search" placeholder="Search findings&hellip;" aria-label="Search findings"><span class="count"></span>`;
+ ft.closest(".tablewrap").before(f);
+ const apply=()=>{let n=0;rows.forEach(r=>{const s=r.cells[1].textContent.trim();const v=r.cells[2].textContent;const ok=(on.has(s)||!sevs.includes(s))&&(!liveOnly||/CONFIRMED/.test(v))&&(!q||r.textContent.toLowerCase().includes(q));r.hidden=!ok;if(ok)n++});f.querySelector(".count").textContent=n+" of "+rows.length+" shown"};
+ f.querySelectorAll("button[data-s]").forEach(b=>b.onclick=()=>{const s=b.dataset.s;on.has(s)?on.delete(s):on.add(s);b.setAttribute("aria-pressed",on.has(s));apply()});
+ f.querySelector("[data-live]").onclick=e=>{liveOnly=!liveOnly;e.target.setAttribute("aria-pressed",liveOnly);apply()};
+ f.querySelector("input").oninput=e=>{q=e.target.value.toLowerCase();apply()};apply();}
+const tb=document.querySelector(".theme");tb.onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark"};
+</script></body></html>

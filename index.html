@@ -9,7 +9,7 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned package review</h1>
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="ui_ux/index.html">UI/UX review</a><a href="ui_ux/mockup/index.html">Mockup</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned package review</h1>
 <p>An adversarial review of the <a href="https://github.com/CIAT/cleaned"><code>cleaned</code></a> R package (v0.7.0, <code>staging</code> @ <code>800d53a</code>), which powers the <a href="https://icleaned.alliance.cgiar.org/">iCLEANED</a> app. Four expert reviews, unit tests against the IPCC source text, proposed fixes tested on a copy, and a script that reproduces every number.</p>
 <p>Nothing here changes the <code>cleaned</code> repository. Fixes are proposals for its maintainers. Every page has a comment thread (GitHub Discussions via giscus).</p>
 <h2>Start here</h2>
@@ -30,6 +30,13 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <ul>
 <li><a href="06_critical_tests.html">06 critical tests</a>: tests against IPCC equations, with citations.</li>
 <li><a href="07_fix_log.html">07 fix log</a>: each proposed fix, its status, the test matrix.</li>
+</ul>
+<h2>App UI/UX and redesign</h2>
+<ul>
+<li><a href="ui_ux/index.html">UI/UX review of the iCLEANED web app</a>: 88 findings from code reading and a live walkthrough, a workshop run sheet, and a feedback-capture form mapped to the GitHub issue forms.</li>
+<li><a href="ui_ux/mockup/index.html">Scenario Builder mockup</a>: a clickable redesign of the data-entry flow. It compiles plain-language answers into the exact <code>cleaned</code> input, scales from one household to a national herd, shows where every value comes from (you entered / from database / assumed / fixed), and captures feedback in place (comment mode, highlights, screengrabs, ratings, A/B votes). Opened from this site, feedback is saved on your device and exported from the Feedback screen; the shared-store version lives on claude.ai.</li>
+<li><a href="md/ui_ux/04_design_benchmarks.md">Design benchmarks</a>: patterns worth adapting from 22 farm and livestock tools.</li>
+<li>Source: <a href="ui_ux/mockup/src-tree/">mockup source</a> (vanilla JS, one build script) and <a href="md/ui_ux/">Markdown</a>.</li>
 </ul>
 <h2>Reproduce it yourself</h2>
 <p><strong>In the browser:</strong> <a href="https://colab.research.google.com/github/peetmate/cleaned-review/blob/main/reproduce/critical_issues.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab" style="vertical-align:middle"></a> opens a notebook in Google Colab (R runtime) with one cell per issue and a final cell that applies the proposed fixes. Setup takes a few minutes. <a href="reproduce/critical_issues.ipynb">Notebook file</a>.</p>

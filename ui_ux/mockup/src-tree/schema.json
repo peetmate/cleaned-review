@@ -1,0 +1,2984 @@
+{
+  "version": "0.1.0",
+  "sections": [
+    {
+      "id": "home",
+      "title": "Scenarios",
+      "short": "Home",
+      "purpose": "Open, copy or share a scenario, or start a new one.",
+      "order": 0,
+      "wizard": false
+    },
+    {
+      "id": "about",
+      "title": "About this {farm}",
+      "short": "About",
+      "purpose": "A few questions so we only ask what applies to this {farm}.",
+      "order": 1,
+      "wizard": true
+    },
+    {
+      "id": "location",
+      "title": "Location & climate",
+      "short": "Location",
+      "purpose": "Tell us where the {farm} is. We fill in climate and soil from public maps; you can correct anything.",
+      "order": 2,
+      "wizard": true
+    },
+    {
+      "id": "boundary",
+      "title": "What we count",
+      "short": "Boundary",
+      "purpose": "One livestock enterprise, one year: its animals, the land that grows their feed, and where the manure goes. From one household to a national herd.",
+      "order": 3,
+      "wizard": true
+    },
+    {
+      "id": "plots",
+      "title": "Land & {plot}s",
+      "short": "Plots",
+      "purpose": "Describe each {plot} that grows feed or is grazed. Feeds are linked to {plot}s later.",
+      "order": 4,
+      "wizard": true,
+      "entity": "plot",
+      "visible_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      }
+    },
+    {
+      "id": "seasons",
+      "title": "Seasons",
+      "short": "Seasons",
+      "purpose": "Split the year into feeding periods. Each period gets its own feeding plan.",
+      "order": 5,
+      "wizard": true,
+      "entity": "season"
+    },
+    {
+      "id": "herds",
+      "title": "Herds",
+      "short": "Herds",
+      "purpose": "Group animals that are kept together and managed the same way.",
+      "order": 6,
+      "wizard": true,
+      "entity": "herd"
+    },
+    {
+      "id": "animals",
+      "title": "Animals",
+      "short": "Animals",
+      "purpose": "Describe each group of animals separately, because they eat and produce differently.",
+      "order": 7,
+      "wizard": true,
+      "entity": "animal"
+    },
+    {
+      "id": "feeds",
+      "title": "Feeds",
+      "short": "Feeds",
+      "purpose": "List every feed the animals eat during the year, where it comes from and how it is grown.",
+      "order": 8,
+      "wizard": true,
+      "entity": "feed"
+    },
+    {
+      "id": "fertiliser",
+      "title": "Fertiliser products",
+      "short": "Fertiliser",
+      "purpose": "For each fertiliser you use, the nitrogen content printed on the bag.",
+      "order": 9,
+      "wizard": true,
+      "visible_if": {
+        "path": "system.fertiliser",
+        "eq": true
+      }
+    },
+    {
+      "id": "inputs",
+      "title": "Manure & inputs bought in",
+      "short": "Inputs",
+      "purpose": "Manure, compost or bedding brought onto the {farm} adds nitrogen to your fields.",
+      "order": 10,
+      "wizard": true,
+      "visible_if": {
+        "path": "system.buysInputs",
+        "eq": true
+      }
+    },
+    {
+      "id": "feeding",
+      "title": "Feeding plan",
+      "short": "Feeding",
+      "purpose": "For each animal group, what share of what they eat in this season comes from each feed?",
+      "order": 11,
+      "wizard": true
+    },
+    {
+      "id": "losses",
+      "title": "Losses after the {farm} gate",
+      "short": "Losses",
+      "purpose": "Optional: milk and meat lost between the {farm} and the consumer.",
+      "order": 12,
+      "wizard": true,
+      "optional": true
+    },
+    {
+      "id": "check",
+      "title": "Check & run",
+      "short": "Check",
+      "purpose": "Fix anything blocking, review what we assumed, then run.",
+      "order": 13,
+      "wizard": true
+    },
+    {
+      "id": "results",
+      "title": "Results",
+      "short": "Results",
+      "purpose": "Results will appear here after running.",
+      "order": 14,
+      "wizard": false
+    },
+    {
+      "id": "parameters",
+      "title": "Parameter set",
+      "short": "Parameters",
+      "purpose": "The reference values this scenario starts from. Shipped sets are read-only; make your own copy to change values.",
+      "order": 15,
+      "wizard": false
+    }
+  ],
+  "systemQuestions": [
+    {
+      "id": "scale",
+      "label": "What does this scenario describe?",
+      "type": "radio",
+      "help": "CLEANED is a livestock enterprise model: a herd, the land that feeds it and its manure. The same description works from one household to a national herd; only the numbers change.",
+      "options": [
+        {
+          "value": "farm",
+          "label": "One farm or household"
+        },
+        {
+          "value": "group",
+          "label": "A group of farms (village, cooperative, project)",
+          "definition": "Enter totals or a typical farm and say how many it represents."
+        },
+        {
+          "value": "region",
+          "label": "A district or region",
+          "definition": "Enter the herd and land totals for the area; defaults come from the area's climate and soils."
+        },
+        {
+          "value": "national",
+          "label": "A national herd",
+          "definition": "Totals for the country; one row per animal category."
+        }
+      ]
+    },
+    {
+      "id": "species",
+      "label": "Which animals does this {farm} keep?",
+      "type": "multichip",
+      "options": [
+        {
+          "value": "Cattle",
+          "label": "Dairy or other cattle"
+        },
+        {
+          "value": "Goats",
+          "label": "Goats",
+          "disabled": true,
+          "note": "coming soon"
+        },
+        {
+          "value": "Sheep",
+          "label": "Sheep",
+          "disabled": true,
+          "note": "coming soon"
+        },
+        {
+          "value": "Pigs",
+          "label": "Pigs",
+          "disabled": true,
+          "note": "coming soon"
+        },
+        {
+          "value": "Buffalo",
+          "label": "Buffalo",
+          "disabled": true,
+          "note": "coming soon"
+        }
+      ],
+      "help": null
+    },
+    {
+      "id": "aim",
+      "label": "What is the main purpose of the cattle?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "milk",
+          "label": "Milk"
+        },
+        {
+          "value": "meat",
+          "label": "Meat or growth"
+        },
+        {
+          "value": "both",
+          "label": "Both"
+        },
+        {
+          "value": "draught",
+          "label": "Draught (work)"
+        }
+      ],
+      "help": null
+    },
+    {
+      "id": "growsFeed",
+      "label": "Do you grow any of the feed yourselves?",
+      "type": "yesno",
+      "help": "Grass, fodder crops, crop residues from your own fields."
+    },
+    {
+      "id": "buysFeed",
+      "label": "Do you buy or collect any feed from outside the {farm}?",
+      "type": "yesno",
+      "help": "Bought concentrate or hay, or grass cut from roadsides and communal land."
+    },
+    {
+      "id": "buysInputs",
+      "label": "Do you bring manure, compost or bedding onto the {farm} from outside?",
+      "type": "yesno",
+      "help": null
+    },
+    {
+      "id": "fertiliser",
+      "label": "Do you use mineral fertiliser on feed plots?",
+      "type": "yesno",
+      "visible_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "help": null
+    },
+    {
+      "id": "nSeasons",
+      "label": "How many feeding seasons does the year have?",
+      "type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "One: feeding is the same all year"
+        },
+        {
+          "value": 2,
+          "label": "Two: for example rainy and dry"
+        },
+        {
+          "value": 3,
+          "label": "Three or more"
+        }
+      ],
+      "help": null
+    },
+    {
+      "id": "rice",
+      "label": "Is any of the feed grown as paddy rice?",
+      "type": "yesno",
+      "visible_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "help": null
+    },
+    {
+      "id": "trees",
+      "label": "Are there trees in the feed plots?",
+      "type": "yesno",
+      "visible_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "help": null
+    }
+  ],
+  "herdPatterns": [
+    {
+      "value": "zero",
+      "label": "Always in a shed or pen (zero-grazing)",
+      "hours": {
+        "stable": 24,
+        "pen": 0,
+        "onfarm": 0,
+        "offfarm": 0
+      }
+    },
+    {
+      "value": "night_shed",
+      "label": "Shed at night, grazing on the {farm} by day",
+      "hours": {
+        "stable": 12,
+        "pen": 0,
+        "onfarm": 12,
+        "offfarm": 0
+      }
+    },
+    {
+      "value": "mostly_grazing",
+      "label": "Mostly grazing on the {farm}",
+      "hours": {
+        "stable": 6,
+        "pen": 0,
+        "onfarm": 18,
+        "offfarm": 0
+      }
+    },
+    {
+      "value": "offfarm",
+      "label": "Grazing off the {farm} (communal land) part of the time",
+      "hours": {
+        "stable": 12,
+        "pen": 0,
+        "onfarm": 6,
+        "offfarm": 6
+      }
+    }
+  ],
+  "manureOptions": [
+    {
+      "value": "left",
+      "label": "Left where it drops in the field or pasture",
+      "definition": "Nothing is collected; dung stays on the land.",
+      "ipcc": "Pasture/Range/Paddock"
+    },
+    {
+      "value": "spread",
+      "label": "Spread on fields within a day",
+      "definition": "Collected and applied fresh, no storage.",
+      "ipcc": "Daily spread"
+    },
+    {
+      "value": "piled",
+      "label": "Piled or heaped in the open",
+      "definition": "Stored as a solid heap for weeks to months.",
+      "ipcc": "Solid storage",
+      "followups": [
+        {
+          "id": "covered",
+          "label": "Is the heap covered or compacted?",
+          "yes": "Solid storage - Covered/compacted"
+        },
+        {
+          "id": "bulking",
+          "label": "Is straw, sawdust or stover mixed in?",
+          "yes": "Solid storage - Bulking agent addition"
+        }
+      ]
+    },
+    {
+      "value": "drylot",
+      "label": "Left to build up in an open pen or dry lot",
+      "definition": "Dung accumulates on the pen floor and is cleared occasionally.",
+      "ipcc": "Dry lot"
+    },
+    {
+      "value": "bedding",
+      "label": "Left to build up as bedding inside the shed",
+      "definition": "Deep litter; dung and bedding build up and are removed later.",
+      "ipcc": "Cattle and swine deep bedding > 1 month",
+      "followups": [
+        {
+          "id": "cleared_monthly",
+          "label": "Is it cleared more than once a month?",
+          "yes": "Cattle and swine deep bedding < 1 month"
+        }
+      ]
+    },
+    {
+      "value": "pit",
+      "label": "Stored wet in a pit, tank or slurry pond",
+      "definition": "Liquid or slurry storage below or beside the animals.",
+      "ipcc": "Liquid/Slurry Pit below animals 3 Month",
+      "followups": [
+        {
+          "id": "pit_months",
+          "label": "How long is it usually stored?",
+          "type": "select",
+          "options": [
+            {
+              "value": "1",
+              "label": "About 1 month",
+              "ipcc": "Liquid/Slurry Pit below animals 1 Month"
+            },
+            {
+              "value": "3",
+              "label": "About 3 months",
+              "ipcc": "Liquid/Slurry Pit below animals 3 Month"
+            },
+            {
+              "value": "4",
+              "label": "About 4 months",
+              "ipcc": "Liquid/Slurry Pit below animals 4 Month"
+            },
+            {
+              "value": "6",
+              "label": "About 6 months",
+              "ipcc": "Liquid/Slurry Pit below animals 6 Month"
+            },
+            {
+              "value": "12",
+              "label": "A year or more",
+              "ipcc": "Liquid/Slurry Pit below animals 12 Month"
+            },
+            {
+              "value": "lagoon",
+              "label": "Open lagoon, never emptied",
+              "ipcc": "Uncovered anaerobic lagoon"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "compost",
+      "label": "Composted deliberately",
+      "definition": "Turned or aerated on purpose to make compost.",
+      "ipcc": "Composting - Unfrequent turning",
+      "followups": [
+        {
+          "id": "compost_method",
+          "label": "How is it composted?",
+          "type": "select",
+          "options": [
+            {
+              "value": "rare",
+              "label": "Heap turned now and then",
+              "ipcc": "Composting - Unfrequent turning"
+            },
+            {
+              "value": "windrow",
+              "label": "Long rows turned often",
+              "ipcc": "Composting - Intensive windrow"
+            },
+            {
+              "value": "forced",
+              "label": "Static pile with pipes or a fan",
+              "ipcc": "Composting - Static pile (forced aeration)"
+            },
+            {
+              "value": "vessel",
+              "label": "In a drum or closed vessel",
+              "ipcc": "Composting - In-vessel"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "biogas",
+      "label": "Fed to a biogas digester",
+      "definition": "Typical fixed-dome digester with covered storage.",
+      "ipcc": "Anaer digester, Low leak, HQ stor, LQ tec"
+    },
+    {
+      "value": "burnt",
+      "label": "Dried and burnt as fuel",
+      "definition": "Dung cakes or dried manure used as household fuel.",
+      "ipcc": "Burned for fuel"
+    }
+  ],
+  "fields": [
+    {
+      "id": "scenario_name",
+      "section": "home",
+      "entity": "meta",
+      "label": "Scenario name",
+      "type": "text",
+      "help": "For example 'Njombe baseline 2026'.",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "farm_name",
+      "definition": null
+    },
+    {
+      "id": "scenario_purpose",
+      "section": "home",
+      "entity": "meta",
+      "label": "What are you testing?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "baseline",
+          "label": "Baseline: the farm as it is now"
+        },
+        {
+          "value": "intervention",
+          "label": "Intervention: a change to test"
+        },
+        {
+          "value": "training",
+          "label": "Training or example"
+        }
+      ],
+      "na_policy": "meta",
+      "package_field": "_meta.purpose",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "param_set",
+      "section": "home",
+      "entity": "meta",
+      "label": "Defaults from",
+      "definition": "The parameter set that supplies reference values (animal weights, feed quality, soils). Recommended from the location.",
+      "type": "select",
+      "options_source": "paramSets",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "database_code",
+      "help": null
+    },
+    {
+      "id": "location_point",
+      "section": "location",
+      "entity": "farm",
+      "group": "Where",
+      "label": "{location}",
+      "type": "location",
+      "help": "Click the map or choose country, region and district.",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.location",
+      "definition": null
+    },
+    {
+      "id": "region",
+      "section": "location",
+      "entity": "farm",
+      "group": "Where",
+      "label": "World region",
+      "definition": "Region used for IPCC livestock defaults; set from the country.",
+      "type": "derived",
+      "options_source": "vocab.region",
+      "na_policy": "block",
+      "package_field": "region",
+      "technical": "region · IPCC Table 10.16",
+      "help": null
+    },
+    {
+      "id": "climate_zone_2",
+      "section": "location",
+      "entity": "farm",
+      "group": "Climate",
+      "label": "Climate type",
+      "definition": "IPCC climate class. It sets manure methane and soil carbon factors.",
+      "type": "select",
+      "options": [
+        {
+          "value": "Tropical Wet",
+          "label": "Tropical, wet",
+          "definition": "Hot all year; rain most months (over ~2000 mm)."
+        },
+        {
+          "value": "Tropical Moist",
+          "label": "Tropical, moist",
+          "definition": "Hot all year; rainy and dry seasons (~1000–2000 mm)."
+        },
+        {
+          "value": "Tropical Dry",
+          "label": "Tropical, dry",
+          "definition": "Hot all year; long dry season (under ~1000 mm)."
+        },
+        {
+          "value": "Tropical Montane",
+          "label": "Tropical highlands",
+          "definition": "Tropics above ~1000 m; cooler nights."
+        },
+        {
+          "value": "Warm Temperate Moist",
+          "label": "Warm temperate, moist",
+          "definition": "Mild winters, warm summers; rain exceeds evaporation."
+        },
+        {
+          "value": "Warm Temperate Dry",
+          "label": "Warm temperate, dry",
+          "definition": "Mild winters, warm summers; evaporation exceeds rain."
+        },
+        {
+          "value": "Cool Temperate Moist",
+          "label": "Cool temperate, moist",
+          "definition": "Cold winters; rain exceeds evaporation."
+        },
+        {
+          "value": "Cool Temperate Dry",
+          "label": "Cool temperate, dry",
+          "definition": "Cold winters; evaporation exceeds rain."
+        },
+        {
+          "value": "Boreal Moist",
+          "label": "Boreal, moist",
+          "definition": "Long cold winters; moist."
+        },
+        {
+          "value": "Boreal Dry",
+          "label": "Boreal, dry",
+          "definition": "Long cold winters; dry."
+        }
+      ],
+      "default_source": "map",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "climate_zone_2",
+      "technical": "climate_zone_2 · IPCC Table 10.17",
+      "help": null
+    },
+    {
+      "id": "annual_prec",
+      "section": "location",
+      "entity": "farm",
+      "group": "Climate",
+      "label": "Rainfall in a normal year",
+      "unit": "mm per year",
+      "definition": "Total rain the {farm} receives in an average year.",
+      "help": "For example 1100 for the Njombe highlands.",
+      "type": "number",
+      "min": 50,
+      "max": 6000,
+      "typical": [
+        400,
+        2500
+      ],
+      "default_source": "map",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "annual_prec",
+      "technical": "annual_prec"
+    },
+    {
+      "id": "rain_months",
+      "section": "location",
+      "entity": "farm",
+      "group": "Climate",
+      "label": "Months with rain in a normal year",
+      "unit": "months",
+      "definition": "Calendar months in which meaningful rain usually falls.",
+      "help": "Tap the months. Two rainy seasons are fine.",
+      "type": "month_set",
+      "min": 1,
+      "max": 12,
+      "default_source": "map",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "rain_length",
+      "convert": "count_months",
+      "technical": "rain_length"
+    },
+    {
+      "id": "et0",
+      "section": "location",
+      "entity": "farm",
+      "group": "Climate",
+      "label": "Evaporation demand (ET0)",
+      "unit": "mm per year",
+      "definition": "Water that would evaporate from well-watered grass. A climate property, not something you measure.",
+      "type": "number",
+      "min": 300,
+      "max": 3000,
+      "typical": [
+        900,
+        1800
+      ],
+      "default": 1400,
+      "default_source": "map",
+      "required_if": "always",
+      "na_policy": "default_assumed",
+      "package_field": "et",
+      "technical": "et",
+      "help": null
+    },
+    {
+      "id": "soil_description",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil",
+      "label": "Main soil type",
+      "definition": "Soil group of the feed plots (FAO/WRB). Plots can override this.",
+      "type": "select",
+      "options": [
+        {
+          "value": "Nitosol",
+          "label": "Nitosol",
+          "definition": "Deep red clay soil, common in highlands."
+        },
+        {
+          "value": "Cambisol",
+          "label": "Cambisol",
+          "definition": "Young, moderately developed soil."
+        },
+        {
+          "value": "Lixisol",
+          "label": "Lixisol",
+          "definition": "Strongly weathered, low nutrient reserve."
+        },
+        {
+          "value": "Acrisol",
+          "label": "Acrisol",
+          "definition": "Acid, clay-rich subsoil; low fertility."
+        },
+        {
+          "value": "Andosol",
+          "label": "Andosol",
+          "definition": "Dark volcanic soil; fertile, erodes easily."
+        },
+        {
+          "value": "Fluvisol",
+          "label": "Fluvisol",
+          "definition": "River-deposited soil in valleys and floodplains."
+        },
+        {
+          "value": "Vertisol",
+          "label": "Vertisol",
+          "definition": "Heavy black clay that cracks when dry."
+        },
+        {
+          "value": "Phaeozem",
+          "label": "Phaeozem",
+          "definition": "Dark, humus-rich soil of grasslands."
+        },
+        {
+          "value": "Xerosol",
+          "label": "Xerosol",
+          "definition": "Dry-region soil, little organic matter."
+        }
+      ],
+      "default": "Cambisol",
+      "default_source": "map",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": [
+        "soil_description",
+        "soil_k_value"
+      ],
+      "convert": "lookup:soil.k",
+      "technical": "soil_description → soil_k_value (USLE K)",
+      "help": null
+    },
+    {
+      "id": "soil_c",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil details",
+      "advanced": true,
+      "label": "Soil organic carbon",
+      "unit": "g per kg",
+      "definition": "Carbon in the top 30 cm of soil.",
+      "type": "number",
+      "min": 1,
+      "max": 120,
+      "typical": [
+        8,
+        40
+      ],
+      "default": 20,
+      "default_source": "map",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "soil_c",
+      "help": null
+    },
+    {
+      "id": "soil_n",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil details",
+      "advanced": true,
+      "label": "Soil total nitrogen",
+      "unit": "g per kg",
+      "definition": "Total N in the topsoil. If you only have %, multiply by 10.",
+      "type": "number",
+      "min": 0.2,
+      "max": 10,
+      "typical": [
+        0.8,
+        4
+      ],
+      "default": 2,
+      "default_source": "map",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "soil_n",
+      "help": null
+    },
+    {
+      "id": "soil_clay",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil details",
+      "advanced": true,
+      "label": "Clay content",
+      "unit": "%",
+      "type": "number",
+      "min": 2,
+      "max": 80,
+      "typical": [
+        15,
+        50
+      ],
+      "default": 30,
+      "default_source": "map",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "soil_clay",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "soil_bulk",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil details",
+      "advanced": true,
+      "label": "Bulk density",
+      "unit": "g per cm³",
+      "type": "number",
+      "min": 0.8,
+      "max": 1.8,
+      "typical": [
+        1.1,
+        1.5
+      ],
+      "default": 1.3,
+      "default_source": "map",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "soil_bulk",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "soil_depth",
+      "section": "location",
+      "entity": "farm",
+      "group": "Soil details",
+      "advanced": true,
+      "label": "Soil depth",
+      "unit": "m",
+      "definition": "Depth to rock or hard layer.",
+      "type": "number",
+      "min": 0.2,
+      "max": 3,
+      "typical": [
+        0.5,
+        1.5
+      ],
+      "default": 1,
+      "default_source": "assumed",
+      "required_if": {
+        "path": "system.growsFeed",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "soil_depth",
+      "help": null
+    },
+    {
+      "id": "plot_name",
+      "section": "plots",
+      "entity": "plot",
+      "label": "{Plot} name",
+      "type": "text",
+      "help": "For example 'Homestead', 'Lower field', 'Hill pasture'.",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.plot",
+      "definition": null
+    },
+    {
+      "id": "plot_area_ha",
+      "section": "plots",
+      "entity": "plot",
+      "label": "Area",
+      "unit": "ha",
+      "help": "1 acre ≈ 0.4 ha. Used to weight soil and practice when plots differ.",
+      "type": "number",
+      "min": 0.01,
+      "max": 10000,
+      "typical": [
+        0.2,
+        5
+      ],
+      "na_policy": "default_assumed",
+      "default": 1,
+      "default_source": "assumed",
+      "package_field": "_meta.plot_area",
+      "definition": null
+    },
+    {
+      "id": "plot_use",
+      "section": "plots",
+      "entity": "plot",
+      "label": "What is this {plot} used for?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "crops",
+          "label": "Growing feed or crops"
+        },
+        {
+          "value": "grazing",
+          "label": "Grazing"
+        },
+        {
+          "value": "both",
+          "label": "Both"
+        }
+      ],
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.plot_use",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "slope_class",
+      "section": "plots",
+      "entity": "plot",
+      "label": "How steep is the {plot}?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "Flat (0-5%)",
+          "label": "Flat",
+          "definition": "You can walk it easily; water hardly runs off."
+        },
+        {
+          "value": "Hilly (5-20%)",
+          "label": "Hilly",
+          "definition": "Noticeable slope; you lean walking up."
+        },
+        {
+          "value": "Steep (20-30%)",
+          "label": "Steep",
+          "definition": "Hard to plough with oxen."
+        },
+        {
+          "value": "Extremely steep (30%+)",
+          "label": "Very steep",
+          "definition": "Terraces needed to farm."
+        }
+      ],
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": [
+        "feed_items[].slope_desc",
+        "feed_items[].slope",
+        "feed_items[].slope_p_factor"
+      ],
+      "convert": "lookup:slope",
+      "technical": "slope_desc (USLE P factor)",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "slope_length_m",
+      "section": "plots",
+      "entity": "plot",
+      "label": "Length of the slope",
+      "unit": "m",
+      "definition": "Distance water runs from the top of the {plot} to the bottom or to a terrace.",
+      "type": "number",
+      "min": 1,
+      "max": 500,
+      "typical": [
+        10,
+        100
+      ],
+      "default": 20,
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].slope_length",
+      "help": null
+    },
+    {
+      "id": "land_cover",
+      "section": "plots",
+      "entity": "plot",
+      "label": "What covers the ground most of the year?",
+      "definition": "Sets how well the soil is protected from rain.",
+      "type": "select",
+      "options_source": "vocab.landcover",
+      "default_source": "crop",
+      "na_policy": "default_assumed",
+      "package_field": [
+        "feed_items[].land_cover_desc",
+        "feed_items[].land_cover",
+        "feed_items[].landcover_c_factor"
+      ],
+      "convert": "lookup:landcover",
+      "technical": "land_cover_desc (USLE C factor)",
+      "help": null
+    },
+    {
+      "id": "plot_soil",
+      "section": "plots",
+      "entity": "plot",
+      "advanced": true,
+      "label": "Soil on this {plot}",
+      "definition": "Only if it differs from the {farm}'s main soil.",
+      "type": "select",
+      "options_source": "field:soil_description",
+      "na_policy": "not_applicable",
+      "package_field": "_meta.plot_soil",
+      "help": null
+    },
+    {
+      "id": "tillage",
+      "section": "plots",
+      "entity": "plot",
+      "label": "How is the {plot} tilled?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full: ploughed every season"
+        },
+        {
+          "value": "reduced",
+          "label": "Reduced: shallow or partial"
+        },
+        {
+          "value": "none",
+          "label": "No tillage: direct planting"
+        }
+      ],
+      "default": "full",
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.plot_use",
+        "in": [
+          "crops",
+          "both"
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "cropland_tillage",
+      "convert": "table:tillage",
+      "technical": "cropland_tillage · IPCC stock-change factor",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "orgmatter",
+      "section": "plots",
+      "entity": "plot",
+      "label": "How much organic matter goes back to the {plot}?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "low",
+          "label": "Little: residues removed, no manure"
+        },
+        {
+          "value": "medium",
+          "label": "Medium: some residues left"
+        },
+        {
+          "value": "high",
+          "label": "High, without manure: residues and cover crops"
+        },
+        {
+          "value": "high_manure",
+          "label": "High, with manure"
+        }
+      ],
+      "default": "medium",
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.plot_use",
+        "in": [
+          "crops",
+          "both"
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "cropland_orgmatter",
+      "convert": "table:orgmatter",
+      "technical": "cropland_orgmatter",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "grass_condition",
+      "section": "plots",
+      "entity": "plot",
+      "label": "Condition of the grazing land",
+      "type": "radio",
+      "options": [
+        {
+          "value": "nominal",
+          "label": "Managed, not improved"
+        },
+        {
+          "value": "moderate",
+          "label": "Somewhat degraded"
+        },
+        {
+          "value": "severe",
+          "label": "Severely degraded"
+        },
+        {
+          "value": "improved",
+          "label": "Improved: sown or fertilised"
+        }
+      ],
+      "default": "nominal",
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.plot_use",
+        "in": [
+          "grazing",
+          "both"
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "grassland_management",
+      "convert": "table:grass",
+      "technical": "grassland_management",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "grass_inputs",
+      "section": "plots",
+      "entity": "plot",
+      "label": "Fertiliser or irrigation on the grazing land?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "None",
+          "label": "None"
+        },
+        {
+          "value": "Medium",
+          "label": "Some"
+        },
+        {
+          "value": "High",
+          "label": "A lot"
+        }
+      ],
+      "default": "None",
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.plot_use",
+        "in": [
+          "grazing",
+          "both"
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "grassland_implevel",
+      "technical": "grassland_implevel",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "season_name",
+      "section": "seasons",
+      "entity": "season",
+      "label": "Season name",
+      "type": "text",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "seasons[].season_name",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "season_months",
+      "section": "seasons",
+      "entity": "season",
+      "label": "Months in this season",
+      "unit": "months",
+      "type": "month_set",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "seasons[].season_length",
+      "convert": "sum_month_days",
+      "technical": "season_length (days)",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "herd_name",
+      "section": "herds",
+      "entity": "herd",
+      "label": "Herd name",
+      "type": "text",
+      "help": "For example 'Dairy herd' or 'Young stock at the hill farm'.",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.herd",
+      "definition": null
+    },
+    {
+      "id": "herd_pattern",
+      "section": "herds",
+      "entity": "herd",
+      "label": "Where do these animals spend their time?",
+      "definition": "Sets a starting time budget for each group in the herd; you can adjust per group.",
+      "type": "radio",
+      "options_source": "herdPatterns",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.herd_pattern",
+      "help": null
+    },
+    {
+      "id": "herd_plots",
+      "section": "herds",
+      "entity": "herd",
+      "label": "Which {plot}s does this herd graze?",
+      "type": "multiselect",
+      "options_source": "entities:plot",
+      "visible_if": {
+        "path": "entity.herd_pattern",
+        "in": [
+          "night_shed",
+          "mostly_grazing",
+          "offfarm"
+        ]
+      },
+      "na_policy": "not_applicable",
+      "package_field": "_meta.herd_plots",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "livetype",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Group",
+      "label": "Animal group",
+      "definition": "Category from the parameter set; sets the default weight and milk composition.",
+      "type": "livetype",
+      "options_source": "vocab.livetype",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": [
+        "livestock[].livetype_code",
+        "livestock[].livetype_desc"
+      ],
+      "technical": "livetype_desc",
+      "help": null
+    },
+    {
+      "id": "herd_ref",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Group",
+      "label": "Herd",
+      "type": "select",
+      "options_source": "entities:herd",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "_meta.animal_herd",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "group_name",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Group",
+      "label": "Your name for this group",
+      "type": "text",
+      "help": "Optional, e.g. 'Improved dairy cows' or 'Mama Neema's heifers'. The model still uses the standard category; your name is kept alongside it.",
+      "na_policy": "not_applicable",
+      "package_field": "_meta.group_name",
+      "technical": "livestock_mapping (user_name → canonical_name), as in CLEANED-flexible",
+      "definition": null
+    },
+    {
+      "id": "herd_n",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Numbers",
+      "label": "{numbers}",
+      "unit": "head",
+      "definition": "Average number present during the year.",
+      "type": "integer",
+      "min": 1,
+      "max": 10000,
+      "typical": [
+        1,
+        50
+      ],
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "livestock[].herd_composition",
+      "technical": "herd_composition",
+      "help": "Average number present during the year. At regional or national scale, the population in this category."
+    },
+    {
+      "id": "body_weight",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Weights",
+      "label": "Average live weight now",
+      "unit": "kg per animal",
+      "definition": "Typical weight of one animal in this group today.",
+      "type": "number",
+      "min": 20,
+      "max": 1200,
+      "typical": [
+        90,
+        650
+      ],
+      "default_source": "db:livetype.body_weight",
+      "required_if": "always",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].body_weight",
+      "help": null
+    },
+    {
+      "id": "adult_weight",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Weights",
+      "label": "Weight when fully grown",
+      "unit": "kg per animal",
+      "definition": "Mature weight this animal will reach; used for growth energy.",
+      "type": "number",
+      "min": 50,
+      "max": 1200,
+      "default_source": "db:livetype.adult_weight",
+      "visible_if": {
+        "path": "entity._young",
+        "eq": true
+      },
+      "required_if": {
+        "path": "entity._young",
+        "eq": true
+      },
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].adult_weight",
+      "convert": "young: identity; mature: copy body_weight",
+      "help": null
+    },
+    {
+      "id": "milk_l_day",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Milk",
+      "label": "Milk per cow per day",
+      "unit": "litres per day",
+      "definition": "Average over the milking period, including milk fed to calves.",
+      "help": "For example 4 in the morning and 2 in the evening = 6.",
+      "type": "number",
+      "min": 0.2,
+      "max": 45,
+      "typical": [
+        2,
+        15
+      ],
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity._milking",
+            "eq": true
+          },
+          {
+            "path": "system.aim",
+            "in": [
+              "milk",
+              "both"
+            ]
+          }
+        ]
+      },
+      "required_if": {
+        "all": [
+          {
+            "path": "entity._milking",
+            "eq": true
+          },
+          {
+            "path": "system.aim",
+            "in": [
+              "milk",
+              "both"
+            ]
+          }
+        ]
+      },
+      "na_policy": "block",
+      "package_field": "livestock[].annual_milk",
+      "convert": "milk_l_day × lactation_days × 1.03",
+      "technical": "annual_milk (kg per animal per year)"
+    },
+    {
+      "id": "lactation_days",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Milk",
+      "label": "Days milked per year",
+      "unit": "days per year",
+      "type": "integer",
+      "min": 30,
+      "max": 365,
+      "typical": [
+        200,
+        305
+      ],
+      "default": 270,
+      "default_source": "assumed",
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity._milking",
+            "eq": true
+          },
+          {
+            "path": "system.aim",
+            "in": [
+              "milk",
+              "both"
+            ]
+          }
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].annual_milk",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "growth_kg_yr",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Growth",
+      "label": "Weight gained per animal per year",
+      "unit": "kg per animal per year",
+      "definition": "Live-weight gain over 12 months.",
+      "help": "A calf going from 90 to 150 kg in a year gains 60.",
+      "type": "number",
+      "min": 0,
+      "max": 400,
+      "typical": [
+        30,
+        150
+      ],
+      "visible_if": {
+        "any": [
+          {
+            "path": "entity._young",
+            "eq": true
+          },
+          {
+            "path": "system.aim",
+            "in": [
+              "meat",
+              "both"
+            ]
+          }
+        ]
+      },
+      "required_if": {
+        "path": "entity._young",
+        "eq": true
+      },
+      "na_policy": "block",
+      "package_field": "livestock[].annual_growth",
+      "convert": "mature & not meat → 0 (not applicable)"
+    },
+    {
+      "id": "work_h_day",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Work",
+      "label": "Hours worked per day",
+      "unit": "hours per day",
+      "type": "number",
+      "min": 0,
+      "max": 12,
+      "default": 0,
+      "visible_if": {
+        "path": "system.aim",
+        "eq": "draught"
+      },
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].work_hour",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "hours_stable",
+      "section": "animals",
+      "entity": "animal",
+      "group": "A normal day",
+      "label": "In a roofed shed",
+      "unit": "hours per day",
+      "type": "number",
+      "min": 0,
+      "max": 24,
+      "step": 0.5,
+      "default_source": "herd pattern",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "livestock[].time_in_stable",
+      "convert": "hours / 24",
+      "technical": "time_in_stable (fraction)",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "hours_pen",
+      "section": "animals",
+      "entity": "animal",
+      "group": "A normal day",
+      "label": "In an open pen or boma",
+      "unit": "hours per day",
+      "type": "number",
+      "min": 0,
+      "max": 24,
+      "step": 0.5,
+      "default_source": "herd pattern",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "livestock[].time_in_non_roofed_enclosure",
+      "convert": "hours / 24",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "hours_onfarm",
+      "section": "animals",
+      "entity": "animal",
+      "group": "A normal day",
+      "label": "Grazing on the {farm}",
+      "unit": "hours per day",
+      "type": "number",
+      "min": 0,
+      "max": 24,
+      "step": 0.5,
+      "default_source": "herd pattern",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "livestock[].time_in_onfarm_grazing",
+      "convert": "hours / 24",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "hours_offfarm",
+      "section": "animals",
+      "entity": "animal",
+      "group": "A normal day",
+      "label": "Grazing off the {farm}",
+      "unit": "hours per day",
+      "type": "number",
+      "min": 0,
+      "max": 24,
+      "step": 0.5,
+      "default_source": "herd pattern",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "livestock[].time_in_offfarm_grazing",
+      "convert": "hours / 24",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "manure_stable",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Manure",
+      "label": "Dung dropped in the shed",
+      "type": "manure",
+      "visible_if": {
+        "path": "entity.hours_stable",
+        "gt": 0
+      },
+      "default": {
+        "handling": "piled",
+        "collected": 100
+      },
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": [
+        "livestock[].manureman_stable",
+        "livestock[].manure_in_stable"
+      ],
+      "convert": "table:manure; collected % / 100",
+      "technical": "manureman_stable · IPCC Table 10.17",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "manure_pen",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Manure",
+      "label": "Dung dropped in the open pen",
+      "type": "manure",
+      "visible_if": {
+        "path": "entity.hours_pen",
+        "gt": 0
+      },
+      "default": {
+        "handling": "drylot",
+        "collected": 80
+      },
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": [
+        "livestock[].manureman_non_roofed_enclosure",
+        "livestock[].manure_in_non_roofed_enclosure"
+      ],
+      "convert": "table:manure; collected % / 100",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "manure_onfarm",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Manure",
+      "label": "Dung dropped while grazing on the {farm}",
+      "type": "manure",
+      "visible_if": {
+        "path": "entity.hours_onfarm",
+        "gt": 0
+      },
+      "default": {
+        "handling": "left",
+        "collected": 0
+      },
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": [
+        "livestock[].manureman_onfarm_grazing",
+        "livestock[].manure_in_field"
+      ],
+      "convert": "table:manure; collected % / 100",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "manure_offfarm",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Manure",
+      "label": "Dung dropped while grazing off the {farm}",
+      "type": "manure",
+      "noCollect": true,
+      "visible_if": {
+        "path": "entity.hours_offfarm",
+        "gt": 0
+      },
+      "default": {
+        "handling": "left",
+        "collected": 0
+      },
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].manureman_offfarm_grazing",
+      "convert": "table:manure",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "manure_kept_share",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Collected manure",
+      "label": "Of the manure you collect, how much stays on this {farm}?",
+      "unit": "%",
+      "definition": "The rest is sold or given away.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 100,
+      "default_source": "assumed",
+      "na_policy": "default_assumed",
+      "package_field": [
+        "livestock[].manure_onfarm_fraction",
+        "livestock[].manure_sales_fraction"
+      ],
+      "convert": "kept/100; sales = (100 − kept)/100",
+      "technical": "manure_onfarm_fraction (mislabelled in the current app)",
+      "help": null
+    },
+    {
+      "id": "fat_milkcontent",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Milk fat",
+      "unit": "%",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.5,
+      "max": 12,
+      "default_source": "db:livetype.fat_milkcontent",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].fat_milkcontent",
+      "technical": "fat_milkcontent",
+      "help": null
+    },
+    {
+      "id": "protein_milkcontent",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Milk protein",
+      "unit": "%",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.5,
+      "max": 8,
+      "default_source": "db:livetype.protein_milkcontent",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].protein_milkcontent",
+      "technical": "protein_milkcontent",
+      "help": null
+    },
+    {
+      "id": "energy_milkcontent",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Milk energy",
+      "unit": "kcal per kg",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 300,
+      "max": 1500,
+      "default_source": "db:livetype.energy_milkcontent",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].energy_milkcontent",
+      "technical": "energy_milkcontent",
+      "help": null
+    },
+    {
+      "id": "energy_meatcontent",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Meat energy",
+      "unit": "kcal per kg",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 1000,
+      "max": 4000,
+      "default_source": "db:livetype.energy_meatcontent",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].energy_meatcontent",
+      "technical": "energy_meatcontent",
+      "help": null
+    },
+    {
+      "id": "protein_meatcontent",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Meat protein",
+      "unit": "%",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 10,
+      "max": 35,
+      "default_source": "db:livetype.protein_meatcontent",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].protein_meatcontent",
+      "technical": "protein_meatcontent",
+      "help": null
+    },
+    {
+      "id": "carcass_fraction",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Carcass fraction",
+      "unit": "fraction",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.3,
+      "max": 0.7,
+      "default_source": "db:livetype.carcass_fraction",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].carcass_fraction",
+      "technical": "carcass_fraction",
+      "help": null
+    },
+    {
+      "id": "birth_interval",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Calving or birth interval",
+      "unit": "years",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.8,
+      "max": 3,
+      "default_source": "db:livetype.birth_interval",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].birth_interval",
+      "technical": "birth_interval",
+      "help": null
+    },
+    {
+      "id": "cp_maintenance",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Crude protein for maintenance",
+      "unit": "kg per day",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.01,
+      "max": 2,
+      "default_source": "db:livetype.cp_maintenance",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].cp_maintenance",
+      "technical": "cp_maintenance",
+      "help": null
+    },
+    {
+      "id": "cp_lys_pregnancy",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Crude protein for pregnancy",
+      "unit": "kg",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0,
+      "max": 30,
+      "default_source": "db:livetype.cp_lys_pregnancy",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].cp_lys_pregnancy",
+      "technical": "cp_lys_pregnancy",
+      "help": null
+    },
+    {
+      "id": "cp_lactmilk",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Crude protein per kg milk",
+      "unit": "kg per kg",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0,
+      "max": 0.2,
+      "default_source": "db:livetype.cp_lactmilk",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].cp_lactmilk",
+      "technical": "cp_lactmilk",
+      "help": null
+    },
+    {
+      "id": "cp_lys_growth",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Crude protein per kg gain",
+      "unit": "kg per kg",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default_source": "db:livetype.cp_lys_growth",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].cp_lys_growth",
+      "technical": "cp_lys_growth",
+      "help": null
+    },
+    {
+      "id": "n_manure_content",
+      "section": "animals",
+      "entity": "animal",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Nitrogen in manure",
+      "unit": "kg N per kg manure",
+      "definition": "Reference value for this animal group. Override only if you have measurements.",
+      "type": "number",
+      "min": 0.005,
+      "max": 0.08,
+      "default_source": "db:livetype.n_manure_content",
+      "na_policy": "default_assumed",
+      "package_field": "livestock[].n_manure_content",
+      "technical": "n_manure_content",
+      "help": null
+    },
+    {
+      "id": "feed_item",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Feed",
+      "label": "Feed",
+      "type": "feed",
+      "options_source": "vocab.feeditems",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": [
+        "feed_items[].feed_item_code",
+        "feed_items[].feed_item_name",
+        "feed_items[].crop_code",
+        "feed_items[].crop_name"
+      ],
+      "technical": "feed_item_name · crop_name",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "feed_origin",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Feed",
+      "label": "Where does this feed come from?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "grown",
+          "label": "Grown on this farm",
+          "visible_if": {
+            "path": "system.growsFeed",
+            "eq": true
+          }
+        },
+        {
+          "value": "bought",
+          "label": "Bought",
+          "visible_if": {
+            "path": "system.buysFeed",
+            "eq": true
+          }
+        },
+        {
+          "value": "collected",
+          "label": "Collected off the farm",
+          "definition": "Roadsides, communal land, neighbours' fields.",
+          "visible_if": {
+            "path": "system.buysFeed",
+            "eq": true
+          }
+        }
+      ],
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": [
+        "feed_items[].source_type",
+        "feed_items[].feed_item_name"
+      ],
+      "convert": "origin → Main/Residue/Purchased; OFR/OFC/IP tag",
+      "technical": "source_type; OFR/OFC/IP suffix on feed_item_name",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "feed_part",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Feed",
+      "label": "Which part is fed?",
+      "type": "radio",
+      "options": [
+        {
+          "value": "main",
+          "label": "The main product",
+          "definition": "The grass, fodder or grain itself."
+        },
+        {
+          "value": "residue",
+          "label": "The crop residue",
+          "definition": "Stover, straw, haulms left after harvest."
+        }
+      ],
+      "default_source": "feed item",
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "required_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "na_policy": "block",
+      "package_field": "feed_items[].source_type",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "feed_plot",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "label": "Grown on which {plot}?",
+      "type": "select",
+      "options_source": "entities:plot",
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "required_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "na_policy": "block",
+      "package_field": "_meta.feed_plot",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "yield_t_dm_ha",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "label": "Harvest of the main product",
+      "unit": "t dry matter per ha per year",
+      "definition": "Yield after drying. Use the converter if you know fresh weight.",
+      "type": "number",
+      "min": 0.1,
+      "max": 60,
+      "typical": [
+        1,
+        15
+      ],
+      "default_source": "db:crop.dry_yield",
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "required_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].dry_yield",
+      "technical": "dry_yield",
+      "help": null
+    },
+    {
+      "id": "residue_yield_t_dm_ha",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "label": "Residue produced",
+      "unit": "t dry matter per ha per year",
+      "type": "number",
+      "min": 0,
+      "max": 60,
+      "default_source": "db:crop.residue_dry_yield",
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "entity.feed_part",
+            "eq": "residue"
+          }
+        ]
+      },
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].residue_dry_yield",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "main_fed_share",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "label": "How much of the main product is fed to the animals?",
+      "unit": "%",
+      "definition": "The rest is sold or eaten by people.",
+      "help": "Grass is usually 100. For maize grain it is often 0, with the stover fed instead.",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default_source": "crop category",
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "entity.feed_part",
+            "eq": "main"
+          }
+        ]
+      },
+      "required_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "entity.feed_part",
+            "eq": "main"
+          }
+        ]
+      },
+      "na_policy": "block",
+      "package_field": "feed_items[].main_product_removal",
+      "convert": "% / 100",
+      "technical": "main_product_removal (0 gives 0 ha in the current app)"
+    },
+    {
+      "id": "residue_fate",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "label": "What happens to the residue?",
+      "unit": "%",
+      "definition": "Fed to animals, left on the field, burnt. Adds to 100.",
+      "type": "triple_pct",
+      "parts": [
+        "Fed to animals",
+        "Left on the field",
+        "Burnt"
+      ],
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "entity.feed_part",
+            "eq": "residue"
+          }
+        ]
+      },
+      "required_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "entity.feed_part",
+            "eq": "residue"
+          }
+        ]
+      },
+      "na_policy": "block",
+      "package_field": [
+        "feed_items[].residue_removal",
+        "feed_items[].residue_burnt"
+      ],
+      "convert": "fed/100; burnt/100",
+      "help": null
+    },
+    {
+      "id": "intercrop_share",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Grown here",
+      "advanced": true,
+      "label": "Share of the {plot} this crop occupies",
+      "unit": "%",
+      "definition": "Only if another crop grows in the same plot at the same time.",
+      "type": "percent",
+      "min": 1,
+      "max": 100,
+      "default": 100,
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "na_policy": "default_assumed",
+      "package_field": [
+        "feed_items[].intercrop",
+        "feed_items[].intercrop_fraction"
+      ],
+      "convert": "100 → intercrop 0; else intercrop 1, fraction/100",
+      "help": null
+    },
+    {
+      "id": "manure_to_plot_share",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Fertility",
+      "label": "Share of the {farm}'s collected manure applied to this crop",
+      "unit": "%",
+      "definition": "All crops together cannot exceed 100.",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "default_source": "assumed",
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "grown"
+      },
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].fraction_as_fertilizer",
+      "convert": "% / 100; Σ ≤ 1",
+      "help": null
+    },
+    {
+      "id": "fert_rates",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Fertility",
+      "label": "Mineral fertiliser applied to this crop",
+      "type": "fert_rates",
+      "definition": "Per product. Enter kg per ha, or kg or bags per {plot} and we use the {plot} area.",
+      "visible_if": {
+        "all": [
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          },
+          {
+            "path": "system.fertiliser",
+            "eq": true
+          }
+        ]
+      },
+      "na_policy": "default_assumed",
+      "default_source": "assumed none",
+      "package_field": [
+        "feed_items[].urea",
+        "feed_items[].npk",
+        "feed_items[].dap",
+        "feed_items[].ammonium_nitrate",
+        "feed_items[].ammonium_sulfate",
+        "feed_items[].n_solutions",
+        "feed_items[].ammonia"
+      ],
+      "convert": "kg/ha; kg/plot ÷ area; bags × 50 ÷ area",
+      "help": null
+    },
+    {
+      "id": "feed_imported",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Bought",
+      "label": "Is it made or grown far away or imported?",
+      "type": "yesno",
+      "default": false,
+      "visible_if": {
+        "path": "entity.feed_origin",
+        "eq": "bought"
+      },
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].feed_item_name",
+      "convert": "adds the IP tag",
+      "technical": "'IP' suffix → imported product",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "rice_fields",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Rice",
+      "label": "Rice cultivation",
+      "type": "rice",
+      "visible_if": {
+        "all": [
+          {
+            "path": "system.rice",
+            "eq": true
+          },
+          {
+            "path": "entity._isRice",
+            "eq": true
+          }
+        ]
+      },
+      "na_policy": "block",
+      "package_field": [
+        "feed_items[].water_regime",
+        "feed_items[].ecosystem_type",
+        "feed_items[].organic_amendment",
+        "feed_items[].cultivation_period"
+      ],
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "dm_content",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Dry matter",
+      "unit": "% of fresh weight",
+      "definition": "Feed quality from the parameter set. Override with your own analysis if you have one.",
+      "type": "number",
+      "min": 1,
+      "max": 100,
+      "default_source": "db:feed.dm_content",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].dm_content",
+      "technical": "dm_content",
+      "help": null
+    },
+    {
+      "id": "me_content",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Energy (ME)",
+      "unit": "MJ per kg DM",
+      "definition": "Feed quality from the parameter set. Override with your own analysis if you have one.",
+      "type": "number",
+      "min": 2,
+      "max": 20,
+      "default_source": "db:feed.me_content",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].me_content",
+      "technical": "me_content",
+      "help": null
+    },
+    {
+      "id": "cp_content",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Crude protein",
+      "unit": "% of DM",
+      "definition": "Feed quality from the parameter set. Override with your own analysis if you have one.",
+      "type": "number",
+      "min": 1,
+      "max": 40,
+      "default_source": "db:feed.cp_content",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].cp_content",
+      "technical": "cp_content",
+      "help": null
+    },
+    {
+      "id": "main_n",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Nitrogen in the main product",
+      "unit": "kg N per kg DM",
+      "type": "number",
+      "min": 0,
+      "max": 0.1,
+      "default_source": "db:crop.main_n",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].main_n",
+      "technical": "main_n",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "residue_n",
+      "section": "feeds",
+      "entity": "feed",
+      "group": "Values from the parameter set",
+      "advanced": true,
+      "label": "Nitrogen in the residue",
+      "unit": "kg N per kg DM",
+      "type": "number",
+      "min": 0,
+      "max": 0.1,
+      "default_source": "db:crop.residue_n",
+      "na_policy": "default_assumed",
+      "package_field": "feed_items[].residue_n",
+      "technical": "residue_n",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "fert_n_pct",
+      "section": "fertiliser",
+      "entity": "fertilizer",
+      "label": "Nitrogen % printed on the bag",
+      "unit": "%",
+      "help": "For NPK it is the first number of the grade, for example 17 in 17:17:17.",
+      "type": "number",
+      "min": 1,
+      "max": 82,
+      "default_source": "product",
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": [
+        "fertilizer[].fertilizer_desc",
+        "fertilizer[].percentage_n",
+        "fertilizer[].fraction",
+        "fertilizer[].fertilizer_code"
+      ],
+      "convert": "percentage_n; fraction = % / 100",
+      "technical": "percentage_n (NPK defaults to 0 in the current app)",
+      "definition": null
+    },
+    {
+      "id": "in_manure",
+      "section": "inputs",
+      "entity": "farm",
+      "label": "Manure brought onto the {farm} per year",
+      "type": "quantity_n",
+      "units": {
+        "kg": 1,
+        "tonnes": 1000,
+        "wheelbarrows (≈60 kg)": 60,
+        "50-kg bags": 50,
+        "ox-cart loads (≈500 kg)": 500
+      },
+      "n_pct_default": 0.5,
+      "na_policy": "default_assumed",
+      "default_source": "none assumed",
+      "package_field": "purchased_manure",
+      "convert": "kg × N% / 100 → kg N",
+      "technical": "purchased_manure (kg N per year)",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "in_compost",
+      "section": "inputs",
+      "entity": "farm",
+      "label": "Compost brought onto the {farm} per year",
+      "type": "quantity_n",
+      "units": {
+        "kg": 1,
+        "tonnes": 1000,
+        "wheelbarrows (≈60 kg)": 60,
+        "50-kg bags": 50
+      },
+      "n_pct_default": 1.2,
+      "na_policy": "default_assumed",
+      "default_source": "none assumed",
+      "package_field": "purchased_compost",
+      "convert": "kg × N% / 100",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "in_organic",
+      "section": "inputs",
+      "entity": "farm",
+      "label": "Other organic fertiliser brought in per year",
+      "type": "quantity_n",
+      "units": {
+        "kg": 1,
+        "tonnes": 1000,
+        "50-kg bags": 50
+      },
+      "n_pct_default": 1.0,
+      "na_policy": "default_assumed",
+      "default_source": "none assumed",
+      "package_field": "purchased_organic_n",
+      "convert": "kg × N% / 100",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "in_bedding",
+      "section": "inputs",
+      "entity": "farm",
+      "label": "Bedding material brought in per year",
+      "type": "quantity_n",
+      "units": {
+        "kg": 1,
+        "tonnes": 1000,
+        "bales (≈20 kg)": 20
+      },
+      "n_pct_default": 0.5,
+      "na_policy": "default_assumed",
+      "default_source": "none assumed",
+      "package_field": "purchased_bedding",
+      "convert": "kg × N% / 100",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_production_milk",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Milk",
+      "label": "Lost on the {farm}",
+      "unit": "%",
+      "help": "Spilt, spoiled or rejected before sale.",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_production_milk",
+      "definition": null
+    },
+    {
+      "id": "waste_distribution_milk",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Milk",
+      "label": "Lost in transport and collection",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_distribution_milk",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_processing_milk",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Milk",
+      "label": "Lost in processing",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_processing_milk",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_consume_milk",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Milk",
+      "label": "Lost at the consumer",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_consume_milk",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_production_meat",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Meat",
+      "label": "Lost on the {farm}",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_production_meat",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_distribution_meat",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Meat",
+      "label": "Lost in transport",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_distribution_meat",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_processing_meat",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Meat",
+      "label": "Lost in processing",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_processing_meat",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "waste_consume_meat",
+      "section": "losses",
+      "entity": "farm",
+      "group": "Meat",
+      "label": "Lost at the consumer",
+      "unit": "%",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "na_policy": "not_applicable",
+      "package_field": "waste_consume_meat",
+      "definition": null,
+      "help": null
+    },
+    {
+      "id": "basket_share",
+      "section": "feeding",
+      "entity": "allocation",
+      "label": "Share of diet",
+      "unit": "% as fed",
+      "definition": "Portion of what this group eats in this season that is this feed.",
+      "type": "percent",
+      "min": 0,
+      "max": 100,
+      "required_if": "always",
+      "na_policy": "block",
+      "package_field": "feed_basket[].feeds[].livestock[].allocation",
+      "convert": "blank → 0; each column sums to 100",
+      "help": null
+    }
+  ],
+  "tables": {
+    "climateBucket": {
+      "Tropical Dry": "trop_dry",
+      "Tropical Moist": "trop_moist",
+      "Tropical Wet": "trop_moist",
+      "Tropical Montane": "trop_mont",
+      "Warm Temperate Dry": "temp_dry",
+      "Warm Temperate Moist": "temp_moist",
+      "Cool Temperate Dry": "temp_dry",
+      "Cool Temperate Moist": "temp_moist",
+      "Boreal Dry": "temp_dry",
+      "Boreal Moist": "temp_moist"
+    },
+    "cropland_system": {
+      "trop_dry": "Long term cultivated, tropical, dry",
+      "trop_moist": "Long term cultivated, tropical, moist/wet",
+      "trop_mont": "Long term cultivated, tropical montane, all",
+      "temp_dry": "Long term cultivated, temperate/boreal, dry",
+      "temp_moist": "Long term cultivated, temperate/boreal, moist"
+    },
+    "tillage": {
+      "full": {
+        "trop_dry": "Full",
+        "trop_moist": "Full",
+        "trop_mont": "Full",
+        "temp_dry": "Full",
+        "temp_moist": "Full"
+      },
+      "reduced": {
+        "trop_dry": "Reduced, tropical, dry",
+        "trop_moist": "Reduced, tropical, moist",
+        "trop_mont": "Reduced, tropical montane, all",
+        "temp_dry": "Reduced, temperate/boreal, dry",
+        "temp_moist": "Reduced, temperate/boreal, moist"
+      },
+      "none": {
+        "trop_dry": "No-till, tropical, dry",
+        "trop_moist": "No-till, tropical, moist/wet",
+        "trop_mont": "No-till, tropical montane, all",
+        "temp_dry": "No-till, temperate/boreal, dry",
+        "temp_moist": "No-till, temperate/boreal, moist"
+      }
+    },
+    "orgmatter": {
+      "low": {
+        "trop_dry": "Low, tropical, dry",
+        "trop_moist": "Low, tropical, moist",
+        "trop_mont": "Low, tropical montane, all",
+        "temp_dry": "Low, temperate/boreal, dry",
+        "temp_moist": "Low, temperate/boreal, moist"
+      },
+      "medium": {
+        "trop_dry": "Medium, all",
+        "trop_moist": "Medium, all",
+        "trop_mont": "Medium, all",
+        "temp_dry": "Medium, all",
+        "temp_moist": "Medium, all"
+      },
+      "high": {
+        "trop_dry": "High w/OUT manure, temperate/boral and tropical, dry",
+        "trop_moist": "High w/OUT manure, temperate/boral and tropical, moist/wet",
+        "trop_mont": "High w/OUT manure, tropical montane",
+        "temp_dry": "High w/OUT manure, temperate/boral and tropical, dry",
+        "temp_moist": "High w/OUT manure, temperate/boral and tropical, moist/wet"
+      },
+      "high_manure": {
+        "trop_dry": "High with manure, temperate/boral and tropical, dry",
+        "trop_moist": "High with manure, temperate/boral and tropical, moist/wet",
+        "trop_mont": "High with manure, tropical montane",
+        "temp_dry": "High with manure, temperate/boral and tropical, dry",
+        "temp_moist": "High with manure, temperate/boral and tropical, moist/wet"
+      }
+    },
+    "grass": {
+      "nominal": {
+        "trop_dry": "Nominally managed",
+        "trop_moist": "Nominally managed",
+        "trop_mont": "Nominally managed",
+        "temp_dry": "Nominally managed",
+        "temp_moist": "Nominally managed"
+      },
+      "moderate": {
+        "trop_dry": "Moderately degraded grassland, tropical",
+        "trop_moist": "Moderately degraded grassland, tropical",
+        "trop_mont": "Moderately degraded grassland, tropical montane",
+        "temp_dry": "Moderately degraded grassland, temperate/boreal",
+        "temp_moist": "Moderately degraded grassland, temperate/boreal"
+      },
+      "severe": {
+        "trop_dry": "Severely degraded",
+        "trop_moist": "Severely degraded",
+        "trop_mont": "Severely degraded",
+        "temp_dry": "Severely degraded",
+        "temp_moist": "Severely degraded"
+      },
+      "improved": {
+        "trop_dry": "Improved grassland, tropical",
+        "trop_moist": "Improved grassland, tropical",
+        "trop_mont": "Improved grassland, tropical montane",
+        "temp_dry": "Improved grassland, temperate/boreal",
+        "temp_moist": "Improved grassland, temperate/boreal"
+      }
+    },
+    "landCoverByCategory": {
+      "grass": "Dense grass",
+      "legume": "Pulses",
+      "cereal": "Cereals",
+      "tree crop": "Other forest",
+      "tuber": "Cereals",
+      "oilseed crop": "Pulses",
+      "pseudocereal": "Cereals",
+      "shrub legume": "Other forest"
+    },
+    "landCoverByCrop": {
+      "Maize": "Maize",
+      "Sorghum": "Sorghum"
+    },
+    "mainFedShareByCategory": {
+      "grass": 100,
+      "legume": 100,
+      "cereal": 0,
+      "tree crop": 100,
+      "tuber": 0,
+      "oilseed crop": 0,
+      "pseudocereal": 0,
+      "shrub legume": 100
+    },
+    "youngGroups": [
+      "Cattle - Calves",
+      "Cattle - Calves (improved)",
+      "Cattle - Steers/heifers",
+      "Cattle - Steers/heifers (improved)",
+      "Buffalo - Calves",
+      "Buffalo - Steers/heifers",
+      "Sheep - Lambs",
+      "Goats - Kids",
+      "Pigs - growers",
+      "Sheep - Fattening Rams",
+      "Goats - Fattening Bucks"
+    ],
+    "milkingGroups": [
+      "Cattle - Cows (local)",
+      "Cattle - Cows (improved)",
+      "Cattle - Cows (high productive)",
+      "Buffalo - Cows",
+      "Sheep - Ewes",
+      "Goats - Does",
+      "Pigs - lactating/pregnant sows"
+    ],
+    "adultOf": {
+      "Cattle - Calves": "Cattle - Cows (local)",
+      "Cattle - Calves (improved)": "Cattle - Cows (improved)",
+      "Cattle - Steers/heifers": "Cattle - Cows (local)",
+      "Cattle - Steers/heifers (improved)": "Cattle - Cows (improved)",
+      "Buffalo - Calves": "Buffalo - Cows",
+      "Buffalo - Steers/heifers": "Buffalo - Cows"
+    },
+    "livetypeLabels": {
+      "Cattle - Cows (local)": {
+        "label": "Cows, local breed",
+        "definition": "Mature cows of indigenous or unimproved breeds; typically 300–400 kg, low to moderate milk."
+      },
+      "Cattle - Cows (improved)": {
+        "label": "Cows, crossbred or improved",
+        "definition": "Mature cows with exotic blood (Friesian, Ayrshire crosses); typically 380–600 kg."
+      },
+      "Cattle - Cows (high productive)": {
+        "label": "Cows, high-producing",
+        "definition": "Intensive dairy cows giving over ~8,500 kg milk a year."
+      },
+      "Cattle - Calves": {
+        "label": "Calves (under 1 year), local",
+        "definition": "Young stock of local breeds still growing."
+      },
+      "Cattle - Calves (improved)": {
+        "label": "Calves (under 1 year), improved",
+        "definition": "Young stock of improved breeds."
+      },
+      "Cattle - Steers/heifers": {
+        "label": "Heifers and steers (1–3 years), local",
+        "definition": "Growing animals not yet calved or finished."
+      },
+      "Cattle - Steers/heifers (improved)": {
+        "label": "Heifers and steers (1–3 years), improved",
+        "definition": "Growing improved-breed animals."
+      },
+      "Cattle - Adult male": {
+        "label": "Bulls and oxen",
+        "definition": "Mature males, breeding or draught."
+      }
+    },
+    "riceOptions": {
+      "ecosystem_type": [
+        "Irrigated-Continuously flooded",
+        "Irrigated-Intermittently flooded-Single aeration",
+        "Irrigated-Intermittently flooded-Multiple aeration",
+        "Rainfed-Regular rainfed",
+        "Rainfed-Drought prone",
+        "Rainfed-Deep water"
+      ],
+      "water_regime": [
+        "Non flooded pre-season <180 d",
+        "Non flooded pre-season >180 d",
+        "Flooded pre-season (>30 d)",
+        "Non-flooded pre-season >365 d"
+      ],
+      "organic_amendment": [
+        "Straw incorporated shortly (<30 days) before cultivation",
+        "Straw incorporated long (>30 days) before cultivation",
+        "Compost",
+        "Farm yard manure",
+        "Green manure"
+      ]
+    },
+    "paramSets": [
+      {
+        "value": "Southern Highland Tanzania Dairy",
+        "label": "Southern Highland Tanzania Dairy",
+        "countries": [
+          "Tanzania"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      },
+      {
+        "value": "Northern Tanzania - Dairy",
+        "label": "Northern Tanzania – Dairy",
+        "countries": [
+          "Tanzania"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      },
+      {
+        "value": "Western Kenya - Dairy",
+        "label": "Western Kenya – Dairy",
+        "countries": [
+          "Kenya"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      },
+      {
+        "value": "Central Uganda - Livestock General",
+        "label": "Central Uganda – Livestock general",
+        "countries": [
+          "Uganda"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      },
+      {
+        "value": "Ethiopia - Small Ruminants",
+        "label": "Ethiopia – Small ruminants",
+        "countries": [
+          "Ethiopia"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      },
+      {
+        "value": "North-west-highlands Vietnam - Multispecies",
+        "label": "North-west highlands Vietnam – Multispecies",
+        "countries": [
+          "Vietnam"
+        ],
+        "owner": "iCLEANED team",
+        "readonly": true
+      }
+    ]
+  },
+  "scaleWords": {
+    "farm": {
+      "farm": "farm",
+      "plot": "plot",
+      "onfarm": "on the farm",
+      "offfarm": "off the farm (communal land)",
+      "location": "Farm location",
+      "numbers": "How many animals in this group?"
+    },
+    "group": {
+      "farm": "group of farms",
+      "plot": "typical plot",
+      "onfarm": "on the farms",
+      "offfarm": "on communal land",
+      "location": "Where the farms are",
+      "numbers": "How many animals in this group, across all the farms?"
+    },
+    "region": {
+      "farm": "region",
+      "plot": "land type",
+      "onfarm": "on private land",
+      "offfarm": "on communal or open land",
+      "location": "Representative location in the region",
+      "numbers": "How many animals in this group in the region?"
+    },
+    "national": {
+      "farm": "country",
+      "plot": "land type",
+      "onfarm": "on private land",
+      "offfarm": "on communal or open land",
+      "location": "Representative location for the herd",
+      "numbers": "How many animals in this group in the national herd?"
+    }
+  }
+}

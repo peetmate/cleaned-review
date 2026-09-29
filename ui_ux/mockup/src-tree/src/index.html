@@ -1,0 +1,60 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>iCLEANED Scenario Builder</title>
+<meta name="description" content="Clickable mockup of a redesigned iCLEANED data-entry flow, with built-in feedback capture for workshop testing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Merriweather+Sans:wght@300;400;600;700&display=swap">
+<!-- @build -->
+<!-- @css -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+
+<div id="app" class="app" data-theme-root>
+  <header class="topbar" role="banner">
+    <a class="brand" href="#home" aria-label="iCLEANED home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text"><strong>iCLEANED</strong><small>Scenario Builder · mockup</small></span>
+    </a>
+    <div class="topbar-scenario" id="topbar-scenario"></div>
+    <nav class="topbar-actions" aria-label="Tools">
+      <button type="button" class="tb-btn" id="btn-technical" aria-pressed="false" title="Show technical field names">{ } Technical names</button>
+      <button type="button" class="tb-btn" id="btn-preview" aria-pressed="true" title="Show what the model receives">⟩ Model input</button>
+      <button type="button" class="tb-btn" id="btn-theme" title="Switch light and dark">◐ Theme</button>
+      <a class="tb-btn" href="#feedback" id="link-feedback">✎ Feedback <span class="badge" id="fb-count" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <div class="frame">
+    <aside class="sidebar" id="sidebar" aria-label="Steps">
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-expanded="false" aria-controls="sidebar-nav">Steps</button>
+      <nav id="sidebar-nav" class="sidebar-nav"></nav>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="screen-container" id="screen" tabindex="-1" aria-live="polite"></div>
+      <div class="wizard-bar" id="wizard-bar"></div>
+      <details class="rating-strip" id="rating-strip" data-html2canvas-ignore>
+        <summary>Rate this screen</summary>
+        <div class="rating-body" id="rating-body"></div>
+      </details>
+    </main>
+
+    <aside class="preview" id="preview" aria-label="What the model receives">
+      <div class="preview-head">
+        <strong>What the model receives</strong>
+        <span class="legend"><i class="prov prov-user"></i>you <i class="prov prov-default"></i>assumed <i class="prov prov-db"></i>database <i class="prov prov-derived"></i>calculated</span>
+        <div class="preview-actions"><button type="button" class="btn-sm" id="btn-copy-json">Copy</button><button type="button" class="btn-sm" id="btn-download-json">Download</button></div>
+      </div>
+      <pre class="preview-json" id="preview-json" aria-label="Compiled input"></pre>
+    </aside>
+  </div>
+
+  <div class="fb-fab" id="fb-fab" data-html2canvas-ignore>
+    <button type="button" class="fab" id="fab-comment" aria-pressed="false" title="Comment on any element">💬 Comment</button>
+    <button type="button" class="fab" id="fab-highlight" aria-pressed="false" title="Highlight an area">▭ Highlight</button>
+  </div>
+  <div id="fb-layer" data-html2canvas-ignore></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<!-- @data -->
+<!-- @js -->

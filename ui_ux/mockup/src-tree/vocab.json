@@ -1,0 +1,2036 @@
+{
+ "_source": {
+  "db": "Southern Highland Tanzania Dairy",
+  "extdata": "cleaned v0.7.0 inst/extdata",
+  "generated": "2026-09-29"
+ },
+ "region": [
+  "NORTH AMERICA",
+  "WESTERN EUROPE",
+  "EASTERN EUROPE",
+  "OCEANIA",
+  "LATIN AMERICA",
+  "AFRICA",
+  "MIDDLE EAST",
+  "ASIA",
+  "INDIA SUB-CONTINENT"
+ ],
+ "climate": [
+  "Cool Temperate Moist",
+  "Cool Temperate Dry",
+  "Boreal Moist",
+  "Boreal Dry",
+  "Warm Temperate Moist",
+  "Warm Temperate Dry",
+  "Tropical Montane",
+  "Tropical Wet",
+  "Tropical Moist",
+  "Tropical Dry"
+ ],
+ "manure_systems": {
+  "all_three": [
+   "Uncovered anaerobic lagoon",
+   "Liquid/Slurry Pit below animals 1 Month",
+   "Liquid/Slurry Pit below animals 3 Month",
+   "Liquid/Slurry Pit below animals 4 Month",
+   "Liquid/Slurry Pit below animals 6 Month",
+   "Liquid/Slurry Pit below animals 12 Month",
+   "Cattle and swine deep bedding > 1 month",
+   "Cattle and swine deep bedding < 1 month",
+   "Solid storage",
+   "Solid storage - Covered/compacted",
+   "Solid storage - Bulking agent addition",
+   "Solid storage - Additives",
+   "Dry lot",
+   "Daily spread",
+   "Composting - In-vessel",
+   "Composting - Static pile (forced aeration)",
+   "Composting - Intensive windrow",
+   "Composting - Unfrequent turning",
+   "Aerobic treatment",
+   "Anaer digester, Low leak, HQ stor, HQ tec",
+   "Anaer digester, Low leak, HQ stor, LQ tec",
+   "Anaer digester, Low leak, open stor, HQ tec",
+   "Anaer digester, High leak, HQ stor, LQ tec",
+   "Anaer digester, High leak, LQ stor, LQ tec",
+   "Anaer digester, High leak, open stor, LQ tec"
+  ],
+  "t17": [
+   "Uncovered anaerobic lagoon",
+   "Liquid/Slurry Pit below animals 1 Month",
+   "Liquid/Slurry Pit below animals 3 Month",
+   "Liquid/Slurry Pit below animals 4 Month",
+   "Liquid/Slurry Pit below animals 6 Month",
+   "Liquid/Slurry Pit below animals 12 Month",
+   "Cattle and swine deep bedding > 1 month",
+   "Cattle and swine deep bedding < 1 month",
+   "Solid storage",
+   "Solid storage - Covered/compacted",
+   "Solid storage - Bulking agent addition",
+   "Solid storage - Additives",
+   "Dry lot",
+   "Daily spread",
+   "Composting - In-vessel",
+   "Composting - Static pile (forced aeration)",
+   "Composting - Intensive windrow",
+   "Composting - Unfrequent turning",
+   "Pasture/Range/Paddock",
+   "Poultry manure with and without litter",
+   "Aerobic treatment",
+   "Burned for fuel",
+   "Anaer digester, Low leak, HQ stor, HQ tec",
+   "Anaer digester, Low leak, HQ stor, LQ tec",
+   "Anaer digester, Low leak, open stor, HQ tec",
+   "Anaer digester, High leak, HQ stor, LQ tec",
+   "Anaer digester, High leak, LQ stor, LQ tec",
+   "Anaer digester, High leak, open stor, LQ tec"
+  ],
+  "t21": [
+   "Pasture/Range/Paddock",
+   "Daily spread",
+   "Solid storage",
+   "Solid storage - Covered/compacted",
+   "Solid storage - Bulking agent addition",
+   "Solid storage - Additives",
+   "Dry lot",
+   "Liquid/Slurry",
+   "Liquid/Slurry Pit below animals 1 Month",
+   "Liquid/Slurry Pit below animals 3 Month",
+   "Liquid/Slurry Pit below animals 4 Month",
+   "Liquid/Slurry Pit below animals 6 Month",
+   "Liquid/Slurry Pit below animals 12 Month",
+   "Uncovered anaerobic lagoon",
+   "Pit storage  below animal confinements",
+   "Anaer digester, Low leak, HQ stor, HQ tec",
+   "Anaer digester, Low leak, HQ stor, LQ tec",
+   "Anaer digester, Low leak, open stor, HQ tec",
+   "Anaer digester, High leak, HQ stor, LQ tec",
+   "Anaer digester, High leak, LQ stor, LQ tec",
+   "Anaer digester, High leak, open stor, LQ tec",
+   "Burned for fuel or as waste",
+   "Cattle and swine deep bedding > 1 month",
+   "Cattle and swine deep bedding < 1 month",
+   "Composting - In-vessel",
+   "Composting - Static pile (forced aeration)",
+   "Composting - Intensive windrow",
+   "Composting - Unfrequent turning",
+   "Poultry manure with litter",
+   "Poultry manure without litter",
+   "Aerobic treatment",
+   "Aerobic treatment2"
+  ],
+  "t22": [
+   "Uncovered anaerobic lagoon",
+   "Liquid/Slurry Pit below animals 1 Month",
+   "Liquid/Slurry Pit below animals 3 Month",
+   "Liquid/Slurry Pit below animals 4 Month",
+   "Liquid/Slurry Pit below animals 6 Month",
+   "Liquid/Slurry Pit below animals 12 Month",
+   "Liquid/Slurry: Without natural crust cover",
+   "Liquid/Slurry: With cover",
+   "Pit storage below animal confinements",
+   "Daily spread",
+   "Solid storage",
+   "Solid storage - Covered/compacted",
+   "Solid storage - Bulking agent addition",
+   "Solid storage - Additives",
+   "Dry lot",
+   "Anaer digester, Low leak, HQ stor, HQ tec",
+   "Anaer digester, Low leak, HQ stor, LQ tec",
+   "Anaer digester, Low leak, open stor, HQ tec",
+   "Anaer digester, High leak, HQ stor, LQ tec",
+   "Anaer digester, High leak, LQ stor, LQ tec",
+   "Anaer digester, High leak, open stor, LQ tec",
+   "Burned for fuel or as waste",
+   "Cattle and swine deep bedding < 1 month",
+   "Cattle and swine deep bedding > 1 month",
+   "Composting - In-vessel",
+   "Composting - Static pile (forced aeration)",
+   "Composting - Intensive windrow",
+   "Composting - Unfrequent turning",
+   "Poultry manure with litter",
+   "Poultry manure without litter",
+   "Aerobic treatment",
+   "Aerobic treatment2"
+  ]
+ },
+ "fertilizer_names": [
+  "Urea",
+  "DAP",
+  "NPK",
+  "Ammonium nitrate",
+  "Ammonium sulfate",
+  "N solutions",
+  "Ammonia"
+ ],
+ "fertilizer_default_n_pct": {
+  "Urea": 46,
+  "DAP": 18,
+  "NPK": null,
+  "Ammonium nitrate": 34,
+  "Ammonium sulfate": 21,
+  "N solutions": 30,
+  "Ammonia": 82
+ },
+ "soil": [
+  {
+   "desc": "Andosol",
+   "k": 0.15
+  },
+  {
+   "desc": "Cambisol",
+   "k": 0.2
+  },
+  {
+   "desc": "Lixisol",
+   "k": 0.25
+  },
+  {
+   "desc": "Fluvisol",
+   "k": 0.3
+  },
+  {
+   "desc": "Vertisol",
+   "k": 0.15
+  },
+  {
+   "desc": "Phaeozem",
+   "k": 0.2
+  },
+  {
+   "desc": "Nitosol",
+   "k": 0.25
+  },
+  {
+   "desc": "Xerosol",
+   "k": 0.3
+  },
+  {
+   "desc": "Acrisol",
+   "k": 0.25
+  }
+ ],
+ "slope": [
+  {
+   "code": "1",
+   "desc": "Flat (0-5%)",
+   "p": 0.11
+  },
+  {
+   "code": "2",
+   "desc": "Hilly (5-20%)",
+   "p": 0.13
+  },
+  {
+   "code": "3",
+   "desc": "Steep (20-30%)",
+   "p": 0.22
+  },
+  {
+   "code": "4",
+   "desc": "Extremely steep (30%+)",
+   "p": 0.37
+  }
+ ],
+ "landcover": [
+  {
+   "code": "1",
+   "desc": "Dense forest",
+   "c": 0.001
+  },
+  {
+   "code": "2",
+   "desc": "Other forest",
+   "c": 0.05
+  },
+  {
+   "code": "3",
+   "desc": "Badlands hard",
+   "c": 0.05
+  },
+  {
+   "code": "4",
+   "desc": "Badlands soft",
+   "c": 0.4
+  },
+  {
+   "code": "5",
+   "desc": "Sorghum",
+   "c": 0.1
+  },
+  {
+   "code": "6",
+   "desc": "Maize",
+   "c": 0.1
+  },
+  {
+   "code": "7",
+   "desc": "Cereals",
+   "c": 0.15
+  },
+  {
+   "code": "8",
+   "desc": "Pulses",
+   "c": 0.15
+  },
+  {
+   "code": "9",
+   "desc": "Dense grass",
+   "c": 0.01
+  },
+  {
+   "code": "10",
+   "desc": "Degraded grass",
+   "c": 0.05
+  },
+  {
+   "code": "11",
+   "desc": "Fallow hard",
+   "c": 0.05
+  },
+  {
+   "code": "12",
+   "desc": "Fallow plouged",
+   "c": 0.6
+  },
+  {
+   "code": "13",
+   "desc": "Ethiopian teff",
+   "c": 0.25
+  },
+  {
+   "code": "14",
+   "desc": "Continuous fallow",
+   "c": 1
+  }
+ ],
+ "stock_change": {
+  "cropland_system": [
+   "Long term cultivated, temperate/boreal, dry",
+   "Long term cultivated, temperate/boreal, moist",
+   "Long term cultivated, tropical, dry",
+   "Long term cultivated, tropical, moist/wet",
+   "Long term cultivated, tropical montane, all",
+   "Paddy rice",
+   "Perennial/tree crop",
+   "Set aside (< 20 years), temperate/boreal and tropical, dry",
+   "Set aside (< 20 years), temperate/boreal and tropical, moist/wet",
+   "Set aside (< 20 years), tropical montane, all"
+  ],
+  "cropland_tillage": [
+   "Full",
+   "Reduced, temperate/boreal, dry",
+   "Reduced, temperate/boreal, moist",
+   "Reduced, tropical, dry",
+   "Reduced, tropical, moist",
+   "Reduced, tropical montane, all",
+   "No-till, temperate/boreal, dry",
+   "No-till, temperate/boreal, moist",
+   "No-till, tropical, dry",
+   "No-till, tropical, moist/wet",
+   "No-till, tropical montane, all"
+  ],
+  "cropland_orgmatter": [
+   "Low, temperate/boreal, dry",
+   "Low, temperate/boreal, moist",
+   "Low, tropical, dry",
+   "Low, tropical, moist",
+   "Low, tropical montane, all",
+   "Medium, all",
+   "High w/OUT manure, temperate/boral and tropical, dry",
+   "High w/OUT manure, temperate/boral and tropical, moist/wet",
+   "High w/OUT manure, tropical montane",
+   "High with manure, temperate/boral and tropical, dry",
+   "High with manure, temperate/boral and tropical, moist/wet",
+   "High with manure, tropical montane"
+  ],
+  "grassland_management": [
+   "Nominally managed",
+   "Medium",
+   "Moderately degraded grassland, temperate/boreal",
+   "Moderately degraded grassland, tropical",
+   "Moderately degraded grassland, tropical montane",
+   "Severely degraded",
+   "Improved grassland, temperate/boreal",
+   "Improved grassland, tropical",
+   "Improved grassland, tropical montane"
+  ],
+  "grassland_implevel": [
+   "Medium",
+   "High",
+   "None"
+  ]
+ },
+ "livetype": [
+  {
+   "code": "1",
+   "desc": "Cattle - Cows (local)",
+   "species": "Cattle",
+   "body_weight": 350,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 350,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.35,
+   "cp_lys_pregnancy": 9.64,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1.5,
+   "protein_milkcontent": 3.2,
+   "fat_milkcontent": 5.8,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.49,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other mature female",
+   "ipcc_ef_category_t2": "Dairy cows",
+   "ipcc_meth_man_category": "Dairy cows",
+   "ipcc_n_exc_category": "Dairy cattle"
+  },
+  {
+   "code": "2",
+   "desc": "Cattle - Cows (improved)",
+   "species": "Cattle",
+   "body_weight": 381,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 600,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.38,
+   "cp_lys_pregnancy": 12.21,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1.2,
+   "protein_milkcontent": 3.7,
+   "fat_milkcontent": 4.3,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.48,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Dairy cattle",
+   "ipcc_ef_category_t2": "Dairy cows",
+   "ipcc_meth_man_category": "Dairy cows",
+   "ipcc_n_exc_category": "Dairy cattle"
+  },
+  {
+   "code": "3",
+   "desc": "Cattle - Cows (high productive)",
+   "species": "Cattle",
+   "body_weight": 600,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 600,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.6,
+   "cp_lys_pregnancy": 15,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1.166666667,
+   "protein_milkcontent": 3.7,
+   "fat_milkcontent": 4,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.45,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Dairy cattle",
+   "ipcc_ef_category_t2": "Dairy cows",
+   "ipcc_meth_man_category": "Dairy cows",
+   "ipcc_n_exc_category": "Dairy cattle"
+  },
+  {
+   "code": "4",
+   "desc": "Cattle - Adult male",
+   "species": "Cattle",
+   "body_weight": 580,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 580,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.58,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.48,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other draft bull",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "5",
+   "desc": "Cattle - Steers/heifers",
+   "species": "Cattle",
+   "body_weight": 200,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 350,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.2,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.48,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other mature female-grazing",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "6",
+   "desc": "Cattle - Steers/heifers (improved)",
+   "species": "Cattle",
+   "body_weight": 290,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 600,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.29,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.58,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other mature female-grazing",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "7",
+   "desc": "Cattle - Calves",
+   "species": "Cattle",
+   "body_weight": 90,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 350,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.09,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.49,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other young",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "8",
+   "desc": "Cattle - Calves (improved)",
+   "species": "Cattle",
+   "body_weight": 90,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 600,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.09,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.52,
+   "n_manure_content": 0.029,
+   "meat_product": "beef",
+   "milk_product": "cow milk",
+   "ipcc_ef_category_t1": "Other young",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "9",
+   "desc": "Buffalo - Cows",
+   "species": "Buffalo",
+   "body_weight": 450,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 450,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.45,
+   "cp_lys_pregnancy": 9.64,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1.2,
+   "protein_milkcontent": 3.7,
+   "fat_milkcontent": 4.3,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.58,
+   "n_manure_content": 0.029,
+   "meat_product": "buffalo",
+   "milk_product": "buffalo milk",
+   "ipcc_ef_category_t1": "Other mature female-grazing",
+   "ipcc_ef_category_t2": "Dairy cows",
+   "ipcc_meth_man_category": "Dairy cows",
+   "ipcc_n_exc_category": "Dairy cattle"
+  },
+  {
+   "code": "10",
+   "desc": "Buffalo - Steers/heifers",
+   "species": "Buffalo",
+   "body_weight": 270,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 450,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.27,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.58,
+   "n_manure_content": 0.029,
+   "meat_product": "buffalo",
+   "milk_product": "buffalo milk",
+   "ipcc_ef_category_t1": "Other young",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "11",
+   "desc": "Buffalo - Calves",
+   "species": "Buffalo",
+   "body_weight": 110,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 450,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.11,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.4,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 26,
+   "carcass_fraction": 0.58,
+   "n_manure_content": 0.029,
+   "meat_product": "buffalo",
+   "milk_product": "buffalo milk",
+   "ipcc_ef_category_t1": "Other young",
+   "ipcc_ef_category_t2": "Non-dairy",
+   "ipcc_meth_man_category": "Other cattle",
+   "ipcc_n_exc_category": "Other cattle"
+  },
+  {
+   "code": "12",
+   "desc": "Sheep - Ewes",
+   "species": "Sheep",
+   "body_weight": 53,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 60,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.106,
+   "cp_lys_pregnancy": 8.374,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1,
+   "protein_milkcontent": 3.2,
+   "fat_milkcontent": 5.8,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "mutton",
+   "milk_product": "sheep milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Sheep",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "13",
+   "desc": "Sheep - Breeding Rams",
+   "species": "Sheep",
+   "body_weight": 30,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.06,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "mutton",
+   "milk_product": "sheep milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Sheep",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "14",
+   "desc": "Sheep - Fattening Rams",
+   "species": "Sheep",
+   "body_weight": 20,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.04,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "mutton",
+   "milk_product": "sheep milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Sheep",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "15",
+   "desc": "Sheep - Lambs",
+   "species": "Sheep",
+   "body_weight": 15,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.03,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.029,
+   "meat_product": "mutton",
+   "milk_product": "sheep milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Sheep",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "16",
+   "desc": "Goats - Does",
+   "species": "Goats",
+   "body_weight": 53,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 60,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.106,
+   "cp_lys_pregnancy": 8.374,
+   "cp_lactmilk": 0.09,
+   "cp_lys_growth": 0,
+   "birth_interval": 1,
+   "protein_milkcontent": 3.2,
+   "fat_milkcontent": 5.8,
+   "energy_milkcontent": 970,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "goat",
+   "milk_product": "goat milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Goats",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "17",
+   "desc": "Goats - Breeding Bucks",
+   "species": "Goats",
+   "body_weight": 30,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.06,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "goat",
+   "milk_product": "goat milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Goats",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "18",
+   "desc": "Goats - Fattening Bucks",
+   "species": "Goats",
+   "body_weight": 20,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.04,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.027,
+   "meat_product": "goat",
+   "milk_product": "goat milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Goats",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "19",
+   "desc": "Goats - Kids",
+   "species": "Goats",
+   "body_weight": 15,
+   "body_weight_weaning": 10,
+   "body_weight_year_one": 30,
+   "adult_weight": 53,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.03,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.45,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2200,
+   "protein_meatcontent": 25,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.029,
+   "meat_product": "goat",
+   "milk_product": "goat milk",
+   "ipcc_ef_category_t1": "Goats",
+   "ipcc_ef_category_t2": "Goats",
+   "ipcc_meth_man_category": "Sheep",
+   "ipcc_n_exc_category": "Sheep"
+  },
+  {
+   "code": "20",
+   "desc": "Pigs - lactating/pregnant sows",
+   "species": "Pigs",
+   "body_weight": 200,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 200,
+   "litter_size": 10,
+   "lactation_length": 21,
+   "proportion_growth_piglets_milk": 60,
+   "lw_gain_piglets": 0.2,
+   "cp_maintenance": 0.029782457,
+   "cp_lys_pregnancy": 0.33396,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0,
+   "birth_interval": 0.5,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2580,
+   "protein_meatcontent": 21,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.04,
+   "meat_product": "pork",
+   "milk_product": "N/A",
+   "ipcc_ef_category_t1": "Pigs",
+   "ipcc_ef_category_t2": "N/A",
+   "ipcc_meth_man_category": "Swine",
+   "ipcc_n_exc_category": "Pigs"
+  },
+  {
+   "code": "21",
+   "desc": "Pigs - dry sows/boars",
+   "species": "Pigs",
+   "body_weight": 200,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 200,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.029782457,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2580,
+   "protein_meatcontent": 21,
+   "carcass_fraction": 0.5,
+   "n_manure_content": 0.04,
+   "meat_product": "pork",
+   "milk_product": "N/A",
+   "ipcc_ef_category_t1": "Pigs",
+   "ipcc_ef_category_t2": "N/A",
+   "ipcc_meth_man_category": "Swine",
+   "ipcc_n_exc_category": "Pigs"
+  },
+  {
+   "code": "22",
+   "desc": "Pigs - growers",
+   "species": "Pigs",
+   "body_weight": 80,
+   "body_weight_weaning": 0,
+   "body_weight_year_one": 0,
+   "adult_weight": 200,
+   "litter_size": 0,
+   "lactation_length": 0,
+   "proportion_growth_piglets_milk": 0,
+   "lw_gain_piglets": 0,
+   "cp_maintenance": 0.014979783,
+   "cp_lys_pregnancy": 0,
+   "cp_lactmilk": 0,
+   "cp_lys_growth": 0.05,
+   "birth_interval": 0,
+   "protein_milkcontent": 0,
+   "fat_milkcontent": 0,
+   "energy_milkcontent": 0,
+   "energy_meatcontent": 2580,
+   "protein_meatcontent": 21,
+   "carcass_fraction": 0.6,
+   "n_manure_content": 0.04,
+   "meat_product": "pork",
+   "milk_product": "N/A",
+   "ipcc_ef_category_t1": "Pigs",
+   "ipcc_ef_category_t2": "N/A",
+   "ipcc_meth_man_category": "Swine",
+   "ipcc_n_exc_category": "Pigs"
+  }
+ ],
+ "crops": [
+  {
+   "crop_code": "1",
+   "crop_name": "Banana",
+   "dry_yield": 16.07,
+   "residue_dry_yield": 23.33,
+   "main_n": 0.015,
+   "residue_n": 0.014,
+   "c_factor": 0.6,
+   "kc_initial": 0.5,
+   "kc_midseason": 1.1,
+   "kc_late": 1,
+   "category": "tree crop",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "2",
+   "crop_name": "Brachiaria hybrid",
+   "dry_yield": 14.38,
+   "residue_dry_yield": 10.21,
+   "main_n": 0.022,
+   "residue_n": 0,
+   "c_factor": 0.01,
+   "kc_initial": 0.6,
+   "kc_midseason": 1.1,
+   "kc_late": 1.05,
+   "category": "grass",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "3",
+   "crop_name": "Desmodium",
+   "dry_yield": 12.24,
+   "residue_dry_yield": 5.67,
+   "main_n": 0.025,
+   "residue_n": 0,
+   "c_factor": 0.15,
+   "kc_initial": 0.4,
+   "kc_midseason": 1.15,
+   "kc_late": 0.55,
+   "category": "legume",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "4",
+   "crop_name": "Groundnut",
+   "dry_yield": 0.56,
+   "residue_dry_yield": 2.65,
+   "main_n": 0.01,
+   "residue_n": 0.013,
+   "c_factor": 0.15,
+   "kc_initial": 0,
+   "kc_midseason": 1.05,
+   "kc_late": 0.6,
+   "category": "legume",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "5",
+   "crop_name": "Guatemala",
+   "dry_yield": 3.43,
+   "residue_dry_yield": 0,
+   "main_n": 0.01408,
+   "residue_n": 0,
+   "c_factor": 0.01,
+   "kc_initial": 0.6,
+   "kc_midseason": 1.1,
+   "kc_late": 1.05,
+   "category": "grass",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "6",
+   "crop_name": "Lablab",
+   "dry_yield": 12,
+   "residue_dry_yield": 0.89,
+   "main_n": 0.037,
+   "residue_n": 0,
+   "c_factor": 0.15,
+   "kc_initial": 0.4,
+   "kc_midseason": 1.15,
+   "kc_late": 0.55,
+   "category": "legume",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "7",
+   "crop_name": "Maize",
+   "dry_yield": 1.3,
+   "residue_dry_yield": 3.58,
+   "main_n": 0.013,
+   "residue_n": 0.006,
+   "c_factor": 0.1,
+   "kc_initial": 0.15,
+   "kc_midseason": 1.15,
+   "kc_late": 0.3,
+   "category": "cereal",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "8",
+   "crop_name": "Natural pasture",
+   "dry_yield": 12.75,
+   "residue_dry_yield": 2.39,
+   "main_n": 0.01,
+   "residue_n": 0,
+   "c_factor": 0.05,
+   "kc_initial": 0.3,
+   "kc_midseason": 0.75,
+   "kc_late": 0.75,
+   "category": "grass",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "9",
+   "crop_name": "Pennisetum purpureum",
+   "dry_yield": 11.26,
+   "residue_dry_yield": 7.07,
+   "main_n": 0.014,
+   "residue_n": 0,
+   "c_factor": 0.01,
+   "kc_initial": 0.6,
+   "kc_midseason": 1.1,
+   "kc_late": 1.05,
+   "category": "grass",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "10",
+   "crop_name": "Purchased",
+   "dry_yield": 0,
+   "residue_dry_yield": 0,
+   "main_n": 0,
+   "residue_n": 0,
+   "c_factor": 0,
+   "kc_initial": 0,
+   "kc_midseason": 0,
+   "kc_late": 0,
+   "category": "cereal",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  },
+  {
+   "crop_code": "11",
+   "crop_name": "Rhodes",
+   "dry_yield": 14.07,
+   "residue_dry_yield": 14.22,
+   "main_n": 0.0142,
+   "residue_n": 0,
+   "c_factor": 0.01,
+   "kc_initial": 0.6,
+   "kc_midseason": 1.1,
+   "kc_late": 1.05,
+   "category": "grass",
+   "trees_ha_dbh25": 0,
+   "average_dbh25": 0,
+   "increase_dbh25": 0,
+   "trees_ha_dbh2550": 0,
+   "average_dbh2550": 0,
+   "increase_dbh2550": 0,
+   "trees_ha_dbh50": 0,
+   "average_dbh50": 0,
+   "increase_dbh50": 0,
+   "time_horizon": 0
+  }
+ ],
+ "feeditems": [
+  {
+   "feed_item_code": "1",
+   "crop_code": "1",
+   "feed_item_name": "Banana (Musa acuminata)-crop residue",
+   "dm_content": 9,
+   "me_content": 8.66,
+   "cp_content": 9.5
+  },
+  {
+   "feed_item_code": "2",
+   "crop_code": "2",
+   "feed_item_name": "Brachiaria hybrid (forage)",
+   "dm_content": 94.08,
+   "me_content": 7.24,
+   "cp_content": 9.44
+  },
+  {
+   "feed_item_code": "3",
+   "crop_code": "10",
+   "feed_item_name": "Concentrate (commercial)",
+   "dm_content": 90,
+   "me_content": 12.1,
+   "cp_content": 16
+  },
+  {
+   "feed_item_code": "4",
+   "crop_code": "3",
+   "feed_item_name": "Greenleaf desmodium (Desmodium intortum) - forage",
+   "dm_content": 93.45,
+   "me_content": 6.83,
+   "cp_content": 12.5
+  },
+  {
+   "feed_item_code": "5",
+   "crop_code": "4",
+   "feed_item_name": "Groundnut (Arachis hypogaea) - crop residue",
+   "dm_content": 89.83,
+   "me_content": 8.4,
+   "cp_content": 14.5
+  },
+  {
+   "feed_item_code": "6",
+   "crop_code": "5",
+   "feed_item_name": "Guatemala (Tripsacum andersonii) - forage",
+   "dm_content": 94.05,
+   "me_content": 7.1,
+   "cp_content": 11.32
+  },
+  {
+   "feed_item_code": "7",
+   "crop_code": "6",
+   "feed_item_name": "Lablab (Lablab purpureus) - forage",
+   "dm_content": 93.35,
+   "me_content": 7.28,
+   "cp_content": 13.24
+  },
+  {
+   "feed_item_code": "8",
+   "crop_code": "7",
+   "feed_item_name": "Maize (Zea mays) - stover",
+   "dm_content": 87,
+   "me_content": 6.9,
+   "cp_content": 3.9
+  },
+  {
+   "feed_item_code": "9",
+   "crop_code": "8",
+   "feed_item_name": "Naturally occuring pasture - green fodder",
+   "dm_content": 29.65,
+   "me_content": 6.17,
+   "cp_content": 6.1
+  },
+  {
+   "feed_item_code": "10",
+   "crop_code": "9",
+   "feed_item_name": "Pennisetum purpureum - forage",
+   "dm_content": 94.13,
+   "me_content": 6.63,
+   "cp_content": 7.78
+  },
+  {
+   "feed_item_code": "11",
+   "crop_code": "11",
+   "feed_item_name": "Rhodes grass (Chloris gayana) - forage",
+   "dm_content": 93.97,
+   "me_content": 6.65,
+   "cp_content": 8.01
+  }
+ ],
+ "constants": {
+  "ym_table_10_12": [
+   {
+    "category": "Dairy cows and Buffalo",
+    "description": "High-producing cows5 (>8500 kg/head/yr-1)",
+    "ym_pct": 5.85
+   },
+   {
+    "category": "Dairy cows and Buffalo",
+    "description": "Medium producing cows (5000 - 8500 kg yr-1)",
+    "ym_pct": 6.3
+   },
+   {
+    "category": "Dairy cows and Buffalo",
+    "description": "Low producing cows (<5000 kg yr-1)",
+    "ym_pct": 6.5
+   },
+   {
+    "category": "Non dairy and multi-purpose Cattle and Buffalo",
+    "description": "> 75 % forage",
+    "ym_pct": 7
+   },
+   {
+    "category": "Non dairy and multi-purpose Cattle and Buffalo",
+    "description": "Rations of >75% high quality forage and/or mixed rations, forage of between 15 and 75% the total ration mixed with grain, and/or silage.",
+    "ym_pct": 6.3
+   },
+   {
+    "category": "Non dairy and multi-purpose Cattle and Buffalo",
+    "description": "Feedlot (all other grains, 0- 15% forage)",
+    "ym_pct": 4
+   },
+   {
+    "category": "Non dairy and multi-purpose Cattle and Buffalo",
+    "description": "Feedlot (steam-flaked corn, ionophore supplement - 0-10% forage)",
+    "ym_pct": 3
+   }
+  ],
+  "mcf_table_10_17": [
+   {
+    "system": "Solid storage",
+    "by_climate": {
+     "Cool Temperate Moist": 0.02,
+     "Cool Temperate Dry": 0.02,
+     "Boreal Moist": 0.02,
+     "Boreal Dry": 0.02,
+     "Warm Temperate Moist": 0.04,
+     "Warm Temperate Dry": 0.04,
+     "Tropical Montane": 0.05,
+     "Tropical Wet": 0.05,
+     "Tropical Moist": 0.05,
+     "Tropical Dry": 0.05
+    }
+   },
+   {
+    "system": "Dry lot",
+    "by_climate": {
+     "Cool Temperate Moist": 0.01,
+     "Cool Temperate Dry": 0.01,
+     "Boreal Moist": 0.01,
+     "Boreal Dry": 0.01,
+     "Warm Temperate Moist": 0.015,
+     "Warm Temperate Dry": 0.015,
+     "Tropical Montane": 0.02,
+     "Tropical Wet": 0.02,
+     "Tropical Moist": 0.02,
+     "Tropical Dry": 0.02
+    }
+   },
+   {
+    "system": "Daily spread",
+    "by_climate": {
+     "Cool Temperate Moist": 0,
+     "Cool Temperate Dry": 0,
+     "Boreal Moist": 0,
+     "Boreal Dry": 0,
+     "Warm Temperate Moist": 0.01,
+     "Warm Temperate Dry": 0.01,
+     "Tropical Montane": 0.01,
+     "Tropical Wet": 0.01,
+     "Tropical Moist": 0.01,
+     "Tropical Dry": 0.01
+    }
+   },
+   {
+    "system": "Pasture/Range/Paddock",
+    "by_climate": {
+     "Cool Temperate Moist": 0.0047,
+     "Cool Temperate Dry": 0.0047,
+     "Boreal Moist": 0.0047,
+     "Boreal Dry": 0.0047,
+     "Warm Temperate Moist": 0.0047,
+     "Warm Temperate Dry": 0.0047,
+     "Tropical Montane": 0.0047,
+     "Tropical Wet": 0.0047,
+     "Tropical Moist": 0.0047,
+     "Tropical Dry": 0.0047
+    }
+   },
+   {
+    "system": "Liquid/Slurry Pit below animals 3 Month",
+    "by_climate": {
+     "Cool Temperate Moist": 0.12,
+     "Cool Temperate Dry": 0.16,
+     "Boreal Moist": 0.08,
+     "Boreal Dry": 0.08,
+     "Warm Temperate Moist": 0.24,
+     "Warm Temperate Dry": 0.28,
+     "Tropical Montane": 0.43,
+     "Tropical Wet": 0.61,
+     "Tropical Moist": 0.57,
+     "Tropical Dry": 0.62
+    }
+   },
+   {
+    "system": "Uncovered anaerobic lagoon",
+    "by_climate": {
+     "Cool Temperate Moist": 0.6,
+     "Cool Temperate Dry": 0.67,
+     "Boreal Moist": 0.5,
+     "Boreal Dry": 0.49,
+     "Warm Temperate Moist": 0.73,
+     "Warm Temperate Dry": 0.76,
+     "Tropical Montane": 0.76,
+     "Tropical Wet": 0.8,
+     "Tropical Moist": 0.8,
+     "Tropical Dry": 0.8
+    }
+   },
+   {
+    "system": "Composting - Unfrequent turning",
+    "by_climate": {
+     "Cool Temperate Moist": 0.01,
+     "Cool Temperate Dry": 0.01,
+     "Boreal Moist": 0.01,
+     "Boreal Dry": 0.01,
+     "Warm Temperate Moist": 0.02,
+     "Warm Temperate Dry": 0.02,
+     "Tropical Montane": 0.025,
+     "Tropical Wet": 0.025,
+     "Tropical Moist": 0.025,
+     "Tropical Dry": 0.025
+    }
+   },
+   {
+    "system": "Anaer digester, Low leak, HQ stor, LQ tec",
+    "by_climate": {
+     "Cool Temperate Moist": 0.0141,
+     "Cool Temperate Dry": 0.0141,
+     "Boreal Moist": 0.0141,
+     "Boreal Dry": 0.0141,
+     "Warm Temperate Moist": 0.0141,
+     "Warm Temperate Dry": 0.0141,
+     "Tropical Montane": 0.0141,
+     "Tropical Wet": 0.0141,
+     "Tropical Moist": 0.0141,
+     "Tropical Dry": 0.0141
+    }
+   }
+  ],
+  "ef3_table_10_21": [
+   {
+    "system": "Pasture/Range/Paddock",
+    "ef3": "NA"
+   },
+   {
+    "system": "Daily spread",
+    "ef3": 0
+   },
+   {
+    "system": "Solid storage",
+    "ef3": 0.01
+   },
+   {
+    "system": "Dry lot",
+    "ef3": 0.02
+   },
+   {
+    "system": "Uncovered anaerobic lagoon",
+    "ef3": 0
+   },
+   {
+    "system": "Composting - Unfrequent turning",
+    "ef3": 0.005
+   }
+  ],
+  "bo_table_10_16": [
+   {
+    "region": "LATIN AMERICA",
+    "category": "Dairy cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Other cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Buffalo",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Swine",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.45
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Chicken-Layer",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.39
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Chicken-Broilers",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.36
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "All Animals PRP",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Sheep",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Goats",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Horses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.3
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Mules/Asses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.33
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Camels",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Dairy cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Other cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Buffalo",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Swine",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.29
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Chicken-Layer",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Chicken-Broilers",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "All Animals PRP",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Sheep",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Goats",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Horses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Mules/Asses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "LATIN AMERICA",
+    "category": "Camels",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.21
+   },
+   {
+    "region": "AFRICA",
+    "category": "Dairy cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "AFRICA",
+    "category": "Other cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "AFRICA",
+    "category": "Buffalo",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "AFRICA",
+    "category": "Swine",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.45
+   },
+   {
+    "region": "AFRICA",
+    "category": "Chicken-Layer",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.39
+   },
+   {
+    "region": "AFRICA",
+    "category": "Chicken-Broilers",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.36
+   },
+   {
+    "region": "AFRICA",
+    "category": "All Animals PRP",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "AFRICA",
+    "category": "Sheep",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "AFRICA",
+    "category": "Goats",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "AFRICA",
+    "category": "Horses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.3
+   },
+   {
+    "region": "AFRICA",
+    "category": "Mules/Asses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.33
+   },
+   {
+    "region": "AFRICA",
+    "category": "Camels",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "AFRICA",
+    "category": "Dairy cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "AFRICA",
+    "category": "Other cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "AFRICA",
+    "category": "Buffalo",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "AFRICA",
+    "category": "Swine",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.29
+   },
+   {
+    "region": "AFRICA",
+    "category": "Chicken-Layer",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "AFRICA",
+    "category": "Chicken-Broilers",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "AFRICA",
+    "category": "All Animals PRP",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "AFRICA",
+    "category": "Sheep",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "AFRICA",
+    "category": "Goats",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "AFRICA",
+    "category": "Horses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "AFRICA",
+    "category": "Mules/Asses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "AFRICA",
+    "category": "Camels",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.21
+   },
+   {
+    "region": "ASIA",
+    "category": "Dairy cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "ASIA",
+    "category": "Other cattle",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "ASIA",
+    "category": "Buffalo",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "ASIA",
+    "category": "Swine",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.45
+   },
+   {
+    "region": "ASIA",
+    "category": "Chicken-Layer",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.39
+   },
+   {
+    "region": "ASIA",
+    "category": "Chicken-Broilers",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.36
+   },
+   {
+    "region": "ASIA",
+    "category": "All Animals PRP",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "ASIA",
+    "category": "Sheep",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "ASIA",
+    "category": "Goats",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.18
+   },
+   {
+    "region": "ASIA",
+    "category": "Horses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.3
+   },
+   {
+    "region": "ASIA",
+    "category": "Mules/Asses",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.33
+   },
+   {
+    "region": "ASIA",
+    "category": "Camels",
+    "system": "High productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "ASIA",
+    "category": "Dairy cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "ASIA",
+    "category": "Other cattle",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "ASIA",
+    "category": "Buffalo",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.1
+   },
+   {
+    "region": "ASIA",
+    "category": "Swine",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.29
+   },
+   {
+    "region": "ASIA",
+    "category": "Chicken-Layer",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "ASIA",
+    "category": "Chicken-Broilers",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.24
+   },
+   {
+    "region": "ASIA",
+    "category": "All Animals PRP",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.19
+   },
+   {
+    "region": "ASIA",
+    "category": "Sheep",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "ASIA",
+    "category": "Goats",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.13
+   },
+   {
+    "region": "ASIA",
+    "category": "Horses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "ASIA",
+    "category": "Mules/Asses",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.26
+   },
+   {
+    "region": "ASIA",
+    "category": "Camels",
+    "system": "Low productivity systems",
+    "bo_m3_per_kg_vs": 0.21
+   }
+  ],
+  "other": [
+   {
+    "name": "Milk density",
+    "value": "1.03 kg per litre",
+    "source": "used to convert litres/day to kg/year"
+   },
+   {
+    "name": "Days in the year",
+    "value": "365 (non-leap month lengths)",
+    "source": "season lengths"
+   },
+   {
+    "name": "Manure CH4 conversion",
+    "value": "0.67 kg/m3",
+    "source": "IPCC 2019 eq. 10.23"
+   },
+   {
+    "name": "Enteric CH4 energy",
+    "value": "55.65 MJ/kg CH4",
+    "source": "IPCC 2019 eq. 10.21"
+   }
+  ]
+ }
+}
