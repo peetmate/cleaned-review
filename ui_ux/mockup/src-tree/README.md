@@ -8,6 +8,27 @@ A redesigned data-entry flow for iCLEANED, built to be tested in the user worksh
 
 Design rationale: `../01_uiux_review.md` (section "Redesign directions") and the approved plan. Adversarial review of this mockup and the fixes made: `../05_mockup_review.md`.
 
+## Example scenarios
+
+`tools/make_scenarios.mjs` generates `fixtures/scenarios.json`: six complete, contrasting descriptions that load for real (plots, herds, feeds, diets, scale and climate all change). The generator validates each one — hours sum to 24, diet shares to 100, months cover the year, plot enums exist — so a broken example fails the build rather than the workshop.
+
+| Scenario | Scale | Size |
+|---|---|---|
+| Njombe smallholder — baseline | one farm | 20 animals · 4.3 ha · 2 seasons |
+| Njombe smallholder — Napier & biogas | one farm | intervention copy of the baseline |
+| Rungwe commercial dairy — 180 cows | one farm | 345 animals · 97 ha |
+| Template: Kenya zero-grazing | one farm | 3 animals · 0.7 ha · 1 season |
+| Tanzania national dairy herd | national herd | 4.7M animals · 1.7M ha |
+| Rungwe zero-grazing (colleague) | one farm | shared with me, to exercise sharing |
+
+Opening, duplicating or starting from a copy swaps the whole dataset (`store.load` / `store.duplicateOpen`); the open scenario's scale and size show in the top bar.
+
+## Numbering and orientation
+
+Step numbers are computed, never typed: `72_numbering.js` numbers the wizard sections by their order in `schema.json` (so inserting or moving a section renumbers everything after it) and then numbers the headings inside each rendered screen in DOM order — `7. Animals` → `7.1 Cows, local breed` → `7.1.2 Numbers`. Numbers appear in the sidebar, the screen heading, the step counter and in every feedback record, so a participant can say "7.1.2 is confusing" and it resolves to one field. Numbers are stable across participants: a step hidden by someone's answers keeps its number.
+
+`#welcome` explains what iCLEANED does, lists the steps, and defines the words the app uses (livestock enterprise, scenario, parameter set, season, herd and animal group). It is the first screen on a first visit and is always reachable from "? What is this" in the top bar.
+
 ## Layout
 
 ```

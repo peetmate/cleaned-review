@@ -33,7 +33,7 @@
     };
     country.addEventListener("change", () => { fill("", ""); }); region.addEventListener("change", () => { const r = region.value; fill(r, ""); apply(); }); district.addEventListener("change", apply);
     if (variant === "A" && !macro) {
-      const map = h("div", { class: "mapmock", role: "img", "aria-label": "Map (mock). Click to place the farm." }, h("div", { class: "lbl" }, loc.district ? `${loc.district}, ${loc.region}, ${loc.country} · ${loc.lat}, ${loc.lon} · ${loc.elevation_m} m` : "Click to place the farm"));
+      const map = h("div", { class: "mapmock", role: "img", "aria-label": ICL.t("Map (mock). Click to place the {enterprise}.") }, h("div", { class: "lbl" }, loc.district ? `${loc.district}, ${loc.region}, ${loc.country} · ${loc.lat}, ${loc.lon} · ${loc.elevation_m} m` : ICL.t("Click to place the {enterprise}")));
       if (loc.lat != null) map.append(h("span", { class: "pin", style: `left:${50 + (loc.lon - 34.7) * 6}%;top:${50 + (loc.lat + 9.3) * 6}%` }, "📍"));
       map.addEventListener("click", (ev) => { const rect = map.getBoundingClientRect(); const x = (ev.clientX - rect.left) / rect.width; const keys = Object.keys(PLACES); const c = keys[Math.min(keys.length - 1, Math.floor(x * keys.length))]; country.value = c; const r0 = Object.keys(PLACES[c].regions)[0]; fill(r0, ""); apply(); });
       card.append(map, h("p", { class: "small" }, "In the real app this is a satellite map; here clicking picks a demo place. Or choose from the lists:"));

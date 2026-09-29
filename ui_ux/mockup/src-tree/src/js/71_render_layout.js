@@ -25,7 +25,7 @@
     if (sectionId === "plots") return e.plot_name || "New plot";
     if (sectionId === "seasons") return e.season_name || "New season";
     if (sectionId === "herds") return e.herd_name || "New herd";
-    if (sectionId === "animals") { const d = D.decorate(e, "animal", state); return (e.group_name || (d._desc ? D.livetypeLabel(d._desc) : "New group")) + (e.herd_n ? ` (${e.herd_n})` : ""); }
+    if (sectionId === "animals") { const d = D.decorate(e, "animal", state); return (e.group_name || (d._desc ? D.livetypeLabel(d._desc) : "New group")) + (e.herd_n ? ` (${ICL.fmt(e.herd_n, 0)})` : ""); }
     if (sectionId === "feeds") { const d = D.decorate(e, "feed", state); return d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "New feed"; }
     return e.id;
   }
@@ -39,17 +39,19 @@
       if (sec.id === "results") continue;
       if (sec.id === "parameters") ul.append(h("li", { class: "sep" }));
       const st = statusFor(sec.id, state, val);
-      const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + sec.title } }, statusIcon(st), h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
+      const num = ICL.num.prefix(sec.id);
+      const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
       ul.append(li);
       if (sec.entity && st !== "off") {
-        for (const e of state[sec.id] || []) {
+        (state[sec.id] || []).forEach((e, i) => {
           const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
-          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", null, entityLabel(sec.id, e, state)))));
-        }
+          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
+        });
         ul.append(h("li", { class: "child add" }, h("a", { href: ICL.router.hashFor(sec.id, "new") }, statusIcon("opt"), h("span", null, "+ Add " + (sec.entity === "plot" ? ICL.dict.words().plot : sec.entity)))));
       }
     }
     ul.append(h("li", null, h("a", { href: "#feedback" }, statusIcon("opt"), h("span", null, "Feedback dashboard"))));
+    ul.append(h("li", { class: "sep" }), h("li", null, h("a", { href: "#welcome" }, statusIcon("opt"), h("span", null, "What is iCLEANED?"))));
     nav.append(ul);
   }
 
@@ -62,14 +64,17 @@
     const errs = val.errors.filter((e) => e.screen === state.route.screen).length;
     bar.append(
       h("button", { type: "button", class: "btn ghost", disabled: !prev, onclick: () => ICL.router.go(prev) }, "← Back"),
-      h("span", { class: "stepinfo" }, `Step ${i + 1} of ${order.length}`, errs ? h("span", { class: "msg err" }, ` · ${errs} thing${errs > 1 ? "s" : ""} to fix`) : ""),
+      h("span", { class: "stepinfo" }, `Step ${ICL.num.stepOf(state.route.screen) || i + 1} of ${ICL.num.totalSteps()}`, errs ? h("span", { class: "msg err" }, ` · ${errs} thing${errs > 1 ? "s" : ""} to fix`) : ""),
       h("button", { type: "button", class: "btn", disabled: !next, onclick: () => ICL.router.go(next) }, next === "check" ? "Check & run →" : "Next →"));
   }
 
   function renderTopbar(state) {
     const el = document.getElementById("topbar-scenario"); el.innerHTML = "";
     if (state.route.screen === "home" || state.route.screen === "feedback") return;
-    el.append(h("strong", { class: "chip", title: "Scenario" }, state.meta.scenario_name || "Untitled scenario"),
+    const row = (state.library.scenarios || []).find((x) => x.id === state.meta.id);
+    const SC = { farm: "one farm", group: "group of farms", region: "region", national: "national herd" };
+    el.append(h("strong", { class: "chip", title: "Open scenario" }, state.meta.scenario_name || "Untitled scenario"),
+      h("span", { class: "chip", title: "Scale and size of the open scenario" }, SC[state.system.scale] || "one farm", row && row.headline ? " · " + row.headline : ""),
       (() => { const copy = D.activeCopy(); const n = copy ? D.changeCount(copy) : 0; return h("span", { class: "chip c-db" }, copy ? "✎ " : "🔒 ", "Defaults from: ", copy ? copy.label + " (my copy" + (n ? `, ${n} change${n === 1 ? "" : "s"}` : "") + ")" : (state.meta.param_set || "—"), " ", h("a", { href: "#parameters" }, copy ? "edit" : "view")); })(),
       h("span", { class: "chip" }, state.meta.project || "no project"));
     document.getElementById("main").querySelector(".fb-banner") && null;

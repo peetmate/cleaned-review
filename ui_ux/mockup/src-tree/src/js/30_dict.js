@@ -129,7 +129,7 @@
     if (src === "vocab.landcover") return V().landcover.map((l) => ({ value: l.desc, label: (T().landcoverLabels || {})[l.desc] || l.desc, definition: (T().landcoverLabels || {})[l.desc] ? `Model class: ${l.desc}` : undefined }));
     if (src === "herdPatterns") return S().herdPatterns;
     if (src === "paramSets") return T().paramSets.concat(((state.paramSets && state.paramSets.copies) || []).map((c) => ({ value: c.value, label: c.label + " · my copy" + (changeCount(c) ? ` (${changeCount(c)} change${changeCount(c) === 1 ? "" : "s"})` : "") })));
-    if (src === "field:soil_description") return [{ value: "", label: "Same as the farm" }].concat(field("soil_description").options);
+    if (src === "field:soil_description") return [{ value: "", label: "Same as the main soil" }].concat(field("soil_description").options);
     if (src === "entities:plot") return state.plots.map((p) => ({ value: p.id, label: p.plot_name || "Unnamed plot" }));
     if (src === "entities:herd") return state.herds.map((h) => ({ value: h.id, label: h.herd_name || "Unnamed herd" }));
     return [];
@@ -137,6 +137,6 @@
 
   function words() { const st = ICL.store && ICL.store.get(); const sc = (st && st.system && st.system.scale) || "farm"; return S().scaleWords[sc] || S().scaleWords.farm; }
   const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-  function t(str) { if (typeof str !== "string" || str.indexOf("{") === -1) return str; const w = words(); return str.replace(/\{(Farm|farm|Plot|plot|onfarm|offfarm|location|numbers|about)\}/g, (_, k) => { const lk = k.toLowerCase(); const v = w[lk] || lk; return k[0] === k[0].toUpperCase() && !["onfarm", "offfarm", "location", "numbers", "about"].includes(lk) ? cap(v) : v; }); }
+  function t(str) { if (typeof str !== "string" || str.indexOf("{") === -1) return str; const w = words(); return str.replace(/\{(Farm|farm|Plot|plot|onfarm|offfarm|location|numbers|about|gate|enterprise|Enterprise)\}/g, (_, k) => { const lk = k.toLowerCase(); const v = w[lk] || lk; return k[0] === k[0].toUpperCase() && !["onfarm", "offfarm", "location", "numbers", "about", "gate"].includes(lk) ? cap(v) : v; }); }
   ICL.t = t; ICL.dict = { t, words, sections, section, field, fieldsFor, tables: T, vocab: V, rawVocab: RAW, activeCopy, changeCount, TABLE_KEY, livetypeOf, feedItemOf, cropOf, livetypeLabel, displayFeedName, decorate, defaultFor, effective, options };
 })(window.ICL);

@@ -4,7 +4,11 @@
   ICL.screens = ICL.screens || {};
 
   function screenHead(sec, extra) {
-    return h("div", { class: "screen-head", dataset: { fb: "screen:" + sec.id, fbLabel: "Screen: " + sec.title } }, h("h1", null, ICL.t(sec.title)), sec.purpose ? h("p", { class: "purpose" }, ICL.t(sec.purpose)) : null, extra || null);
+    const n = ICL.num.prefix(sec.id); const total = ICL.num.totalSteps();
+    return h("div", { class: "screen-head", dataset: { fb: "screen:" + sec.id, fbLabel: "Screen: " + ICL.t(sec.title), noNumber: "" } },
+      n ? h("p", { class: "eyebrow" }, `Step ${n} of ${total}`) : null,
+      h("h1", null, n ? h("span", { class: "num" }, n + ".") : null, n ? " " : "", ICL.t(sec.title)),
+      sec.purpose ? h("p", { class: "purpose" }, ICL.t(sec.purpose)) : null, extra || null);
   }
 
   /** A/B variant toggle + vote widget for a screen. Returns element or null. */

@@ -5,13 +5,22 @@
   const PREFS_KEY = "icleaned.mockup.prefs.v1";
   const PERSIST = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation", "library", "ui", "paramSets"];
 
+  const LIB = () => window.ICL_SCENARIOS || { scenarios: {}, library: [], projects: [], default: null };
+  /** The saved dataset of one example scenario, deep-copied. */
+  function dataset(id) {
+    const all = LIB().scenarios || {};
+    const sc = all[id] || all[LIB().default] || {};
+    return JSON.parse(JSON.stringify(sc));
+  }
+  const DATA_KEYS = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"];
+
   function freshState() {
-    const demo = JSON.parse(JSON.stringify(window.ICL_DEMO || {}));
+    const d = dataset(LIB().default);
     return {
       route: { screen: "home", entity: null },
-      meta: demo.meta, system: demo.system, farm: demo.farm, provenance: demo.provenance || {},
-      plots: demo.plots || [], seasons: demo.seasons || [], herds: demo.herds || [], animals: demo.animals || [], feeds: demo.feeds || [],
-      fertilizer: demo.fertilizer || {}, allocation: demo.allocation || {}, library: demo.library || { scenarios: [], projects: [] }, paramSets: { copies: [] },
+      meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
+      plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
+      fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { scenarios: (LIB().library || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
       ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false },
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };
@@ -56,7 +65,28 @@
         persist(); notify();
       },
       subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
-      reset() { const fb = state.fb, route = state.route; state = freshState(); state.fb = fb; state.route = route; ICL.storage.del(KEY); persist(); notify(); },
+      reset() { const fb = state.fb, route = state.route, copies = state.paramSets; state = freshState(); state.fb = fb; state.route = route; state.paramSets = copies; ICL.storage.del(KEY); persist(); notify(); },
+      /** Load one of the example scenarios, keeping feedback, parameter-set copies and the library. */
+      load(id) {
+        const d = dataset(id); if (!d.meta) return false;
+        const lib = state.library; const known = lib.scenarios.find((x) => x.id === id);
+        for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
+        if (known && known.owner) state.meta.owner = known.owner;
+        state.library = lib;
+        state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, validateAll: false, homeTab: state.ui.homeTab });
+        persist(); notify(); return true;
+      },
+      /** Copy the scenario that is open into a new library entry. */
+      duplicateOpen(newName) {
+        const id = ICL.uid("sc");
+        const copy = {}; for (const k of DATA_KEYS) copy[k] = JSON.parse(JSON.stringify(state[k]));
+        copy.meta = Object.assign({}, copy.meta, { id, scenario_name: newName, owner: "you" });
+        (window.ICL_SCENARIOS = window.ICL_SCENARIOS || { scenarios: {} }).scenarios[id] = copy;
+        const head = state.animals.reduce((t, a) => t + (Number(a.herd_n) || 0), 0);
+        const ha = state.plots.reduce((t, p) => t + (Number(p.plot_area_ha) || 0), 0);
+        state.library.scenarios.unshift({ id, name: newName, owner: "you", project: state.meta.project, param_set: state.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: state.meta.scenario_purpose, shared: [], scale: state.system.scale || "farm", headline: `${Math.round(head)} animals · ${Math.round(ha * 10) / 10} ha · ${state.seasons.length} season${state.seasons.length > 1 ? "s" : ""}` });
+        persist(); notify(); return id;
+      },
       notify,
     };
     return api;

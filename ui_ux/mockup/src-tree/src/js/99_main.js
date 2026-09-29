@@ -37,7 +37,7 @@
     const fn = ICL.screens[state.route.screen] || ICL.screens.home;
     const sec = ICL.dict.section(state.route.screen);
     if (sec && !ICL.cond.sectionVisible(sec, state) && state.route.screen !== "home") {
-      screen.append(h("div", { class: "screen-head" }, h("h1", null, sec.title)), h("div", { class: "callout" }, "This step is not needed for this farm, based on your answers under ", h("a", { href: "#about" }, "About this farm"), "."));
+      screen.append(h("div", { class: "screen-head" }, h("h1", null, ICL.num.prefix(sec.id) ? ICL.num.prefix(sec.id) + ". " + ICL.t(sec.title) : ICL.t(sec.title))), h("div", { class: "callout" }, ICL.t("This step is not needed for this {enterprise}, based on your answers under "), h("a", { href: "#about" }, ICL.t("About this {about}")), "."));
     } else fn(screen, { state, val, compiled, store: ICL.store });
     if (state.fb.focusSnapshot && state.fb.focusSnapshot.route && state.fb.focusSnapshot.route !== ICL.router.hashFor(state.route.screen, state.route.entity)) { setTimeout(() => ICL.store.set((s) => { s.fb.focusSnapshot = null; return s; }), 0); }
     if (state.route.screen === "check" && !state.ui.validateAll) setTimeout(() => ICL.store.update("ui.validateAll", true), 0);
@@ -45,6 +45,7 @@
     if (key === lastKey) { if (focusKey) { const el = findByFocusKey(focusKey, screen); if (el) { el.focus({ preventScroll: true }); if (el.select && el.type === "text") { try { const n = el.value.length; el.setSelectionRange(n, n); } catch {} } } } window.scrollTo(0, scrollY); }
     else { window.scrollTo(0, 0); }
     lastKey = key;
+    ICL.num.numberHeadings(screen, state.route.screen);
     if (state.fb.mode === "comment") screen.querySelectorAll("[data-fb]").forEach((el) => { if (!el.matches("a,button,input,select,textarea")) el.setAttribute("tabindex", "0"); });
   }
   ICL.store.subscribe(render);
@@ -61,6 +62,7 @@
   document.getElementById("btn-copy-json").addEventListener("click", () => { const txt = JSON.stringify(ICL.compile(ICL.store.get()).input, null, 2); navigator.clipboard.writeText(txt).then(() => ICL.toast("Copied the model input."), () => ICL.toast("Copy not allowed here; use Download.")); });
   document.getElementById("btn-download-json").addEventListener("click", async () => { const state = ICL.store.get(); const data = JSON.stringify(ICL.compile(state).input, null, 2); const filename = (state.meta.scenario_name || "scenario").replace(/[^\w-]+/g, "_") + ".json"; const dl = ICL.env.caps.downloads; if (dl) { try { await dl.save({ filename, data }); } catch (e) { if (e && e.code !== "declined") ICL.toast("Download not available here."); } return; } if (!ICL.env.hasClaude) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = filename; document.body.append(a); a.click(); a.remove(); } else ICL.toast("Download unavailable in this view; use Copy."); });
 
+  if (!location.hash && !ICL.store.get().ui.welcomeSeen) { location.replace("#welcome"); ICL.store.update("ui.welcomeSeen", true); }
   ICL.router.install(ICL.store);
   ICL.fb.installUI();
   ICL.fb.init().catch((e) => console.error("feedback init failed", e));

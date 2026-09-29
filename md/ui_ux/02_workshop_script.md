@@ -62,6 +62,10 @@ Give each pair a printed card with one task at a time. The facilitator only give
 
 **Timing:** tasks T1–T9 take ~115 min. With T10, a break, the intro and the debrief, the whole session is ~3 h 15 min. If time is short, drop T10 and merge T3 into T4.
 
+## 4a. Numbers make feedback precise
+
+Every step and heading in the mockup is numbered (`7. Animals` → `7.1 Cows, local breed` → `7.1.2 Numbers`). Ask participants to quote the number when they say anything: "7.1.2 is confusing" beats "the animals page". The numbers are also stored with every comment, so the export maps straight onto issues. Tell them the numbers renumber if we add a step, so quote them in the session, not weeks later.
+
 ## 5. Observation checklist (one per pair per task)
 
 Use a tick or a short note, and record the time in minutes.

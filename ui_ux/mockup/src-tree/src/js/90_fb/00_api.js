@@ -96,7 +96,8 @@
   }
   fb.describe = function (el) {
     const target = el.closest("[data-fb]"); const state = ICL.store.get();
-    return { fbId: target ? target.dataset.fb : "page", fbLabel: target ? (target.dataset.fbLabel || target.dataset.fb) : "Page", fieldId: target && target.dataset.fieldId || null, screen: state.route.screen, entityId: state.route.entity || null, wizardState: { system: state.system, variant: state.ui.variant, route: ICL.router.hashFor(state.route.screen, state.route.entity) } };
+    const num = ICL.num.numberFor(target || el);
+    return { fbId: target ? target.dataset.fb : "page", fbLabel: (num ? num + " · " : "") + (target ? (target.dataset.fbLabel || target.dataset.fb) : "Page"), sectionNumber: num || null, fieldId: target && target.dataset.fieldId || null, screen: state.route.screen, entityId: state.route.entity || null, wizardState: { system: state.system, variant: state.ui.variant, route: ICL.router.hashFor(state.route.screen, state.route.entity) } };
   };
   fb.submit = async function (partial) {
     if (!fb.adapter) { ICL.toast("Still connecting to the feedback store; try again in a moment."); return null; }

@@ -36,7 +36,8 @@
       if (!Number.isFinite(v)) { out.errors.push({ ...base, msg: `${f.label}: not a number.` }); return; }
       if (f.min != null && v < f.min) out.errors.push({ ...base, msg: `${f.label}: ${v} is below the minimum ${f.min}${f.unit ? " " + f.unit : ""}.` });
       if (f.max != null && v > f.max) out.errors.push({ ...base, msg: `${f.label}: ${v} is above the maximum ${f.max}${f.unit ? " " + f.unit : ""}.` });
-      if (f.typical && (v < f.typical[0] || v > f.typical[1]) && !(f.min != null && v < f.min) && !(f.max != null && v > f.max))
+      const macro = ["group", "region", "national"].includes(state.system.scale) && ["herd_n", "plot_area_ha"].includes(f.id);
+      if (f.typical && !macro && (v < f.typical[0] || v > f.typical[1]) && !(f.min != null && v < f.min) && !(f.max != null && v > f.max))
         out.warnings.push({ ...base, msg: `${f.label}: ${v} is outside the usual range ${f.typical[0]}–${f.typical[1]}${f.unit ? " " + f.unit : ""}. Check the unit.` });
       if (f.type === "integer" && !Number.isInteger(v)) out.errors.push({ ...base, msg: `${f.label}: must be a whole number.` });
     }
@@ -68,7 +69,7 @@
       if (!C.sectionVisible(sec(sid), state)) continue;
       const list = state[sid] || [];
       if (!list.length && sid !== "plots") out.errors.push({ fieldId: null, screen: sid, entityId: null, path: sid, label: sec(sid).title, msg: `Add at least one ${etype}.` });
-      if (!list.length && sid === "plots" && state.system.growsFeed) out.errors.push({ fieldId: null, screen: sid, entityId: null, path: sid, label: sec(sid).title, msg: `Add at least one plot, because feed is grown on the farm.` });
+      if (!list.length && sid === "plots" && state.system.growsFeed) out.errors.push({ fieldId: null, screen: sid, entityId: null, path: sid, label: sec(sid).title, msg: ICL.t("Add at least one {plot}, because feed is grown here.") });
       for (const raw of list) {
         const e = D.decorate(raw, etype, state);
         const name = nameKey ? e[nameKey] : etype === "animal" ? D.livetypeLabel(e._desc) : e._feedItem ? D.displayFeedName(e._feedItem.feed_item_name) : "";
@@ -135,9 +136,9 @@
     }
     // plots disagreement (one soil / practice per farm in the model)
     if (state.plots.length > 1) {
-      const soils = new Set(state.plots.map((p) => p.plot_soil || "")); if ([...soils].filter(Boolean).length > 0) out.assumptions.push({ fieldId: "plot_soil", screen: "plots", entityId: null, path: "plots.soil", label: "Plots · Soil", msg: "The model uses one soil per farm. Using the farm's main soil; plot-specific soils are recorded but not sent.", source: "derived" });
+      const soils = new Set(state.plots.map((p) => p.plot_soil || "")); if ([...soils].filter(Boolean).length > 0) out.assumptions.push({ fieldId: "plot_soil", screen: "plots", entityId: null, path: "plots.soil", label: "Plots · Soil", msg: ICL.t("The model uses one soil for the whole {enterprise}. Using the main soil; {plot}-specific soils are recorded but not sent."), source: "derived" });
       const till = new Set(state.plots.filter((p) => p.plot_use !== "grazing").map((p) => p.tillage || "full"));
-      if (till.size > 1) { const big = largestPlot(state, "crops"); out.assumptions.push({ fieldId: "tillage", screen: "plots", entityId: big && big.id, path: "plots.tillage", label: "Plots · Tillage", msg: `Plots are tilled differently. The model takes one practice per farm: using "${big.plot_name}" (largest cropped plot, ${big.plot_area_ha || 1} ha).`, source: "derived" }); }
+      if (till.size > 1) { const big = largestPlot(state, "crops"); out.assumptions.push({ fieldId: "tillage", screen: "plots", entityId: big && big.id, path: "plots.tillage", label: "Plots · Tillage", msg: ICL.t(`{Plot}s are tilled differently. The model takes one practice for the whole {enterprise}: using "${big.plot_name}" (largest cropped {plot}, ${big.plot_area_ha || 1} ha).`), source: "derived" }); }
     }
     // herds merge
     const byType = {};

@@ -2,10 +2,18 @@
   "version": "0.1.0",
   "sections": [
     {
+      "id": "welcome",
+      "title": "Welcome",
+      "short": "Welcome",
+      "purpose": "What iCLEANED does and what you will be asked.",
+      "order": -1,
+      "wizard": false
+    },
+    {
       "id": "home",
       "title": "Scenarios",
       "short": "Home",
-      "purpose": "Open, copy or share a scenario, or start a new one.",
+      "purpose": "A scenario is one complete description of a livestock enterprise for one year. Open one, copy one, or start a new one.",
       "order": 0,
       "wizard": false
     },
@@ -116,7 +124,7 @@
     },
     {
       "id": "losses",
-      "title": "Losses after the farm gate",
+      "title": "Losses after the {gate}",
       "short": "Losses",
       "purpose": "Optional: milk and meat lost between the producer and the consumer.",
       "order": 12,
@@ -497,7 +505,7 @@
       "entity": "meta",
       "label": "Scenario name",
       "type": "text",
-      "help": "For example 'Njombe baseline 2026'.",
+      "help": "Something you will recognise later, for example \"Njombe baseline 2026\" or \"Njombe + Napier\".",
       "required_if": "always",
       "na_policy": "block",
       "package_field": "farm_name",
@@ -512,20 +520,23 @@
       "options": [
         {
           "value": "baseline",
-          "label": "Baseline: the farm as it is now"
+          "label": "Baseline: the enterprise as it is now",
+          "definition": "Describe what happens today. Every comparison needs one."
         },
         {
           "value": "intervention",
-          "label": "Intervention: a change to test"
+          "label": "Intervention: a change to test",
+          "definition": "A copy of a baseline with one or more things changed, for example a new feed or covered manure storage."
         },
         {
           "value": "training",
-          "label": "Training or example"
+          "label": "Training or example",
+          "definition": "For learning or demonstration; not a real enterprise."
         }
       ],
       "na_policy": "meta",
       "package_field": "_meta.purpose",
-      "definition": null,
+      "definition": "A baseline describes the enterprise as it is now. An intervention is a copy with something changed, so the two can be compared.",
       "help": null
     },
     {
@@ -944,8 +955,8 @@
       "min": 0.01,
       "max": 1000000000,
       "typical": [
-        0.2,
-        5
+        0.1,
+        200
       ],
       "na_policy": "default_assumed",
       "default": 1,
@@ -1031,7 +1042,7 @@
       "max": 500,
       "typical": [
         10,
-        100
+        300
       ],
       "default": 20,
       "default_source": "assumed",
@@ -1352,7 +1363,7 @@
       "max": 1000000000,
       "typical": [
         1,
-        50
+        500
       ],
       "required_if": "always",
       "na_policy": "block",
@@ -1419,8 +1430,8 @@
       "min": 0.2,
       "max": 45,
       "typical": [
-        2,
-        15
+        1,
+        40
       ],
       "visible_if": {
         "all": [
@@ -2098,7 +2109,7 @@
       "max": 60,
       "typical": [
         1,
-        15
+        20
       ],
       "default_source": "db:crop.dry_yield",
       "visible_if": {
@@ -3060,7 +3071,9 @@
       "offfarm": "off the farm (communal land)",
       "location": "Farm location",
       "numbers": "How many animals in this group?",
-      "about": "farm"
+      "about": "farm",
+      "gate": "farm gate",
+      "enterprise": "farm"
     },
     "group": {
       "farm": "group of farms",
@@ -3069,7 +3082,9 @@
       "offfarm": "on communal land",
       "location": "Where the farms are",
       "numbers": "How many animals in this group, across all the farms?",
-      "about": "group of farms"
+      "about": "group of farms",
+      "gate": "farm gate",
+      "enterprise": "group of farms"
     },
     "region": {
       "farm": "region",
@@ -3078,7 +3093,9 @@
       "offfarm": "on communal or open land",
       "location": "Representative location in the region",
       "numbers": "How many animals in this group in the region?",
-      "about": "region"
+      "about": "region",
+      "gate": "producer",
+      "enterprise": "region"
     },
     "national": {
       "farm": "country",
@@ -3087,7 +3104,9 @@
       "offfarm": "on communal or open land",
       "location": "Representative location for the herd",
       "numbers": "How many animals in this group in the national herd?",
-      "about": "national herd"
+      "about": "national herd",
+      "gate": "producer",
+      "enterprise": "national herd"
     }
   }
 }

@@ -73,6 +73,7 @@ function build() {
   const vocab = JSON.parse(readFileSync(join(ROOT, "vocab.json"), "utf8"));
   const variants = JSON.parse(readFileSync(join(ROOT, "variants.json"), "utf8"));
   const demo = JSON.parse(readFileSync(join(ROOT, "fixtures", "demo_scenario.json"), "utf8"));
+  const scenarios = JSON.parse(readFileSync(join(ROOT, "fixtures", "scenarios.json"), "utf8"));
   const fixture = JSON.parse(readFileSync(join(ROOT, "fixtures", "Study_1.json"), "utf8"));
   const errs = validateSchema(schema, fixture);
   if (errs.length) { console.error("schema.json errors:\n  " + errs.join("\n  ")); process.exitCode = 1; return; }
@@ -82,7 +83,7 @@ function build() {
   const js = jsFiles.map((f) => `/* ---- ${relative(SRC, f)} ---- */\n${readFileSync(f, "utf8")}`).join("\n\n");
   const css = readFileSync(join(SRC, "styles.css"), "utf8");
   const J = (x) => JSON.stringify(x).replace(/</g, "\\u003c");
-  const dataJs = `window.ICL_SCHEMA=${J(schema)};\nwindow.ICL_VOCAB=${J(vocab)};\nwindow.ICL_VARIANTS=${J(variants)};\nwindow.ICL_DEMO=${J(demo)};`;
+  const dataJs = `window.ICL_SCHEMA=${J(schema)};\nwindow.ICL_VOCAB=${J(vocab)};\nwindow.ICL_VARIANTS=${J(variants)};\nwindow.ICL_DEMO=${J(demo)};\nwindow.ICL_SCENARIOS=${J(scenarios)};`;
   const html = readFileSync(join(SRC, "index.html"), "utf8");
 
   const buildTag = (target) => `<script>window.ICL_BUILD=${JSON.stringify({ version: ver, target, built: new Date().toISOString() })};</script>`;
@@ -106,7 +107,7 @@ function build() {
     .replace("<!-- @data -->", `<script>\n${dataJs}\n</script>`)
     .replace("<!-- @js -->", `<script>\n${js.replace(/<\/script/g, "<\\/script")}\n</script>`);
   writeFileSync(join(ROOT, "dist", "offline", "icleaned-mockup.html"), inline);
-  console.log(`built ${ver} in ${Date.now() - t0} ms: ${jsFiles.length} js files, offline ${(inline.length / 1024).toFixed(0)} KB, ${schema.fields.length} dictionary fields`);
+  console.log(`built ${ver} in ${Date.now() - t0} ms: ${jsFiles.length} js files, offline ${(inline.length / 1024).toFixed(0)} KB, ${schema.fields.length} dictionary fields, ${Object.keys(scenarios.scenarios).length} example scenarios`);
 }
 
 build();

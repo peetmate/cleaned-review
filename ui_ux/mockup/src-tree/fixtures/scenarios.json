@@ -1,0 +1,1989 @@
+{
+ "default": "sc_njombe_baseline",
+ "scenarios": {
+  "sc_njombe_baseline": {
+   "meta": {
+    "id": "sc_njombe_baseline",
+    "scenario_name": "Njombe smallholder — baseline",
+    "scenario_purpose": "baseline",
+    "param_set": "Southern Highland Tanzania Dairy",
+    "owner": "you",
+    "project": "Njombe dairy 2026",
+    "updated": "2026-09-29"
+   },
+   "system": {
+    "scale": "farm",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "milk",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": false,
+    "fertiliser": false,
+    "nSeasons": 2,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Tanzania",
+     "region": "Njombe",
+     "district": "Njombe DC",
+     "lat": -9.33,
+     "lon": 34.77,
+     "elevation_m": 1870
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Montane",
+    "annual_prec": 1100,
+    "rain_months": [
+     11,
+     12,
+     1,
+     2,
+     3,
+     4
+    ],
+    "et0": 1300,
+    "soil_description": "Nitosol",
+    "soil_c": 28,
+    "soil_n": 2.1,
+    "soil_clay": 38,
+    "soil_bulk": 1.25,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Homestead",
+     "plot_area_ha": 0.8,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 50,
+     "land_cover": "Dense grass",
+     "tillage": "full",
+     "orgmatter": "medium"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Lower field",
+     "plot_area_ha": 1.5,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 50,
+     "land_cover": "Maize",
+     "tillage": "full",
+     "orgmatter": "medium"
+    },
+    {
+     "id": "p3",
+     "plot_soil": null,
+     "plot_name": "Hill pasture",
+     "plot_area_ha": 2,
+     "plot_use": "grazing",
+     "slope_class": "Steep (20-30%)",
+     "slope_length_m": 80,
+     "land_cover": "Degraded grass",
+     "grass_condition": "moderate",
+     "grass_inputs": "None"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "Rainy season",
+     "season_months": [
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "s2",
+     "season_name": "Dry season",
+     "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Home herd",
+     "herd_pattern": "night_shed",
+     "herd_plots": [
+      "p3"
+     ]
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "1",
+     "group_name": null,
+     "herd_n": 12,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 4,
+     "lactation_days": 240,
+     "growth_kg_yr": null,
+     "hours_stable": 12,
+     "hours_pen": 4,
+     "hours_onfarm": 8,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h1",
+     "livetype": "7",
+     "group_name": null,
+     "herd_n": 8,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 60,
+     "hours_stable": 12,
+     "hours_pen": 4,
+     "hours_onfarm": 8,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "11",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 60,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "residue",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 40,
+     "residue_yield_t_dm_ha": null,
+     "residue_fate": {
+      "fed": 60,
+      "left": 40,
+      "burnt": 0
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "9",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p3",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 0,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f4",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    }
+   ],
+   "fertilizer": {},
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 45,
+      "f2": 15,
+      "f3": 30,
+      "f4": 10
+     },
+     "a2": {
+      "f1": 55,
+      "f2": 10,
+      "f3": 35,
+      "f4": 0
+     }
+    },
+    "s2": {
+     "a1": {
+      "f1": 25,
+      "f2": 45,
+      "f3": 20,
+      "f4": 10
+     },
+     "a2": {
+      "f1": 35,
+      "f2": 40,
+      "f3": 25,
+      "f4": 0
+     }
+    }
+   }
+  },
+  "sc_njombe_napier": {
+   "meta": {
+    "id": "sc_njombe_napier",
+    "scenario_name": "Njombe smallholder — Napier & biogas",
+    "scenario_purpose": "intervention",
+    "param_set": "Southern Highland Tanzania Dairy",
+    "owner": "you",
+    "project": "Njombe dairy 2026",
+    "updated": "2026-09-29"
+   },
+   "system": {
+    "scale": "farm",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "milk",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": false,
+    "fertiliser": true,
+    "nSeasons": 2,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Tanzania",
+     "region": "Njombe",
+     "district": "Njombe DC",
+     "lat": -9.33,
+     "lon": 34.77,
+     "elevation_m": 1870
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Montane",
+    "annual_prec": 1100,
+    "rain_months": [
+     11,
+     12,
+     1,
+     2,
+     3,
+     4
+    ],
+    "et0": 1300,
+    "soil_description": "Nitosol",
+    "soil_c": 28,
+    "soil_n": 2.1,
+    "soil_clay": 38,
+    "soil_bulk": 1.25,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Homestead (Napier)",
+     "plot_area_ha": 0.8,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 50,
+     "land_cover": "Dense grass",
+     "tillage": "reduced",
+     "orgmatter": "high_manure"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Lower field",
+     "plot_area_ha": 1.5,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 50,
+     "land_cover": "Maize",
+     "tillage": "reduced",
+     "orgmatter": "high_manure"
+    },
+    {
+     "id": "p3",
+     "plot_soil": null,
+     "plot_name": "Hill pasture",
+     "plot_area_ha": 2,
+     "plot_use": "grazing",
+     "slope_class": "Steep (20-30%)",
+     "slope_length_m": 80,
+     "land_cover": "Dense grass",
+     "grass_condition": "improved",
+     "grass_inputs": "Medium"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "Rainy season",
+     "season_months": [
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "s2",
+     "season_name": "Dry season",
+     "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Home herd",
+     "herd_pattern": "zero",
+     "herd_plots": []
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "1",
+     "group_name": null,
+     "herd_n": 12,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 6.5,
+     "lactation_days": 270,
+     "growth_kg_yr": null,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "biogas",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h1",
+     "livetype": "7",
+     "group_name": null,
+     "herd_n": 8,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 75,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "biogas",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "10",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 55,
+     "main_fed_share": 100,
+     "fert_rates": {
+      "NPK": {
+       "mode": "kg_ha",
+       "value": 120
+      }
+     }
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "residue",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 35,
+     "residue_yield_t_dm_ha": null,
+     "residue_fate": {
+      "fed": 80,
+      "left": 20,
+      "burnt": 0
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "7",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 70,
+     "manure_to_plot_share": 10,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f4",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    }
+   ],
+   "fertilizer": {
+    "NPK": 17
+   },
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 55,
+      "f2": 15,
+      "f3": 15,
+      "f4": 15
+     },
+     "a2": {
+      "f1": 60,
+      "f2": 15,
+      "f3": 20,
+      "f4": 5
+     }
+    },
+    "s2": {
+     "a1": {
+      "f1": 35,
+      "f2": 40,
+      "f3": 12,
+      "f4": 13
+     },
+     "a2": {
+      "f1": 45,
+      "f2": 35,
+      "f3": 15,
+      "f4": 5
+     }
+    }
+   }
+  },
+  "sc_rungwe_commercial": {
+   "meta": {
+    "id": "sc_rungwe_commercial",
+    "scenario_name": "Rungwe commercial dairy — 180 cows",
+    "scenario_purpose": "baseline",
+    "param_set": "Southern Highland Tanzania Dairy",
+    "owner": "you",
+    "project": "Njombe dairy 2026",
+    "updated": "2026-09-26"
+   },
+   "system": {
+    "scale": "farm",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "both",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": true,
+    "fertiliser": true,
+    "nSeasons": 2,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Tanzania",
+     "region": "Mbeya",
+     "district": "Rungwe",
+     "lat": -9,
+     "lon": 33.5,
+     "elevation_m": 1700
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Montane",
+    "annual_prec": 1300,
+    "rain_months": [
+     11,
+     12,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "et0": 1350,
+    "soil_description": "Lixisol",
+    "soil_c": 44,
+    "soil_n": 3.6,
+    "soil_clay": 23,
+    "soil_bulk": 1.3,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Irrigated pasture block",
+     "plot_area_ha": 45,
+     "plot_use": "grazing",
+     "slope_class": "Flat (0-5%)",
+     "slope_length_m": 120,
+     "land_cover": "Dense grass",
+     "grass_condition": "improved",
+     "grass_inputs": "High"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Silage maize",
+     "plot_area_ha": 30,
+     "plot_use": "crops",
+     "slope_class": "Flat (0-5%)",
+     "slope_length_m": 150,
+     "land_cover": "Maize",
+     "tillage": "full",
+     "orgmatter": "high_manure"
+    },
+    {
+     "id": "p3",
+     "plot_soil": null,
+     "plot_name": "Hay paddocks",
+     "plot_area_ha": 22,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 90,
+     "land_cover": "Dense grass",
+     "tillage": "none",
+     "orgmatter": "high"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "Rainy season",
+     "season_months": [
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "s2",
+     "season_name": "Dry season",
+     "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Milking herd",
+     "herd_pattern": "night_shed",
+     "herd_plots": [
+      "p1"
+     ]
+    },
+    {
+     "id": "h2",
+     "herd_name": "Young stock",
+     "herd_pattern": "mostly_grazing",
+     "herd_plots": [
+      "p1"
+     ]
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "2",
+     "group_name": null,
+     "herd_n": 180,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 16,
+     "lactation_days": 305,
+     "growth_kg_yr": null,
+     "hours_stable": 12,
+     "hours_pen": 2,
+     "hours_onfarm": 10,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "pit",
+      "collected": 100,
+      "followups": {
+       "pit_months": "3"
+      }
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 90,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 70
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h2",
+     "livetype": "6",
+     "group_name": null,
+     "herd_n": 95,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 160,
+     "hours_stable": 6,
+     "hours_pen": 0,
+     "hours_onfarm": 18,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a3",
+     "herd_ref": "h2",
+     "livetype": "8",
+     "group_name": null,
+     "herd_n": 70,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 95,
+     "hours_stable": 8,
+     "hours_pen": 2,
+     "hours_onfarm": 14,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "2",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 30,
+     "main_fed_share": 100,
+     "fert_rates": {
+      "Urea": {
+       "mode": "kg_ha",
+       "value": 80
+      }
+     }
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 45,
+     "main_fed_share": 90,
+     "fert_rates": {
+      "NPK": {
+       "mode": "kg_ha",
+       "value": 200
+      }
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "11",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p3",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 25,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f4",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    }
+   ],
+   "fertilizer": {
+    "Urea": 46,
+    "NPK": 17
+   },
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 30,
+      "f2": 25,
+      "f3": 15,
+      "f4": 30
+     },
+     "a2": {
+      "f1": 45,
+      "f2": 20,
+      "f3": 30,
+      "f4": 5
+     },
+     "a3": {
+      "f1": 40,
+      "f2": 20,
+      "f3": 30,
+      "f4": 10
+     }
+    },
+    "s2": {
+     "a1": {
+      "f1": 15,
+      "f2": 40,
+      "f3": 20,
+      "f4": 25
+     },
+     "a2": {
+      "f1": 25,
+      "f2": 40,
+      "f3": 30,
+      "f4": 5
+     },
+     "a3": {
+      "f1": 20,
+      "f2": 40,
+      "f3": 30,
+      "f4": 10
+     }
+    }
+   }
+  },
+  "tpl_kenya_zero": {
+   "meta": {
+    "id": "tpl_kenya_zero",
+    "scenario_name": "Template: Kenya zero-grazing (2 cows)",
+    "scenario_purpose": "training",
+    "param_set": "Western Kenya - Dairy",
+    "owner": "iCLEANED team",
+    "project": "Njombe dairy 2026",
+    "updated": "2026-06-01"
+   },
+   "system": {
+    "scale": "farm",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "milk",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": true,
+    "fertiliser": false,
+    "nSeasons": 1,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Kenya",
+     "region": "Kakamega",
+     "district": "Lurambi",
+     "lat": 0.28,
+     "lon": 34.75,
+     "elevation_m": 1550
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Moist",
+    "annual_prec": 1900,
+    "rain_months": [
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "et0": 1500,
+    "soil_description": "Acrisol",
+    "soil_c": 25,
+    "soil_n": 2,
+    "soil_clay": 35,
+    "soil_bulk": 1.2,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Napier strip",
+     "plot_area_ha": 0.25,
+     "plot_use": "crops",
+     "slope_class": "Flat (0-5%)",
+     "slope_length_m": 20,
+     "land_cover": "Dense grass",
+     "tillage": "reduced",
+     "orgmatter": "high_manure"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Maize shamba",
+     "plot_area_ha": 0.4,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 25,
+     "land_cover": "Maize",
+     "tillage": "full",
+     "orgmatter": "medium"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "All year",
+     "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Zero-grazing unit",
+     "herd_pattern": "zero",
+     "herd_plots": []
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "2",
+     "group_name": null,
+     "herd_n": 2,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 10,
+     "lactation_days": 300,
+     "growth_kg_yr": null,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h1",
+     "livetype": "8",
+     "group_name": null,
+     "herd_n": 1,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 90,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "10",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 70,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "residue",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 30,
+     "residue_yield_t_dm_ha": null,
+     "residue_fate": {
+      "fed": 90,
+      "left": 10,
+      "burnt": 0
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    },
+    {
+     "id": "f4",
+     "feed_item": "9",
+     "feed_origin": "collected"
+    }
+   ],
+   "fertilizer": {},
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 50,
+      "f2": 20,
+      "f3": 20,
+      "f4": 10
+     },
+     "a2": {
+      "f1": 55,
+      "f2": 25,
+      "f3": 10,
+      "f4": 10
+     }
+    }
+   }
+  },
+  "sc_tz_national": {
+   "meta": {
+    "id": "sc_tz_national",
+    "scenario_name": "Tanzania national dairy herd",
+    "scenario_purpose": "baseline",
+    "param_set": "Southern Highland Tanzania Dairy",
+    "owner": "you",
+    "project": "National inventory 2026",
+    "updated": "2026-09-20"
+   },
+   "system": {
+    "scale": "national",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "both",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": false,
+    "fertiliser": false,
+    "nSeasons": 2,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Tanzania",
+     "region": "Njombe",
+     "district": "Njombe DC",
+     "lat": -9.33,
+     "lon": 34.77,
+     "elevation_m": 1870
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Montane",
+    "annual_prec": 1100,
+    "rain_months": [
+     11,
+     12,
+     1,
+     2,
+     3,
+     4
+    ],
+    "et0": 1300,
+    "soil_description": "Nitosol",
+    "soil_c": 28,
+    "soil_n": 2.1,
+    "soil_clay": 38,
+    "soil_bulk": 1.25,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Communal and open grazing land",
+     "plot_area_ha": 1250000,
+     "plot_use": "grazing",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 200,
+     "land_cover": "Degraded grass",
+     "grass_condition": "moderate",
+     "grass_inputs": "None"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Cropland providing residues",
+     "plot_area_ha": 420000,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 100,
+     "land_cover": "Maize",
+     "tillage": "full",
+     "orgmatter": "low"
+    },
+    {
+     "id": "p3",
+     "plot_soil": null,
+     "plot_name": "Planted fodder",
+     "plot_area_ha": 18000,
+     "plot_use": "crops",
+     "slope_class": "Flat (0-5%)",
+     "slope_length_m": 60,
+     "land_cover": "Dense grass",
+     "tillage": "reduced",
+     "orgmatter": "medium"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "Rainy season",
+     "season_months": [
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "id": "s2",
+     "season_name": "Dry season",
+     "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Indigenous herd",
+     "herd_pattern": "mostly_grazing",
+     "herd_plots": [
+      "p1"
+     ]
+    },
+    {
+     "id": "h2",
+     "herd_name": "Improved dairy herd",
+     "herd_pattern": "night_shed",
+     "herd_plots": [
+      "p1"
+     ]
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "1",
+     "group_name": "Indigenous cows (national)",
+     "herd_n": 2800000,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 1.8,
+     "lactation_days": 200,
+     "growth_kg_yr": null,
+     "hours_stable": 2,
+     "hours_pen": 2,
+     "hours_onfarm": 20,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 40,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 30,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 40
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h1",
+     "livetype": "7",
+     "group_name": "Indigenous calves (national)",
+     "herd_n": 1150000,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 45,
+     "hours_stable": 2,
+     "hours_pen": 2,
+     "hours_onfarm": 20,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a3",
+     "herd_ref": "h2",
+     "livetype": "2",
+     "group_name": "Improved cows (national)",
+     "herd_n": 780000,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 8,
+     "lactation_days": 290,
+     "growth_kg_yr": null,
+     "hours_stable": 12,
+     "hours_pen": 2,
+     "hours_onfarm": 10,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {}
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 80
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "9",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 20,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "residue",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 40,
+     "residue_yield_t_dm_ha": null,
+     "residue_fate": {
+      "fed": 45,
+      "left": 45,
+      "burnt": 10
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "10",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p3",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 40,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f4",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    }
+   ],
+   "fertilizer": {},
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 75,
+      "f2": 15,
+      "f3": 5,
+      "f4": 5
+     },
+     "a2": {
+      "f1": 80,
+      "f2": 15,
+      "f3": 5,
+      "f4": 0
+     },
+     "a3": {
+      "f1": 40,
+      "f2": 25,
+      "f3": 20,
+      "f4": 15
+     }
+    },
+    "s2": {
+     "a1": {
+      "f1": 55,
+      "f2": 35,
+      "f3": 5,
+      "f4": 5
+     },
+     "a2": {
+      "f1": 60,
+      "f2": 35,
+      "f3": 5,
+      "f4": 0
+     },
+     "a3": {
+      "f1": 25,
+      "f2": 40,
+      "f3": 20,
+      "f4": 15
+     }
+    }
+   }
+  },
+  "sc_shared_rungwe": {
+   "meta": {
+    "id": "sc_shared_rungwe",
+    "scenario_name": "Rungwe zero-grazing 2025 (colleague)",
+    "scenario_purpose": "baseline",
+    "param_set": "Southern Highland Tanzania Dairy",
+    "owner": "Colleague A",
+    "project": "Njombe dairy 2026",
+    "updated": "2026-06-01"
+   },
+   "system": {
+    "scale": "farm",
+    "species": [
+     "Cattle"
+    ],
+    "aim": "milk",
+    "growsFeed": true,
+    "buysFeed": true,
+    "buysInputs": true,
+    "fertiliser": false,
+    "nSeasons": 1,
+    "rice": false,
+    "trees": false
+   },
+   "farm": {
+    "location_point": {
+     "country": "Kenya",
+     "region": "Kakamega",
+     "district": "Lurambi",
+     "lat": 0.28,
+     "lon": 34.75,
+     "elevation_m": 1550
+    },
+    "in_manure": null,
+    "in_compost": null,
+    "in_organic": null,
+    "in_bedding": null,
+    "waste_production_milk": null,
+    "waste_distribution_milk": null,
+    "waste_processing_milk": null,
+    "waste_consume_milk": null,
+    "waste_production_meat": null,
+    "waste_distribution_meat": null,
+    "waste_processing_meat": null,
+    "waste_consume_meat": null,
+    "climate_zone_2": "Tropical Moist",
+    "annual_prec": 1900,
+    "rain_months": [
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "et0": 1500,
+    "soil_description": "Acrisol",
+    "soil_c": 25,
+    "soil_n": 2,
+    "soil_clay": 35,
+    "soil_bulk": 1.2,
+    "soil_depth": 0.3
+   },
+   "provenance": {
+    "farm.climate_zone_2": "default",
+    "farm.annual_prec": "default",
+    "farm.rain_months": "default",
+    "farm.et0": "default",
+    "farm.soil_description": "default",
+    "farm.soil_c": "default",
+    "farm.soil_n": "default",
+    "farm.soil_clay": "default",
+    "farm.soil_bulk": "default",
+    "farm.soil_depth": "default"
+   },
+   "plots": [
+    {
+     "id": "p1",
+     "plot_soil": null,
+     "plot_name": "Napier strip",
+     "plot_area_ha": 0.25,
+     "plot_use": "crops",
+     "slope_class": "Flat (0-5%)",
+     "slope_length_m": 20,
+     "land_cover": "Dense grass",
+     "tillage": "reduced",
+     "orgmatter": "high_manure"
+    },
+    {
+     "id": "p2",
+     "plot_soil": null,
+     "plot_name": "Maize shamba",
+     "plot_area_ha": 0.4,
+     "plot_use": "crops",
+     "slope_class": "Hilly (5-20%)",
+     "slope_length_m": 25,
+     "land_cover": "Maize",
+     "tillage": "full",
+     "orgmatter": "medium"
+    }
+   ],
+   "seasons": [
+    {
+     "id": "s1",
+     "season_name": "All year",
+     "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   ],
+   "herds": [
+    {
+     "id": "h1",
+     "herd_name": "Zero-grazing unit",
+     "herd_pattern": "zero",
+     "herd_plots": []
+    }
+   ],
+   "animals": [
+    {
+     "id": "a1",
+     "herd_ref": "h1",
+     "livetype": "2",
+     "group_name": null,
+     "herd_n": 2,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": 10,
+     "lactation_days": 300,
+     "growth_kg_yr": null,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    },
+    {
+     "id": "a2",
+     "herd_ref": "h1",
+     "livetype": "8",
+     "group_name": null,
+     "herd_n": 1,
+     "body_weight": null,
+     "adult_weight": null,
+     "milk_l_day": null,
+     "lactation_days": null,
+     "growth_kg_yr": 90,
+     "hours_stable": 24,
+     "hours_pen": 0,
+     "hours_onfarm": 0,
+     "hours_offfarm": 0,
+     "manure_stable": {
+      "handling": "piled",
+      "collected": 100,
+      "followups": {
+       "covered": true
+      }
+     },
+     "manure_pen": {
+      "handling": "drylot",
+      "collected": 80,
+      "followups": {}
+     },
+     "manure_onfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_offfarm": {
+      "handling": "left",
+      "collected": 0,
+      "followups": {}
+     },
+     "manure_kept_share": 100
+    }
+   ],
+   "feeds": [
+    {
+     "id": "f1",
+     "feed_item": "10",
+     "feed_origin": "grown",
+     "feed_part": "main",
+     "feed_plot": "p1",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 70,
+     "main_fed_share": 100
+    },
+    {
+     "id": "f2",
+     "feed_item": "8",
+     "feed_origin": "grown",
+     "feed_part": "residue",
+     "feed_plot": "p2",
+     "yield_t_dm_ha": null,
+     "intercrop_share": 100,
+     "manure_to_plot_share": 30,
+     "residue_yield_t_dm_ha": null,
+     "residue_fate": {
+      "fed": 90,
+      "left": 10,
+      "burnt": 0
+     }
+    },
+    {
+     "id": "f3",
+     "feed_item": "3",
+     "feed_origin": "bought",
+     "feed_imported": false
+    },
+    {
+     "id": "f4",
+     "feed_item": "9",
+     "feed_origin": "collected"
+    }
+   ],
+   "fertilizer": {},
+   "allocation": {
+    "s1": {
+     "a1": {
+      "f1": 50,
+      "f2": 20,
+      "f3": 20,
+      "f4": 10
+     },
+     "a2": {
+      "f1": 55,
+      "f2": 25,
+      "f3": 10,
+      "f4": 10
+     }
+    }
+   }
+  }
+ },
+ "library": [
+  {
+   "id": "sc_njombe_baseline",
+   "name": "Njombe smallholder — baseline",
+   "owner": "you",
+   "project": "Njombe dairy 2026",
+   "param_set": "Southern Highland Tanzania Dairy",
+   "updated": "2026-09-29",
+   "purpose": "baseline",
+   "template": false,
+   "shared": [],
+   "scale": "farm",
+   "headline": "20 animals · 4.3 ha · 2 seasons"
+  },
+  {
+   "id": "sc_njombe_napier",
+   "name": "Njombe smallholder — Napier & biogas",
+   "owner": "you",
+   "project": "Njombe dairy 2026",
+   "param_set": "Southern Highland Tanzania Dairy",
+   "updated": "2026-09-29",
+   "purpose": "intervention",
+   "template": false,
+   "shared": [],
+   "scale": "farm",
+   "headline": "20 animals · 4.3 ha · 2 seasons"
+  },
+  {
+   "id": "sc_rungwe_commercial",
+   "name": "Rungwe commercial dairy — 180 cows",
+   "owner": "you",
+   "project": "Njombe dairy 2026",
+   "param_set": "Southern Highland Tanzania Dairy",
+   "updated": "2026-09-26",
+   "purpose": "baseline",
+   "template": false,
+   "shared": [],
+   "scale": "farm",
+   "headline": "345 animals · 97 ha · 2 seasons"
+  },
+  {
+   "id": "tpl_kenya_zero",
+   "name": "Template: Kenya zero-grazing (2 cows)",
+   "owner": "iCLEANED team",
+   "project": "Njombe dairy 2026",
+   "param_set": "Western Kenya - Dairy",
+   "updated": "2026-06-01",
+   "purpose": "training",
+   "template": true,
+   "shared": [],
+   "scale": "farm",
+   "headline": "3 animals · 0.7 ha · 1 season"
+  },
+  {
+   "id": "sc_tz_national",
+   "name": "Tanzania national dairy herd",
+   "owner": "you",
+   "project": "National inventory 2026",
+   "param_set": "Southern Highland Tanzania Dairy",
+   "updated": "2026-09-20",
+   "purpose": "baseline",
+   "template": false,
+   "shared": [],
+   "scale": "national",
+   "headline": "4.7M animals · 1.7M ha · 2 seasons"
+  },
+  {
+   "id": "sc_shared_rungwe",
+   "name": "Rungwe zero-grazing 2025 (colleague)",
+   "owner": "Colleague A",
+   "project": "Njombe dairy 2026",
+   "param_set": "Southern Highland Tanzania Dairy",
+   "updated": "2026-09-12",
+   "purpose": "baseline",
+   "shared": [
+    "you"
+   ],
+   "scale": "farm",
+   "headline": "3 animals · 0.7 ha · 1 season"
+  }
+ ],
+ "projects": [
+  {
+   "id": "prj1",
+   "name": "Njombe dairy 2026",
+   "members": [
+    "you",
+    "Colleague A",
+    "Colleague B"
+   ]
+  },
+  {
+   "id": "prj2",
+   "name": "National inventory 2026",
+   "members": [
+    "you"
+   ]
+  }
+ ]
+}

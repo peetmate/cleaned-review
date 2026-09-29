@@ -4,7 +4,7 @@
   ICL.screens.boundary = function (root, { state }) {
     root.append(screenHead(D.section("boundary")));
     if (!state.ui.boundarySeen) setTimeout(() => ICL.store.update("ui.boundarySeen", true), 800);
-    const svg = `<svg viewBox="0 0 640 260" width="100%" style="max-width:640px" role="img" aria-label="Diagram: inputs into the farm, outputs out of the farm">
+    const svg = `<svg viewBox="0 0 640 260" width="100%" style="max-width:640px" role="img" aria-label="Diagram: what comes into the enterprise and what leaves it">
       <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
       <rect x="200" y="40" width="240" height="180" rx="12" fill="var(--tint)" stroke="var(--primary)" stroke-width="2"/>
       <text x="320" y="70" text-anchor="middle" font-weight="700" fill="var(--primary)" font-family="Merriweather, serif">This livestock enterprise, one year</text>
