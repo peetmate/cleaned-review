@@ -14,7 +14,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <li><strong>Date:</strong> 2026-09-29</li>
 <li><strong>Package reviewed:</strong> <code>cleaned</code> v0.7.0 (CIAT/cleaned <code>staging</code> @ <code>800d53a</code>)</li>
 <li><strong>App:</strong> iCLEANED (CIAT/icleaned @ <code>fb8498c</code>)</li>
-<li><strong>Status:</strong> local only; not committed to any shared branch and not pushed</li>
+<li><strong>Status:</strong> published at <a href="https://peetmate.github.io/cleaned-review/">https://peetmate.github.io/cleaned-review/</a> (repo <code>peetmate/cleaned-review</code>); <code>CIAT/cleaned</code> is unchanged</li>
 </ul>
 <h2>Verdict</h2>
 <p>The package runs, and its Tier 2 structure follows IPCC. But several defects change headline results by tens of percent, and some by an order of magnitude:</p>
@@ -250,7 +250,9 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <ul>
 <li><code>../cleaned_review/</code>: these reports, and the user guide as extracted text</li>
 <li><code>../cleaned_review_src/</code>: read-only checkout of v0.7.0 (a detached worktree)</li>
-<li><code>fixes/</code>: tests, the proposed fixes, the runner, <code>demo.Rmd</code>, <code>results/</code>, and <code>cleaned_fixed_copy/</code> (a plain folder, not git)</li>
+<li><code>fixes/</code>: tests, the proposed fixes, the runner, <code>demo.Rmd</code>, <code>build_site.R</code>, <code>build_notebook.py</code>, <code>results/</code>, and <code>cleaned_fixed_copy/</code> (a plain folder, not git)</li>
+<li><code>reproduce/</code>: <code>reproduce_critical_issues.R</code> (self-contained script) and <code>critical_issues.ipynb</code> (Colab notebook, R runtime), both generated from the same code</li>
+<li><code>site/</code>: the published site, a git checkout of <a href="https://github.com/peetmate/cleaned-review">https://github.com/peetmate/cleaned-review</a> (Pages: <a href="https://peetmate.github.io/cleaned-review/">https://peetmate.github.io/cleaned-review/</a>)</li>
 <li><code>../icleaned_review_src/</code>: read-only clone of the app</li>
 <li>Session scratchpad: the IPCC PDFs as text, the reviewers' run scripts, and the scratch R library (openxlsx)</li>
 </ul>

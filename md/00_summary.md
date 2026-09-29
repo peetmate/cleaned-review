@@ -3,7 +3,7 @@
 - **Date:** 2026-09-29
 - **Package reviewed:** `cleaned` v0.7.0 (CIAT/cleaned `staging` @ `800d53a`)
 - **App:** iCLEANED (CIAT/icleaned @ `fb8498c`)
-- **Status:** local only; not committed to any shared branch and not pushed
+- **Status:** published at https://peetmate.github.io/cleaned-review/ (repo `peetmate/cleaned-review`); `CIAT/cleaned` is unchanged
 
 ## Verdict
 
@@ -104,6 +104,8 @@ The proposed fixes and their test results are in `07_fix_log.md`. The demo is `0
 
 - `../cleaned_review/`: these reports, and the user guide as extracted text
 - `../cleaned_review_src/`: read-only checkout of v0.7.0 (a detached worktree)
-- `fixes/`: tests, the proposed fixes, the runner, `demo.Rmd`, `results/`, and `cleaned_fixed_copy/` (a plain folder, not git)
+- `fixes/`: tests, the proposed fixes, the runner, `demo.Rmd`, `build_site.R`, `build_notebook.py`, `results/`, and `cleaned_fixed_copy/` (a plain folder, not git)
+- `reproduce/`: `reproduce_critical_issues.R` (self-contained script) and `critical_issues.ipynb` (Colab notebook, R runtime), both generated from the same code
+- `site/`: the published site, a git checkout of https://github.com/peetmate/cleaned-review (Pages: https://peetmate.github.io/cleaned-review/)
 - `../icleaned_review_src/`: read-only clone of the app
 - Session scratchpad: the IPCC PDFs as text, the reviewers' run scripts, and the scratch R library (openxlsx)
