@@ -4,8 +4,16 @@
     "screen": "animals",
     "label": "How should animal groups be shown?",
     "options": [
-      { "key": "A", "label": "One card per group", "why": "Room for the hours bar and manure choices; one group at a time." },
-      { "key": "B", "label": "Compact table, expand a row to edit", "why": "Faster to scan when there are many groups." }
+      {
+        "key": "A",
+        "label": "One card per group",
+        "why": "Room for the hours bar and manure choices; one group at a time."
+      },
+      {
+        "key": "B",
+        "label": "Compact table, expand a row to edit",
+        "why": "Faster to scan when there are many groups."
+      }
     ]
   },
   {
@@ -13,8 +21,16 @@
     "screen": "animals",
     "label": "How should the daily time budget be entered?",
     "options": [
-      { "key": "A", "label": "Hours per day (adds to 24)", "why": "People remember 'in at 6 pm, out at 6 am'." },
-      { "key": "B", "label": "Percent of the day (adds to 100)", "why": "Matches how the model stores it." }
+      {
+        "key": "A",
+        "label": "Hours per day (adds to 24)",
+        "why": "People remember 'in at 6 pm, out at 6 am'."
+      },
+      {
+        "key": "B",
+        "label": "Percent of the day (adds to 100)",
+        "why": "Matches how the model stores it."
+      }
     ]
   },
   {
@@ -22,17 +38,33 @@
     "screen": "feeding",
     "label": "How should the feeding plan be entered?",
     "options": [
-      { "key": "A", "label": "Small grid with column totals", "why": "All animal groups visible at once." },
-      { "key": "B", "label": "One stacked bar per animal group", "why": "Friendlier when there are only a few feeds." }
+      {
+        "key": "A",
+        "label": "Small grid with column totals",
+        "why": "All animal groups visible at once."
+      },
+      {
+        "key": "B",
+        "label": "One stacked bar per animal group",
+        "why": "Friendlier when there are only a few feeds."
+      }
     ]
   },
   {
     "id": "V4",
     "screen": "location",
-    "label": "How should the farm location be picked?",
+    "label": "How should the location be picked?",
     "options": [
-      { "key": "A", "label": "Point on a map, values filled from maps", "why": "Precise climate and soil." },
-      { "key": "B", "label": "Country › region › district dropdowns", "why": "Works offline and without coordinates." }
+      {
+        "key": "A",
+        "label": "Point on a map, values filled from maps",
+        "why": "Precise climate and soil."
+      },
+      {
+        "key": "B",
+        "label": "Country › region › district dropdowns",
+        "why": "Works offline and without coordinates."
+      }
     ]
   },
   {
@@ -40,8 +72,16 @@
     "screen": "animals",
     "label": "How should manure handling be asked?",
     "options": [
-      { "key": "A", "label": "Eight plain-language choices with follow-ups", "why": "No jargon; the app maps to the IPCC system." },
-      { "key": "B", "label": "The full IPCC list with definitions", "why": "Exact control for researchers." }
+      {
+        "key": "A",
+        "label": "Eight plain-language choices with follow-ups",
+        "why": "No jargon; the app maps to the IPCC system."
+      },
+      {
+        "key": "B",
+        "label": "The full IPCC list with definitions",
+        "why": "Exact control for researchers."
+      }
     ]
   }
 ]

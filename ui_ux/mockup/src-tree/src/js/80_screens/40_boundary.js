@@ -15,7 +15,7 @@
       <text x="455" y="70">Milk</text><text x="455" y="120">Meat, live animals</text><text x="455" y="170">Manure sold · losses</text></g></svg>`;
     root.append(h("div", { class: "card", dataset: { fb: "boundary:text", fbLabel: "Boundary explanation" } },
       h("p", null, "CLEANED is a livestock enterprise model, not a farm model. Describe the herd, the land that grows its feed (including land elsewhere if feed is bought), and the manure it produces. The same structure describes one household's cows, a cooperative's herd, a district or the national herd; the numbers scale, the questions do not."),
-      h("p", null, "Do not include crops sold for people to eat unless their residues are fed. Anything that happens after milk or meat leaves the farm gate is optional (see Losses)."),
+      h("p", null, "Do not include crops sold for people to eat unless their residues are fed. Anything that happens after milk or meat leave the producer is optional (see Losses)."),
       h("div", { html: svg })));
     root.append(h("div", { class: "callout" }, "Examples: a dairy farm that also grows maize for sale → include the maize only if the stover is fed. A family with cows at home and goats at a relative's farm → make two herds. A national dairy herd → one animal group per category with national head counts, land types instead of plots, and defaults from the dominant climate."));
   };

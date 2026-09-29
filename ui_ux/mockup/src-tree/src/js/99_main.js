@@ -8,27 +8,41 @@
   applyTheme(ICL.store.get().ui.theme);
 
   let lastKey = null;
+  // Stable focus key: nearest [data-fb] + control identity + index among controls in that container.
+  const CONTROLS = "input, select, textarea, button, a[href], summary";
+  function focusKeyOf(el, root) {
+    const box = el.closest("[data-fb]") || root; const ctrls = [...box.querySelectorAll(CONTROLS)];
+    return { fb: box.dataset ? box.dataset.fb || "" : "", ident: el.getAttribute("aria-label") || el.name || el.id || "", idx: ctrls.indexOf(el), tag: el.tagName };
+  }
+  function findByFocusKey(k, root) {
+    const box = k.fb ? root.querySelector(`[data-fb="${k.fb.replace(/"/g, '\\"')}"]`) : root; if (!box) return null;
+    const ctrls = [...box.querySelectorAll(CONTROLS)];
+    return (k.ident && ctrls.find((c) => (c.getAttribute("aria-label") || c.name || c.id || "") === k.ident && c.tagName === k.tag)) || ctrls[k.idx] || null;
+  }
   function render(state) {
-    const val = ICL.validate(state);
-    const compiled = ICL.compile(state);
+    let compiled, val;
+    try { compiled = ICL.compile(state); } catch (e) { console.error(e); compiled = { input: {}, prov: {}, assumed: [], blocked: [{ path: "compile", msg: "Internal: " + e.message }] }; }
+    try { val = ICL.validate(state); } catch (e) { console.error(e); val = { errors: [{ fieldId: null, screen: "check", entityId: null, path: "validate", label: "Internal", msg: "Internal: " + e.message }], warnings: [], assumptions: [], fromDb: [] }; }
     app.classList.toggle("show-tech", !!state.ui.showTech);
     app.classList.toggle("preview-hidden", !state.ui.previewOpen);
     document.getElementById("btn-technical").setAttribute("aria-pressed", String(!!state.ui.showTech));
     document.getElementById("btn-preview").setAttribute("aria-pressed", String(!!state.ui.previewOpen));
     const fbCounts = {}; for (const d of state.fb.docs || []) fbCounts[d.screen] = (fbCounts[d.screen] || 0) + 1;
     const cnt = document.getElementById("fb-count"); cnt.textContent = String((state.fb.docs || []).length); cnt.hidden = !(state.fb.docs || []).length;
-    ICL.layout.renderTopbar(state); ICL.layout.renderSidebar(state, val, fbCounts); ICL.layout.renderWizardBar(state, val); ICL.layout.renderPreview(state, compiled); ICL.layout.renderRating(state, state.route.screen);
+    ICL.layout.renderTopbar(state); ICL.layout.renderSidebar(state, val, fbCounts); ICL.layout.renderWizardBar(state, val); if (state.ui.previewOpen) ICL.layout.renderPreview(state, compiled); ICL.layout.renderRating(state, state.route.screen);
     const screen = document.getElementById("screen");
     const key = JSON.stringify(state.route);
-    const active = document.activeElement; const activeId = active && screen.contains(active) ? active.id : null; const scrollY = window.scrollY;
+    const active = document.activeElement; const focusKey = active && screen.contains(active) ? focusKeyOf(active, screen) : null; const scrollY = window.scrollY;
     screen.innerHTML = "";
     const fn = ICL.screens[state.route.screen] || ICL.screens.home;
     const sec = ICL.dict.section(state.route.screen);
     if (sec && !ICL.cond.sectionVisible(sec, state) && state.route.screen !== "home") {
       screen.append(h("div", { class: "screen-head" }, h("h1", null, sec.title)), h("div", { class: "callout" }, "This step is not needed for this farm, based on your answers under ", h("a", { href: "#about" }, "About this farm"), "."));
     } else fn(screen, { state, val, compiled, store: ICL.store });
+    if (state.fb.focusSnapshot && state.fb.focusSnapshot.route && state.fb.focusSnapshot.route !== ICL.router.hashFor(state.route.screen, state.route.entity)) { setTimeout(() => ICL.store.set((s) => { s.fb.focusSnapshot = null; return s; }), 0); }
+    if (state.route.screen === "check" && !state.ui.validateAll) setTimeout(() => ICL.store.update("ui.validateAll", true), 0);
     if (state.fb.focusSnapshot) { screen.prepend(h("div", { class: "fb-banner" }, `Showing the page as the participant saw it (${state.fb.focusSnapshot.label}). `, h("button", { type: "button", onclick: () => ICL.store.set((s) => { s.fb.focusSnapshot = null; return s; }) }, "Back to my view"))); }
-    if (key === lastKey) { if (activeId) { const el = document.getElementById(activeId); if (el) el.focus({ preventScroll: true }); } window.scrollTo(0, scrollY); }
+    if (key === lastKey) { if (focusKey) { const el = findByFocusKey(focusKey, screen); if (el) { el.focus({ preventScroll: true }); if (el.select && el.type === "text") { try { const n = el.value.length; el.setSelectionRange(n, n); } catch {} } } } window.scrollTo(0, scrollY); }
     else { window.scrollTo(0, 0); }
     lastKey = key;
     if (state.fb.mode === "comment") screen.querySelectorAll("[data-fb]").forEach((el) => { if (!el.matches("a,button,input,select,textarea")) el.setAttribute("tabindex", "0"); });
@@ -38,7 +52,10 @@
   // toolbar
   document.getElementById("btn-technical").addEventListener("click", () => ICL.store.update("ui.showTech", !ICL.store.get().ui.showTech));
   document.getElementById("btn-preview").addEventListener("click", () => ICL.store.update("ui.previewOpen", !ICL.store.get().ui.previewOpen));
-  document.getElementById("btn-theme").addEventListener("click", () => { const cur = ICL.store.get().ui.theme; const isDark = cur === "dark" || (cur === "auto" && matchMedia("(prefers-color-scheme: dark)").matches); const next = isDark ? "light" : "dark"; applyTheme(next); ICL.store.update("ui.theme", next); });
+  const themeBtn = document.getElementById("btn-theme");
+  const labelTheme = () => { const cur = ICL.store.get().ui.theme; const isDark = cur === "dark" || (cur === "auto" && matchMedia("(prefers-color-scheme: dark)").matches); themeBtn.textContent = isDark ? "◐ Theme: dark" : "◐ Theme: light"; themeBtn.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme"); };
+  themeBtn.addEventListener("click", () => { const cur = ICL.store.get().ui.theme; const isDark = cur === "dark" || (cur === "auto" && matchMedia("(prefers-color-scheme: dark)").matches); const next = isDark ? "light" : "dark"; applyTheme(next); ICL.store.update("ui.theme", next); labelTheme(); }); labelTheme();
+  const closePrev = document.getElementById("btn-preview-close"); if (closePrev) closePrev.addEventListener("click", () => ICL.store.update("ui.previewOpen", false));
   document.getElementById("sidebar-toggle").addEventListener("click", (e) => { const b = e.currentTarget; const open = b.getAttribute("aria-expanded") === "true"; b.setAttribute("aria-expanded", String(!open)); });
   document.getElementById("sidebar-nav").addEventListener("click", (e) => { if (e.target.closest("a")) document.getElementById("sidebar-toggle").setAttribute("aria-expanded", "false"); });
   document.getElementById("btn-copy-json").addEventListener("click", () => { const txt = JSON.stringify(ICL.compile(ICL.store.get()).input, null, 2); navigator.clipboard.writeText(txt).then(() => ICL.toast("Copied the model input."), () => ICL.toast("Copy not allowed here; use Download.")); });

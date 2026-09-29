@@ -22,7 +22,7 @@
       h("select", { "aria-label": "Screen", onchange: (e) => set("screen", e.target.value) }, h("option", { value: "" }, "All screens"), ...screens.map((s) => h("option", { value: s, selected: f.screen === s }, (D.section(s) || {}).title || s))),
       h("select", { "aria-label": "Type", onchange: (e) => set("type", e.target.value) }, h("option", { value: "" }, "All types"), ...Object.entries(TYPE_LABEL).map(([k, l]) => h("option", { value: k, selected: f.type === k }, l))),
       h("select", { "aria-label": "Severity", onchange: (e) => set("sev", e.target.value) }, h("option", { value: "" }, "Any severity"), h("option", { value: "3", selected: f.sev === "3" }, "Blocker"), h("option", { value: "2", selected: f.sev === "2" }, "High"), h("option", { value: "1", selected: f.sev === "1" }, "Low")),
-      h("input", { type: "search", placeholder: "Search text or group…", value: f.q || "", "aria-label": "Search", oninput: (e) => set("q", e.target.value) }),
+      h("input", { type: "search", id: "fb-search", placeholder: "Search text or group…", value: f.q || "", "aria-label": "Search", oninput: (e) => { clearTimeout(window.__fbq); const v = e.target.value; window.__fbq = setTimeout(() => set("q", v), 300); } }),
       h("label", { class: "small" }, h("input", { type: "checkbox", checked: !!f.hideTriaged, onchange: (e) => set("hideTriaged", e.target.checked) }), " hide triaged"),
       h("span", { style: "flex:1" }),
       h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("json") }, "Export JSON"), h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("csv") }, "Export CSV"),
@@ -36,7 +36,7 @@
     for (const d of shown) {
       const sevChip = d.severity ? h("span", { class: "chip", style: d.severity === 3 ? "color:var(--danger);border-color:var(--danger)" : d.severity === 2 ? "color:var(--warn);border-color:var(--warn)" : "" }, ["", "Low", "High", "Blocker"][d.severity]) : null;
       list.append(h("div", { class: "fb-item" },
-        d.screenshot ? h("img", { src: d.screenshot, alt: "Screenshot for " + d.fbLabel, loading: "lazy" }) : h("div", { class: "small muted" }, d.rect ? "area highlight" : "no screenshot"),
+        d.screenshot && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(d.screenshot) ? h("img", { src: d.screenshot, alt: "Screenshot for " + d.fbLabel, loading: "lazy" }) : h("div", { class: "small muted" }, d.rect ? "area highlight" : "no screenshot"),
         h("div", null, h("div", null, h("strong", null, (D.section(d.screen) || {}).title || d.screen), " › ", h("span", { class: "mono" }, d.fbLabel), " ", sevChip, d.triaged ? h("span", { class: "chip c-derived" }, "triaged") : null, d.source === "local" ? h("span", { class: "chip c-blank" }, "on this device") : null),
           h("div", { class: "tags" }, ...(d.types || []).map((t) => h("span", { class: "chip" }, TYPE_LABEL[t] || t))),
           h("div", null, d.text || h("em", { class: "muted" }, "(no text)")),

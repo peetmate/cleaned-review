@@ -7,17 +7,18 @@
     return function (root, { state, val }) {
       const sec = D.section(collection); const etype = TYPE[collection];
       root.append(screenHead(sec));
-      if (collection === "animals") root.append(variantVote("V1", state), variantVote("V2", state), variantVote("V5", state));
       const list = state[collection] || [];
       const route = state.route;
+      if (collection === "animals" && !route.entity) root.append(ICL.common.variantsBox(["V1", "V2", "V5"], state));
       if (route.entity === "new") { root.append(addFlow(collection, state)); return; }
       const selected = route.entity ? list.find((e) => e.id === route.entity) : null;
       if (selected) { root.append(card(collection, selected, state, val, true)); return; }
       // list view
+      const noun = ICL.common.entityNoun(collection);
       if (collection === "seasons") root.append(seasonsOverview(state, val));
       if (collection === "animals" && (state.ui.variant.V1 || "A") === "B") { root.append(animalsTable(state, val)); }
-      else if (!list.length) root.append(h("div", { class: "empty" }, emptyText(collection, state), h("div", { style: "margin-top:10px" }, h("a", { class: "btn", href: ICL.router.hashFor(collection, "new") }, "+ Add " + etype))));
-      else { for (const e of list) root.append(card(collection, e, state, val, false)); root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + etype)); }
+      else if (!list.length) root.append(h("div", { class: "empty" }, emptyText(collection, state), h("div", { style: "margin-top:10px" }, h("a", { class: "btn", href: ICL.router.hashFor(collection, "new") }, "+ Add " + noun))));
+      else { for (const e of list) root.append(card(collection, e, state, val, false)); root.append(h("a", { class: "btn secondary", href: ICL.router.hashFor(collection, "new") }, "+ Add another " + noun)); }
       if (collection === "seasons" && list.length) root.append(h("div", { style: "margin-top:12px" }, seasonTemplates(state)));
     };
   }
@@ -28,10 +29,12 @@
     const errs = val.errors.filter((x) => x.screen === collection && x.entityId === e.id);
     const title = ICL.layout.entityLabel(collection, e, state);
     const head = h("div", { class: "card-head" }, h("h2", null, title, errs.length ? h("span", { class: "chip", style: "margin-left:8px;color:var(--danger);border-color:var(--danger)" }, `${errs.length} to fix`) : null),
-      h("div", { class: "actions" }, expanded ? h("a", { class: "btn-sm", href: ICL.router.hashFor(collection) }, "Done") : h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, e.id) }, "Edit"), confirmButton("Remove", () => { removeEntity(collection, e.id); ICL.router.go(collection); }, "btn-sm")));
+      h("div", { class: "actions" }, expanded ? h("a", { class: "btn-sm", href: ICL.router.hashFor(collection) }, "Done") : h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, e.id) }, "Edit"), confirmButton("Remove", () => { removeEntity(collection, e.id); ICL.toast(`Removed "${title}".`); ICL.router.go(collection); }, "btn-sm")));
     const wrap = h("div", { class: "card", dataset: { fb: `${etype}:${e.id}`, fbLabel: `${etype} card: ${title}` } }, head);
     if (!expanded) { wrap.append(summary(collection, dec, state)); return wrap; }
     const ctx = entityCtx(state, val, collection, e, etype);
+    const touched = Object.keys(state.provenance).some((p) => p.startsWith(`${collection}[${e.id}]`)) || state.ui.validateAll;
+    if (!touched) { ctx.errors = []; ctx.warnings = []; wrap.append(h("p", { class: "small" }, "Fill in what you know; we will point out anything missing on Check & run.")); }
     if (collection === "animals") wrap.append(animalCard(dec, ctx, state));
     else if (collection === "feeds") wrap.append(feedCard(dec, ctx, state));
     else if (collection === "seasons") wrap.append(seasonCard(dec, ctx, state));
@@ -43,9 +46,9 @@
     const dl = h("dl", { class: "kv" }); const add = (k, v) => { if (v != null && v !== "") dl.append(h("dt", null, k), h("dd", null, v)); };
     if (collection === "plots") { add("Area", e.plot_area_ha ? e.plot_area_ha + " ha" : "not given"); add("Use", { crops: "Feed or crops", grazing: "Grazing", both: "Crops and grazing" }[e.plot_use]); add("Slope", e.slope_class ? e.slope_class.split(" (")[0] : null); add("Grown here", state.feeds.filter((f) => f.feed_plot === e.id).map((f) => { const d = D.decorate(f, "feed", state); return d._feedItem ? D.displayFeedName(d._feedItem.feed_item_name) : "?"; }).join(", ") || "nothing yet"); }
     if (collection === "seasons") { const m = e.season_months || []; add("Months", m.length ? m.map((x) => ICL.MONTHS[x - 1]).join(" ") : "none"); add("Days", m.reduce((d, x) => d + ICL.MONTH_DAYS[x - 1], 0)); }
-    if (collection === "herds") { const p = window.ICL_SCHEMA.herdPatterns.find((x) => x.value === e.herd_pattern); add("Pattern", p ? p.label : "not set"); add("Groups", state.animals.filter((a) => a.herd_ref === e.id).length); }
+    if (collection === "herds") { const p = window.ICL_SCHEMA.herdPatterns.find((x) => x.value === e.herd_pattern); add("Pattern", p ? ICL.t(p.label) : "not set"); add("Groups", state.animals.filter((a) => a.herd_ref === e.id).length); }
     if (collection === "animals") { add("Herd", (state.herds.find((x) => x.id === e.herd_ref) || {}).herd_name); const milk = D.effective(D.field("milk_l_day"), e, state).value; if (e._milking && milk != null) add("Milk", `${milk} L/day`); if (e._young) add("Growth", (e.growth_kg_yr ?? "?") + " kg/yr"); add("Day", `${e.hours_stable || 0} h shed · ${e.hours_pen || 0} h pen · ${e.hours_onfarm || 0} h grazing · ${e.hours_offfarm || 0} h off-farm`); }
-    if (collection === "feeds") { add("From", { grown: "grown on plot " + ((state.plots.find((p) => p.id === e.feed_plot) || {}).plot_name || "?"), bought: "bought", collected: "collected off the farm" }[e.feed_origin] || "not set"); if (e.feed_origin === "grown") add("Part fed", e.feed_part === "residue" ? "residue" : "main product"); if (e._feedItem) add("Quality", `DM ${e._feedItem.dm_content}% · ME ${e._feedItem.me_content} MJ/kg · CP ${e._feedItem.cp_content}%`); }
+    if (collection === "feeds") { add("From", { grown: `grown on ${ICL.dict.words().plot} ` + ((state.plots.find((p) => p.id === e.feed_plot) || {}).plot_name || "?"), bought: "bought", collected: ICL.t("collected {offfarm}") }[e.feed_origin] || "not set"); if (e.feed_origin === "grown") add("Part fed", e.feed_part === "residue" ? "residue" : "main product"); if (e._feedItem) add("Quality", `DM ${e._feedItem.dm_content}% · ME ${e._feedItem.me_content} MJ/kg · CP ${e._feedItem.cp_content}%`); }
     return dl;
   }
 
@@ -68,8 +71,9 @@
     if (collection === "feeds") {
       const search = h("input", { type: "text", placeholder: "Search feeds…", "aria-label": "Search feeds" });
       const listBox = h("div", { class: "pickerlist" });
-      const render = () => { listBox.innerHTML = ""; const q = search.value.toLowerCase(); const items = D.vocab().feeditems.filter((fi) => D.displayFeedName(fi.feed_item_name).toLowerCase().includes(q)); const byCat = {}; for (const fi of items) { const crop = D.cropOf(fi.crop_code); const cat = crop ? crop.category : "other"; (byCat[cat] = byCat[cat] || []).push(fi); }
-        for (const [cat, fis] of Object.entries(byCat)) { listBox.append(h("div", { class: "grp" }, { grass: "Grasses & fodder", legume: "Legumes", cereal: "Cereals & residues", "tree crop": "Tree crops" }[cat] || cat)); for (const fi of fis) listBox.append(h("button", { type: "button", onclick: () => { const id = addEntity("feeds", { feed_item: fi.feed_item_code, feed_origin: state.system.growsFeed ? "grown" : "bought", feed_plot: state.plots[0] ? state.plots[0].id : null }); ICL.router.go("feeds", id); } }, h("strong", null, D.displayFeedName(fi.feed_item_name)), h("span", { class: "small" }, `DM ${fi.dm_content}% · ME ${fi.me_content} · CP ${fi.cp_content}%`))); }
+      const syn = D.tables().feedSynonyms || {};
+      const render = () => { listBox.innerHTML = ""; const q = search.value.toLowerCase().trim(); const items = D.vocab().feeditems.filter((fi) => D.displayFeedName(fi.feed_item_name).toLowerCase().includes(q) || (syn[fi.feed_item_code] || []).some((x) => x.toLowerCase().includes(q))); const byCat = {}; for (const fi of items) { const crop = D.cropOf(fi.crop_code); const cat = crop ? crop.category : "other"; (byCat[cat] = byCat[cat] || []).push(fi); }
+        for (const [cat, fis] of Object.entries(byCat)) { listBox.append(h("div", { class: "grp" }, { grass: "Grasses & fodder", legume: "Legumes", cereal: "Cereals & residues", "tree crop": "Tree crops" }[cat] || cat)); for (const fi of fis) listBox.append(h("button", { type: "button", title: (syn[fi.feed_item_code] || []).join(", "), onclick: () => { const id = addEntity("feeds", { feed_item: fi.feed_item_code, feed_origin: state.system.growsFeed ? "grown" : "bought", feed_plot: state.plots[0] ? state.plots[0].id : null }); ICL.store.set((s) => { s.provenance[`feeds[${id}].feed_origin`] = "default"; if (state.plots[0]) s.provenance[`feeds[${id}].feed_plot`] = "default"; return s; }); ICL.router.go("feeds", id); } }, h("strong", null, (syn[fi.feed_item_code] || [])[0] ? `${syn[fi.feed_item_code][0]} · ` : "", D.displayFeedName(fi.feed_item_name)), h("span", { class: "small" }, `DM ${fi.dm_content}% · ME ${fi.me_content} · CP ${fi.cp_content}%`))); }
         if (!items.length) listBox.append(h("div", { class: "grp" }, "Nothing matches. In the real app you could request a feed to be added to the parameter set.")); };
       search.addEventListener("input", render); render();
       box.append(h("p", { class: "small" }, `Feeds come from the parameter set "${state.meta.param_set}". `, h("a", { href: "#parameters" }, "See the full list")), search, listBox);
@@ -108,7 +112,7 @@
   function feedCard(e, ctx, state) {
     const frag = document.createDocumentFragment();
     if (e._feedItem) frag.append(h("div", { class: "callout" }, h("strong", null, D.displayFeedName(e._feedItem.feed_item_name)), ` · dry matter ${e._feedItem.dm_content}% · energy ${e._feedItem.me_content} MJ/kg DM · protein ${e._feedItem.cp_content}% `, h("span", { class: "chip c-db" }, "from database"), e._crop ? h("div", { class: "small" }, `Crop: ${e._crop.crop_name} (${e._crop.category}) · typical yield ${e._crop.dry_yield} t DM/ha, residue ${e._crop.residue_dry_yield} t DM/ha`) : null));
-    if (e.feed_origin === "grown" && !state.plots.length) frag.append(h("div", { class: "callout warn" }, "This feed is grown on the farm but no plots exist yet. ", h("a", { href: "#plots-new" }, "Add a plot")));
+    if (e.feed_origin === "grown" && !state.plots.length) frag.append(h("div", { class: "callout warn" }, ICL.t("This feed is grown on the {farm} but no {plot}s exist yet. "), h("a", { href: "#plots-new" }, ICL.t("Add a {plot}"))));
     frag.append(ICL.fields.renderFields("feeds", ctx, (f) => f.id !== "feed_item"));
     return frag;
   }
@@ -123,7 +127,7 @@
     const g = h("div", { class: "months" });
     ICL.MONTHS.forEach((m, i) => { const on = cur.includes(i + 1); const other = taken.has(i + 1); const b = h("button", { type: "button", class: other && !on ? "other" : "", "aria-pressed": String(on), title: other ? "In " + (state.seasons[taken.get(i + 1)].season_name || "another season") : "" }, m); b.addEventListener("click", () => { if (other && !on) { ICL.store.set((s) => { for (const ss of s.seasons) if (ss.id !== e.id) ss.season_months = (ss.season_months || []).filter((x) => x !== i + 1); const me = s.seasons.find((ss) => ss.id === e.id); me.season_months = [...(me.season_months || []), i + 1].sort((a, b) => a - b); return s; }); } else ctx.onChange("season_months", on ? cur.filter((x) => x !== i + 1) : [...cur, i + 1].sort((a, b) => a - b), "user"); }); g.append(b); });
     const days = cur.reduce((d, x) => d + ICL.MONTH_DAYS[x - 1], 0);
-    wrap.append(g, h("div", { class: "small" }, cur.length ? `${cur.map((x) => ICL.MONTHS[x - 1]).join(", ")} · ${days} days` : "No months yet. Grey months belong to another season; tapping one moves it here."));
+    wrap.append(g, h("div", { class: "small" }, (cur.length ? `${cur.map((x) => ICL.MONTHS[x - 1]).join(", ")} · ${days} days. ` : "No months yet. ") + "Grey months belong to another season; tapping one moves it here."));
     frag.append(wrap);
     return frag;
   }
@@ -137,11 +141,13 @@
     return h("div", { class: "card soft", dataset: { fb: "seasons:overview", fbLabel: "Year overview" } }, h("h2", null, "The year"), strip, h("div", { class: "total " + (days === 365 ? "ok" : "bad") }, `${days} of 365 days in a season ${days === 365 ? "✓" : ""}`), err ? h("div", { class: "msg err" }, err.msg) : null);
   }
   function seasonTemplates(state) {
-    const apply = (defs) => ICL.store.set((s) => { s.seasons = defs.map((d) => ({ id: ICL.uid("s"), season_name: d[0], season_months: d[1] })); s.allocation = {}; return s; });
-    return h("div", { class: "control" }, h("span", { class: "small" }, "Templates:"),
-      h("button", { type: "button", class: "btn-sm", onclick: () => apply([["All year", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]) }, "One season"),
-      h("button", { type: "button", class: "btn-sm", onclick: () => apply([["Rainy season", [11, 12, 1, 2, 3, 4]], ["Dry season", [5, 6, 7, 8, 9, 10]]]) }, "Rainy / dry (southern)"),
-      h("button", { type: "button", class: "btn-sm", onclick: () => apply([["Long rains", [3, 4, 5, 6]], ["Dry season", [7, 8, 9, 10]], ["Short rains", [11, 12, 1, 2]]]) }, "Long rains / dry / short rains"));
+    const hasPlan = Object.keys(state.allocation || {}).length > 0;
+    const apply = (defs) => { ICL.store.set((s) => { s.seasons = defs.map((d) => ({ id: ICL.uid("s"), season_name: d[0], season_months: d[1] })); s.allocation = {}; return s; }); ICL.toast(hasPlan ? "Seasons replaced. The feeding plan was cleared; enter it again for the new seasons." : "Seasons set."); };
+    const tpl = (label, defs) => hasPlan ? confirmButton(label, () => apply(defs), "btn-sm") : h("button", { type: "button", class: "btn-sm", onclick: () => apply(defs) }, label);
+    return h("div", { class: "control" }, h("span", { class: "small" }, "Templates:", hasPlan ? " (replacing seasons clears the feeding plan)" : ""),
+      tpl("One season", [["All year", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]),
+      tpl("Rainy / dry (southern)", [["Rainy season", [11, 12, 1, 2, 3, 4]], ["Dry season", [5, 6, 7, 8, 9, 10]]]),
+      tpl("Long rains / dry / short rains", [["Long rains", [3, 4, 5, 6]], ["Dry season", [7, 8, 9, 10]], ["Short rains", [11, 12, 1, 2]]]));
   }
   function animalsTable(state, val) {
     const tbl = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Group"), h("th", null, "Herd"), h("th", null, "Head"), h("th", null, "Weight kg"), h("th", null, "Milk L/day"), h("th", null, "Shed / pen / graze / off h"), h("th", null, ""))));

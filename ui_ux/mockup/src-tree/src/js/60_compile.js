@@ -6,20 +6,21 @@
   function compile(state) {
     const prov = {}; // json path → user|default|db|derived|blocked
     const assumed = [], blocked = [];
-    const T = D.tables(), V = D.vocab(), S = window.ICL_SCHEMA;
+    const T = D.tables(), V = D.vocab(state), S = window.ICL_SCHEMA;
     const set = (obj, key, val, p, path) => { obj[key] = val; prov[path || key] = p; };
     const eff = (fieldId, entity, prefix) => D.effective(D.field(fieldId), entity, state, prefix);
     const farm = state.farm;
     const out = {};
 
     // --- scalars ---------------------------------------------------------
-    set(out, "database_code", state.meta.param_set || null, state.meta.param_set ? "user" : "blocked");
+    const copy = D.activeCopy(state);
+    set(out, "database_code", copy ? copy.base : (state.meta.param_set || null), state.meta.param_set ? "user" : "blocked");
+    if (copy) { out.param_set_copy = { name: copy.value, base: copy.base, changes: copy.changes || {} }; prov["param_set_copy"] = "user"; }
     set(out, "farm_name", state.meta.scenario_name || "", "user");
     const loc = farm.location_point || {};
     const region = regionForCountry(loc.country);
-    set(out, "region", region, region ? "derived" : "blocked");
+    set(out, "region", region, region ? "derived" : "blocked"); if (!region) blocked.push({ path: "region", msg: loc.country ? `Country "${loc.country}" is not mapped to an IPCC region yet. Choose a country from the list.` : "Choose the country so the model knows the IPCC region." });
     const cz = eff("climate_zone_2", farm, "farm"); set(out, "climate_zone_2", cz.value, cz.prov);
-    set(out, "climate_zone", cz.value ? (/^Tropical/.test(cz.value) ? "Warm" : /^Warm/.test(cz.value) ? "Temperate" : "Cool") : null, "derived");
     for (const [fid, key] of [["annual_prec", "annual_prec"], ["et0", "et"], ["soil_c", "soil_c"], ["soil_n", "soil_n"], ["soil_clay", "soil_clay"], ["soil_bulk", "soil_bulk"], ["soil_depth", "soil_depth"]]) {
       const e = eff(fid, farm, "farm"); set(out, key, e.value == null ? null : Number(e.value), e.value == null ? "blocked" : e.prov);
     }
@@ -34,19 +35,20 @@
     const cropPlot = ICL.largestPlot(state, "crops"), grazePlot = ICL.largestPlot(state, "grazing");
     const isRicePlot = state.system.rice && state.feeds.some((f) => D.decorate(f, "feed", state)._isRice && f.feed_plot === (cropPlot && cropPlot.id));
     set(out, "cropland_system", isRicePlot ? "Paddy rice" : T.cropland_system[bucket], "derived");
+    const lut = (tbl, key, fallback, label) => { if (tbl[key]) return tbl[key][bucket]; if (key) blocked.push({ path: label, msg: `${label}: "${key}" is not a recognised choice. Pick again.` }); return tbl[fallback][bucket]; };
     const till = cropPlot ? eff("tillage", cropPlot, `plots[${cropPlot.id}]`) : { value: "full", prov: "default" };
-    set(out, "cropland_tillage", T.tillage[till.value || "full"][bucket], till.prov === "user" ? "derived" : "default");
+    set(out, "cropland_tillage", lut(T.tillage, till.value || "full", "full", "cropland_tillage"), till.prov === "user" ? "derived" : "default");
     const om = cropPlot ? eff("orgmatter", cropPlot, `plots[${cropPlot.id}]`) : { value: "medium", prov: "default" };
-    set(out, "cropland_orgmatter", T.orgmatter[om.value || "medium"][bucket], om.prov === "user" ? "derived" : "default");
+    set(out, "cropland_orgmatter", lut(T.orgmatter, om.value || "medium", "medium", "cropland_orgmatter"), om.prov === "user" ? "derived" : "default");
     const gc = grazePlot && grazePlot.plot_use !== "crops" ? eff("grass_condition", grazePlot, `plots[${grazePlot.id}]`) : { value: "nominal", prov: "default" };
-    set(out, "grassland_management", T.grass[gc.value || "nominal"][bucket], gc.prov === "user" ? "derived" : "default");
+    set(out, "grassland_management", lut(T.grass, gc.value || "nominal", "nominal", "grassland_management"), gc.prov === "user" ? "derived" : "default");
     const gi = grazePlot && grazePlot.plot_use !== "crops" ? eff("grass_inputs", grazePlot, `plots[${grazePlot.id}]`) : { value: "None", prov: "default" };
     set(out, "grassland_implevel", gi.value || "None", gi.prov);
     for (const k of ["cropland_system", "cropland_tillage", "cropland_orgmatter", "grassland_management", "grassland_implevel"]) {
       if (!V.stock_change[k].includes(out[k])) { blocked.push({ path: k, msg: `Internal: land-use label "${out[k]}" not recognised by the model.` }); prov[k] = "blocked"; }
     }
     // factors (unused by package but present in file format)
-    set(out, "cropland_system_ipcc", null, "derived"); set(out, "cropland_tillage_ipcc", null, "derived"); set(out, "cropland_orgmatter_ipcc", null, "derived"); set(out, "grassland_management_ipcc", null, "derived"); set(out, "grassland_implevel_ipcc", null, "derived");
+    set(out, "cropland_system_ipcc", 1, "derived"); set(out, "cropland_tillage_ipcc", 1, "derived"); set(out, "cropland_orgmatter_ipcc", 1, "derived"); set(out, "grassland_management_ipcc", 1, "derived"); set(out, "grassland_implevel_ipcc", 1, "derived");
     set(out, "grassland_toarable", 0, "derived"); set(out, "arable_tograssland", 0, "derived");
 
     // purchased inputs (quantity + unit + N%)
@@ -65,18 +67,18 @@
     // --- livestock: one row per livetype, merged by head count ------------
     const mapping = [];
     const groups = {};
-    for (const raw of state.animals) { const a = D.decorate(raw, "animal", state); (groups[a.livetype] = groups[a.livetype] || []).push(a); }
+    for (const raw of state.animals) { const a = D.decorate(raw, "animal", state); if (!D.livetypeOf(a.livetype)) { blocked.push({ path: `livestock.${raw.id}`, msg: "An animal group refers to a category that is not in the parameter set." }); continue; } (groups[a.livetype] = groups[a.livetype] || []).push(a); }
     out.livestock = [];
     Object.values(groups).forEach((list, idx) => {
       const lt = D.livetypeOf(list[0].livetype); if (!lt) return;
-      const heads = list.map((a) => Number(a.herd_n) || 0); const N = heads.reduce((s, x) => s + x, 0) || 1;
+      const heads0 = list.map((a) => Number(a.herd_n) || 0); const heads = heads0.some((x) => x > 0) ? heads0 : list.map(() => 1); const N = heads.reduce((s, x) => s + x, 0) || 1;
       const w = (fn) => list.reduce((s, a, i) => s + fn(a) * heads[i], 0) / N; // head-weighted mean
       const merged = list.length > 1;
       const P = (p) => (merged ? "derived" : p);
       const row = {}; const pf = (k, v, p) => set(row, k, v, p, `livestock[${idx}].${k}`);
       pf("livetype_code", lt.code, "db"); pf("livetype_desc", lt.desc, "db");
       pf("herd_composition", N, "user");
-      const bw = list.map((a) => eff("body_weight", a, `animals[${a.id}]`)); pf("body_weight", r4(w((a, i) => Number(bw[list.indexOf(a)].value) || lt.body_weight)), P(bw[0].prov));
+      const bw = list.map((a) => eff("body_weight", a, `animals[${a.id}]`)); pf("body_weight", r4(w((a) => { const v = bw[list.indexOf(a)].value; return v == null ? lt.body_weight : Number(v); })), P(bw[0].prov));
       const young = list[0]._young;
       if (young) { const aw = list.map((a) => eff("adult_weight", a, `animals[${a.id}]`)); pf("adult_weight", r4(w((a) => Number(aw[list.indexOf(a)].value) || 0)), P(aw[0].prov)); }
       else pf("adult_weight", row.body_weight, "derived");
@@ -104,18 +106,19 @@
         const active = list.filter((a) => Number(a[hk]) > 0);
         if (!active.length) { pf(mmKey, "Pasture/Range/Paddock", "derived"); if (collKey) pf(collKey, 0, "derived"); continue; }
         // dominant handling by head; collected weighted
-        const vals = active.map((a) => { const e = eff(fid, a, `animals[${a.id}]`); return { v: e.value || f.default, prov: e.prov, n: Number(a.herd_n) || 0 }; });
+        const vals = active.map((a) => { const e = eff(fid, a, `animals[${a.id}]`); const v = Object.assign({}, e.value || f.default); if (v.handling === "left") v.collected = 0; return { v, prov: e.prov, n: Number(a.herd_n) || 0 }; });
         const dom = vals.slice().sort((x, y) => y.n - x.n)[0];
         pf(mmKey, ipccManure(dom.v), dom.prov === "user" ? "derived" : "default");
         if (collKey) pf(collKey, r4(vals.reduce((s, x) => s + (Number(x.v.collected) || 0) / 100 * x.n, 0) / (vals.reduce((s, x) => s + x.n, 0) || 1)), dom.prov === "user" ? "derived" : "default");
       }
       const kept = list.map((a) => eff("manure_kept_share", a, `animals[${a.id}]`)); const keptV = w((a) => Number(kept[list.indexOf(a)].value) || 0) / 100;
-      pf("manure_onfarm_fraction", r4(keptV), P(kept[0].prov)); pf("manure_sales_fraction", r4(1 - keptV), "derived");
+      // The package multiplies collected manure by manure_onfarm_fraction and then by manure_sales_fraction again (double discount); like the current app we send sales = 0 and let onfarm_fraction carry the split.
+      pf("manure_onfarm_fraction", r4(keptV), P(kept[0].prov)); pf("manure_sales_fraction", 0, "derived");
       pf("distance_to_pasture", 0, "derived");
       for (const k of ["litter_size", "lactation_length", "proportion_growth_piglets_milk", "lw_gain_piglets", "meat_product", "milk_product", "ipcc_ef_category_t1", "ipcc_ef_category_t2", "ipcc_meth_man_category", "ipcc_n_exc_category"]) pf(k, lt[k] ?? 0, "db");
       for (const k of ["cp_maintenance", "cp_lys_pregnancy", "cp_lactmilk", "cp_lys_growth", "birth_interval", "protein_milkcontent", "fat_milkcontent", "energy_milkcontent", "energy_meatcontent", "protein_meatcontent", "carcass_fraction", "n_manure_content"]) {
         const vals = list.map((a) => eff(k, a, `animals[${a.id}]`)); const anyUser = vals.some((v) => v.prov === "user");
-        pf(k, r4(w((a) => Number(vals[list.indexOf(a)].value) ?? lt[k] ?? 0)), anyUser ? (merged ? "derived" : "user") : "db");
+        pf(k, r4(w((a) => { const v = vals[list.indexOf(a)].value; return v == null ? (lt[k] ?? 0) : Number(v); })), anyUser ? (merged ? "derived" : "user") : "db");
       }
       const names = list.map((a) => (a.group_name || "").trim()).filter(Boolean);
       if (names.length) for (const n of names) mapping.push({ user_name: n, canonical_name: lt.desc });
@@ -126,7 +129,7 @@
     // --- feed items -------------------------------------------------------
     out.feed_items = [];
     state.feeds.forEach((raw, idx) => {
-      const fe = D.decorate(raw, "feed", state); const fi = fe._feedItem, crop = fe._crop; if (!fi) return;
+      const fe = D.decorate(raw, "feed", state); const fi = fe._feedItem, crop = fe._crop; if (!fi) { blocked.push({ path: `feed_items.${raw.id}`, msg: "A feed refers to an item that is not in the parameter set." }); return; }
       const row = {}; const pf = (k, v, p) => set(row, k, v, p, `feed_items[${idx}].${k}`);
       const base = D.displayFeedName(fi.feed_item_name);
       let tag = "";
@@ -135,7 +138,9 @@
       pf("feed_item_code", fi.feed_item_code, "db"); pf("crop_code", fi.crop_code, "db");
       pf("feed_item_name", base + tag, tag ? "derived" : "db"); pf("crop_name", crop ? crop.crop_name : base, "db");
       const grown = fe.feed_origin === "grown";
-      pf("source_type", grown ? (fe.feed_part === "residue" ? "Residue" : "Main") : "Purchased", grown ? "derived" : "derived");
+      // Off-farm feeds keep "Main" so the package counts their (off-farm) land, water and N; only the DB placeholder crop "Purchased" compiles to Purchased.
+      const isPlaceholder = crop && /^purchased$/i.test(crop.crop_name);
+      pf("source_type", grown ? (fe.feed_part === "residue" ? "Residue" : "Main") : (isPlaceholder ? "Purchased" : "Main"), "derived");
       const plot = grown ? state.plots.find((p) => p.id === fe.feed_plot) : null;
       // land / erosion from plot
       const sl = plot ? eff("slope_class", plot, `plots[${plot.id}]`) : { value: "Flat (0-5%)", prov: "derived" };
@@ -145,7 +150,7 @@
       const lc = plot ? eff("land_cover", plot, `plots[${plot.id}]`) : { value: crop ? (T.landCoverByCrop[crop.crop_name] || T.landCoverByCategory[crop.category] || "Cereals") : "Cereals", prov: "derived" };
       const lcRow = V.landcover.find((l) => l.desc === lc.value) || V.landcover.find((l) => l.desc === "Cereals");
       pf("land_cover_desc", lcRow.desc, plot ? lc.prov : "derived"); pf("land_cover", lcRow.code, "derived"); pf("landcover_c_factor", lcRow.c, "derived");
-      pf("grassman_desc", out.grassland_management, "derived"); pf("grassman", null, "derived"); pf("grassman_change_factor", null, "derived");
+      pf("grassman_desc", out.grassland_management, "derived"); pf("grassman", "1", "derived"); pf("grassman_change_factor", 1, "derived");
       // yields & removal
       if (grown) {
         const y = eff("yield_t_dm_ha", fe, `feeds[${fe.id}]`); pf("dry_yield", y.value == null ? null : Number(y.value), y.value == null ? "blocked" : y.prov);
@@ -159,13 +164,14 @@
           pf("residue_removal", ok ? r4(Number(rf.fed) / 100) : null, ok ? "user" : "blocked"); pf("residue_burnt", ok ? r4(Number(rf.burnt || 0) / 100) : 0, ok ? "user" : "derived");
         }
         const ic = eff("intercrop_share", fe, `feeds[${fe.id}]`); const icv = Number(ic.value) || 100;
-        pf("intercrop", icv < 100 ? 1 : 0, "derived"); pf("intercrop_fraction", icv < 100 ? r4(icv / 100) : 0, "derived");
+        // package: area = A − intercrop × fraction × A, i.e. the fraction is the share taken by the OTHER crop
+        pf("intercrop", icv < 100 ? 1 : 0, "derived"); pf("intercrop_fraction", icv < 100 ? r4(1 - icv / 100) : 0, "derived");
         const mp = eff("manure_to_plot_share", fe, `feeds[${fe.id}]`); pf("fraction_as_fertilizer", r4((Number(mp.value) || 0) / 100), mp.prov);
         const area = plot ? Number(plot.plot_area_ha) || 1 : 1;
         for (const [name, key] of [["Urea", "urea"], ["NPK", "npk"], ["DAP", "dap"], ["Ammonium nitrate", "ammonium_nitrate"], ["Ammonium sulfate", "ammonium_sulfate"], ["N solutions", "n_solutions"], ["Ammonia", "ammonia"]]) {
           const fr = (fe.fert_rates || {})[name];
           if (!state.system.fertiliser || !fr || fr.value == null || fr.value === "") { pf(key, 0, "derived"); continue; }
-          const v = Number(fr.value); const rate = fr.mode === "kg_plot" ? v / area : fr.mode === "bags_plot" ? v * 50 / area : v;
+          const v = Math.max(0, Number(fr.value)); const rate = fr.mode === "kg_plot" ? v / area : fr.mode === "bags_plot" ? v * 50 / area : v;
           pf(key, r4(rate), "derived");
         }
       } else {
@@ -183,13 +189,13 @@
       pf("ecosystem_type", rice.ecosystem_type || "", fe._isRice ? (rice.ecosystem_type ? "user" : "blocked") : "derived");
       pf("organic_amendment", rice.organic_amendment || "", fe._isRice ? (rice.organic_amendment ? "user" : "blocked") : "derived");
       pf("cultivation_period", rice.cultivation_period != null ? Number(rice.cultivation_period) : 0, fe._isRice ? (rice.cultivation_period != null ? "user" : "blocked") : "derived");
-      pf("fraction_as_manure", null, "derived"); pf("n_fertilizer", null, "derived");
+      pf("fraction_as_manure", "NULL", "derived"); pf("n_fertilizer", "NULL", "derived");
       out.feed_items.push(row);
     });
 
     // --- fertilizer products used anywhere --------------------------------
     out.fertilizer = [];
-    const used = new Set(); for (const f of state.feeds) for (const [name, fr] of Object.entries(f.fert_rates || {})) if (fr && Number(fr.value) > 0) used.add(name);
+    const used = new Set(); if (state.system.fertiliser) for (const f of state.feeds) for (const [name, fr] of Object.entries(f.fert_rates || {})) if (fr && Number(fr.value) > 0) used.add(name);
     const fertCodes = { Urea: "1", NPK: "2", DAP: "3", "Ammonium nitrate": "4", "Ammonium sulfate": "5", "N solutions": "6", Ammonia: "7" };
     [...used].forEach((name, i) => {
       const pct = state.fertilizer[name] != null && state.fertilizer[name] !== "" ? Number(state.fertilizer[name]) : V.fertilizer_default_n_pct[name];
@@ -203,7 +209,7 @@
     // --- dense feed basket, merged by livetype -----------------------------
     out.feed_basket = state.seasons.map((s, si) => ({
       season_name: s.season_name || "Season",
-      feeds: state.feeds.map((f, fi) => {
+      feeds: state.feeds.filter((f) => D.feedItemOf(f.feed_item)).map((f, fi) => {
         const item = D.feedItemOf(f.feed_item);
         return {
           feed_item_code: item ? item.feed_item_code : null, crop_code: item ? item.crop_code : null,
@@ -228,7 +234,24 @@
     return { input: out, prov, assumed, blocked };
   }
 
+  const COUNTRY_REGION = {
+    "AFRICA": ["tanzania", "kenya", "uganda", "ethiopia", "rwanda", "burundi", "malawi", "zambia", "zimbabwe", "mozambique", "nigeria", "ghana", "senegal", "mali", "burkina faso", "niger", "cameroon", "south africa", "tunisia", "morocco", "algeria", "egypt", "sudan", "south sudan", "somalia", "madagascar", "botswana", "namibia", "angola", "democratic republic of the congo", "republic of the congo", "benin", "togo", "côte d'ivoire", "cote d'ivoire", "ivory coast", "liberia", "sierra leone", "guinea", "guinea-bissau", "gambia", "chad", "eritrea", "djibouti", "lesotho", "eswatini", "mauritius", "mauritania", "libya", "central african republic", "gabon", "equatorial guinea", "cape verde", "comoros", "seychelles"],
+    "LATIN AMERICA": ["ecuador", "honduras", "nicaragua", "haiti", "colombia", "peru", "bolivia", "brazil", "mexico", "guatemala", "el salvador", "costa rica", "panama", "cuba", "dominican republic", "venezuela", "argentina", "chile", "uruguay", "paraguay", "belize", "jamaica", "guyana", "suriname", "trinidad and tobago"],
+    "ASIA": ["vietnam", "viet nam", "nepal", "mongolia", "uzbekistan", "cambodia", "laos", "lao pdr", "thailand", "indonesia", "philippines", "myanmar", "china", "kazakhstan", "kyrgyzstan", "tajikistan", "turkmenistan", "malaysia", "bangladesh", "japan", "south korea", "north korea", "afghanistan", "timor-leste", "papua new guinea", "singapore", "brunei"],
+    "INDIA SUB-CONTINENT": ["india", "pakistan", "sri lanka", "bhutan", "maldives"],
+    "MIDDLE EAST": ["iran", "iraq", "syria", "jordan", "lebanon", "israel", "palestine", "saudi arabia", "yemen", "oman", "united arab emirates", "qatar", "bahrain", "kuwait", "turkey", "türkiye"],
+    "WESTERN EUROPE": ["germany", "france", "italy", "spain", "portugal", "netherlands", "belgium", "united kingdom", "ireland", "switzerland", "austria", "denmark", "sweden", "norway", "finland", "greece", "luxembourg", "iceland"],
+    "EASTERN EUROPE": ["poland", "czechia", "czech republic", "slovakia", "hungary", "romania", "bulgaria", "ukraine", "belarus", "russia", "serbia", "croatia", "bosnia and herzegovina", "slovenia", "north macedonia", "albania", "moldova", "lithuania", "latvia", "estonia", "georgia", "armenia", "azerbaijan"],
+    "NORTH AMERICA": ["united states", "usa", "canada"],
+    "OCEANIA": ["australia", "new zealand", "fiji", "samoa", "tonga", "vanuatu", "solomon islands"],
+  };
   function regionForCountry(country) {
+    if (!country) return null;
+    const c = String(country).trim().toLowerCase();
+    for (const [region, list] of Object.entries(COUNTRY_REGION)) if (list.includes(c)) return region;
+    return null;
+  }
+  function regionForCountryLegacy(country) {
     if (!country) return null;
     const c = country.toLowerCase();
     const AFR = ["tanzania", "kenya", "uganda", "ethiopia", "rwanda", "burundi", "malawi", "zambia", "zimbabwe", "mozambique", "nigeria", "ghana", "senegal", "mali", "burkina", "niger", "cameroon", "south africa", "tunisia", "morocco", "egypt", "sudan", "somalia", "madagascar", "botswana", "namibia", "angola", "congo", "benin", "togo", "ivory", "côte", "liberia", "sierra", "guinea", "gambia", "chad", "eritrea", "djibouti", "lesotho", "eswatini", "mauritius"];

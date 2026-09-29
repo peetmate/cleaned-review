@@ -1,6 +1,8 @@
 /* Tiny store: state object, path updates, subscribers, rAF-batched notify, localStorage persistence. */
 (function (ICL) {
+  const SCHEMA_VERSION = (window.ICL_SCHEMA && window.ICL_SCHEMA.version) || "0";
   const KEY = "icleaned.mockup.state.v1";
+  const PREFS_KEY = "icleaned.mockup.prefs.v1";
   const PERSIST = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation", "library", "ui", "paramSets"];
 
   function freshState() {
@@ -18,15 +20,25 @@
   function createStore() {
     let state = freshState();
     const saved = ICL.storage.get(KEY, null);
-    if (saved && saved.meta) for (const k of PERSIST) if (saved[k] !== undefined) state[k] = saved[k];
+    if (saved && saved.meta) {
+      for (const k of PERSIST) if (saved[k] !== undefined) state[k] = saved[k];
+      // merge shape changes from a newer dictionary onto persisted objects
+      const fresh = freshState();
+      state.system = Object.assign({}, fresh.system, state.system || {});
+      state.meta = Object.assign({}, fresh.meta, state.meta || {});
+      if (saved._schema !== SCHEMA_VERSION) setTimeout(() => ICL.toast && ICL.toast("The questions were updated since your last visit; saved answers were kept where they still apply."), 800);
+    }
     state.ui = Object.assign(freshState().ui, state.ui || {}); state.paramSets = state.paramSets || { copies: [] };
+    const prefs = ICL.storage.get(PREFS_KEY, null); if (prefs) Object.assign(state.fb, { session: prefs.session || state.fb.session, viewerLabel: prefs.viewerLabel || "", group: prefs.group || "" });
     const subs = new Set();
     let scheduled = false, saveT = null;
     const notify = () => {
       if (scheduled) return; scheduled = true;
-      requestAnimationFrame(() => { scheduled = false; for (const fn of subs) { try { fn(state); } catch (e) { console.error(e); } } });
+      // rAF does not fire while the page is hidden or not painted; race it with a short timeout so updates never stall
+      let done = false; const run = () => { if (done) return; done = true; scheduled = false; for (const fn of subs) { try { fn(state); } catch (e) { console.error(e); } } };
+      const t = setTimeout(run, 40); requestAnimationFrame(() => { clearTimeout(t); run(); });
     };
-    const persist = () => { clearTimeout(saveT); saveT = setTimeout(() => { const out = {}; for (const k of PERSIST) out[k] = state[k]; ICL.storage.set(KEY, out); }, 300); };
+    const persist = () => { clearTimeout(saveT); saveT = setTimeout(() => { const out = { _schema: SCHEMA_VERSION, _build: ICL.env.build.version }; for (const k of PERSIST) out[k] = state[k]; ICL.storage.set(KEY, out); ICL.storage.set(PREFS_KEY, { session: state.fb.session, viewerLabel: state.fb.viewerLabel, group: state.fb.group }); }, 300); };
     const api = {
       get: () => state,
       set(patch) { state = typeof patch === "function" ? patch(state) : Object.assign(state, patch); persist(); notify(); },
@@ -44,7 +56,7 @@
         persist(); notify();
       },
       subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
-      reset() { state = freshState(); ICL.storage.del(KEY); persist(); notify(); },
+      reset() { const fb = state.fb, route = state.route; state = freshState(); state.fb = fb; state.route = route; ICL.storage.del(KEY); persist(); notify(); },
       notify,
     };
     return api;

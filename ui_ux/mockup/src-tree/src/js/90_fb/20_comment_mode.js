@@ -40,7 +40,7 @@
       if (!text.value.trim() && !chosen.size) { status.textContent = "Add a note or pick a tag first."; return; }
       ICL.store.set((s) => { s.fb.viewerLabel = who.value.trim(); s.fb.group = grp.value.trim(); return s; });
       status.textContent = withShot ? "Capturing screen…" : "Saving…";
-      let shot = null; if (withShot) { closePanelVisualOnly(); shot = await fb.screengrab(document.getElementById("screen"), rect); }
+      let shot = null; if (withShot) { closePanelVisualOnly(); ICL.toast("Capturing the screen…", 8000); shot = await fb.screengrab(document.getElementById("screen"), rect); }
       await fb.submit(Object.assign({}, desc, { text: text.value.trim(), types: [...chosen], severity: sev.value ? Number(sev.value) : null, screenshot: shot, viewerLabel: who.value.trim() || null, group: grp.value.trim() || null }));
       closePanel(); if (rectEl) { rectEl.remove(); rectEl = null; }
     };
@@ -70,6 +70,7 @@
     const pos = (e) => { const b = screen.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return { x: p.clientX - b.left, y: p.clientY - b.top, W: b.width, H: b.height }; };
     overlay.addEventListener("pointerdown", (e) => { const p = pos(e); dragging = { x0: p.x, y0: p.y, W: p.W, H: p.H }; if (rectEl) rectEl.remove(); rectEl = h("div", { class: "fb-rect" }); screen.append(rectEl); overlay.setPointerCapture(e.pointerId); });
     overlay.addEventListener("pointermove", (e) => { if (!dragging) return; const p = pos(e); const x = Math.min(p.x, dragging.x0), y = Math.min(p.y, dragging.y0), w = Math.abs(p.x - dragging.x0), hh = Math.abs(p.y - dragging.y0); Object.assign(rectEl.style, { left: x + "px", top: y + "px", width: w + "px", height: hh + "px" }); dragging.cur = { x, y, w, h: hh }; });
+    overlay.addEventListener("pointercancel", () => { dragging = null; if (rectEl) { rectEl.remove(); rectEl = null; } });
     overlay.addEventListener("pointerup", () => { if (!dragging || !dragging.cur || dragging.cur.w < 8) { dragging = null; return; } const c = dragging.cur; const rect = { x: c.x / dragging.W * 100, y: c.y / dragging.H * 100, w: c.w / dragging.W * 100, h: c.h / dragging.H * 100 }; dragging = null; stopHighlight(true); const under = document.elementFromPoint(c.x + screen.getBoundingClientRect().left + c.w / 2, c.y + screen.getBoundingClientRect().top + c.h / 2); openPanel(under && under.closest("[data-fb]") || screen, rect); });
   }
   function stopHighlight(keepRect) { if (overlay) { overlay.remove(); overlay = null; } if (!keepRect && rectEl) { rectEl.remove(); rectEl = null; } if (mode === "highlight") { mode = "off"; document.getElementById("fab-highlight").setAttribute("aria-pressed", "false"); } }

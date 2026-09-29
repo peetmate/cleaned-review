@@ -29,8 +29,8 @@
   }
   // ---- claude db adapter -------------------------------------------------------------
   function claudeAdapter(db, user) {
-    const chains = {}; // per-doc write chain
-    const chain = (k, fn) => (chains[k] = (chains[k] || Promise.resolve()).then(fn, fn).finally(() => { if (chains[k]) delete chains[k]; }));
+    const chains = {}; // per-doc write chain (one in-flight write per document)
+    const chain = (k, fn) => { const p = (chains[k] || Promise.resolve()).then(fn, fn); chains[k] = p; p.finally(() => { if (chains[k] === p) delete chains[k]; }); return p; };
     let vid = null, canW = null;
     return {
       name: "claudeDb",
@@ -55,24 +55,43 @@
   const merge = (a, b) => { const m = new Map(); for (const d of a) m.set(d.id, d); for (const d of b) m.set(d.id, Object.assign({}, d, { source: "local" })); return [...m.values()]; };
 
   // ---- API ----------------------------------------------------------------------------------
-  const fb = { adapter: null, viewerId: null, canWrite: null, docs: [], ratings: [], votes: [], unsubs: [] };
+  const fb = { adapter: null, viewerId: null, canWrite: null, docs: [], ratings: [], votes: [], unsubs: [], local: null, remote: null };
+  const READ_ONLY_MSG = "You can view everyone's feedback, but your own comments are saved on this device only. Use Export on the Feedback screen and hand the file to a facilitator.";
+  function subscribeAll(adapter) {
+    fb.unsubs.forEach((u) => u()); fb.unsubs = [];
+    for (const c of ["feedback", "ratings", "votes"]) fb.unsubs.push(adapter.subscribe(c, (docs) => { fb[c === "feedback" ? "docs" : c] = docs; ICL.store.set((s) => { s.fb[c === "feedback" ? "docs" : c] = docs; return s; }); }, (e) => {
+      if (e && e.code === "revoked") showBanner("Access to the shared feedback store ended for this page; showing what was loaded. Reload to reconnect.");
+      else showBanner("Live updates from the shared feedback store stopped (" + (e && e.code || "unavailable") + "). Reload the page to reconnect.");
+    }));
+  }
+  // switch to reading live / writing locally after a refused shared write
+  function degradeToLocalWrites() {
+    if (!fb.remote || fb.adapter.name === "composite") return;
+    fb.adapter = compositeAdapter(fb.remote, fb.local); fb.canWrite = false;
+    ICL.store.set((s) => { s.fb.adapterName = fb.adapter.name; s.fb.canWrite = false; return s; });
+    subscribeAll(fb.adapter); showBanner(READ_ONLY_MSG);
+  }
   fb.init = async function () {
-    const state = ICL.store.get();
-    let adapter = null; const local = (() => { try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return localAdapter(); } catch { return memoryAdapter(); } })();
+    let adapter = null; fb.local = (() => { try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return localAdapter(); } catch { return memoryAdapter(); } })();
     if (ICL.env.hasClaude) {
       await ICL.env.ready;
       const { db, user } = ICL.env.caps;
-      if (db) { const remote = claudeAdapter(db, user); await remote.ready(); const cw = await remote.canWrite(); adapter = cw === false ? compositeAdapter(remote, local) : remote; fb.canWrite = cw; if (cw === false) showBanner("You can view everyone's feedback, but your own comments are saved on this device only. Use Export on the Feedback screen and hand the file to a facilitator."); }
+      if (db) { fb.remote = claudeAdapter(db, user); await fb.remote.ready(); const cw = await fb.remote.canWrite(); adapter = cw === false ? compositeAdapter(fb.remote, fb.local) : fb.remote; fb.canWrite = cw; if (cw === false) showBanner(READ_ONLY_MSG); }
     }
-    if (!adapter) { adapter = local; fb.canWrite = true; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
-    fb.adapter = adapter; fb.viewerId = await adapter.viewerId();
+    if (!adapter) { adapter = fb.local; fb.canWrite = true; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
+    fb.adapter = adapter;
+    // viewer id: the platform id when known, else this device's anonymous id (never "null")
+    fb.viewerId = (await adapter.viewerId()) || (await fb.local.viewerId());
     ICL.store.set((s) => { s.fb.adapterName = adapter.name; s.fb.viewerId = fb.viewerId; s.fb.canWrite = fb.canWrite; return s; });
-    for (const c of ["feedback", "ratings", "votes"]) fb.unsubs.push(adapter.subscribe(c, (docs) => { fb[c === "feedback" ? "docs" : c] = docs; ICL.store.set((s) => { s.fb[c === "feedback" ? "docs" : c] = docs; return s; }); }));
+    subscribeAll(adapter);
     window.addEventListener("pagehide", () => fb.unsubs.forEach((u) => u()));
   };
+  const SAFE_ID = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
+  const safeId = (s) => String(s).replace(/[^A-Za-z0-9_\-.~:@+]/g, "_").slice(0, 200);
   function showBanner(text) {
-    const main = document.getElementById("main"); if (!main || main.querySelector(".fb-banner")) return;
-    const b = ICL.h("div", { class: "fb-banner", role: "status" }, text, ICL.h("button", { type: "button", onclick: () => b.remove() }, "Dismiss"));
+    const main = document.getElementById("main"); if (!main) return;
+    const old = main.querySelector(".fb-store-banner"); if (old) old.remove();
+    const b = ICL.h("div", { class: "fb-banner fb-store-banner", role: "status" }, text, ICL.h("button", { type: "button", onclick: () => b.remove() }, "Dismiss"));
     main.prepend(b);
   }
   fb.describe = function (el) {
@@ -80,22 +99,26 @@
     return { fbId: target ? target.dataset.fb : "page", fbLabel: target ? (target.dataset.fbLabel || target.dataset.fb) : "Page", fieldId: target && target.dataset.fieldId || null, screen: state.route.screen, entityId: state.route.entity || null, wizardState: { system: state.system, variant: state.ui.variant, route: ICL.router.hashFor(state.route.screen, state.route.entity) } };
   };
   fb.submit = async function (partial) {
+    if (!fb.adapter) { ICL.toast("Still connecting to the feedback store; try again in a moment."); return null; }
     const state = ICL.store.get(); const id = "fb_" + ICL.uid("").slice(1);
     const doc = Object.assign({ v: 1, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), session: state.fb.session, viewerId: fb.viewerId, viewerLabel: state.fb.viewerLabel || null, group: state.fb.group || null, types: [], severity: null, rect: null, screenshot: null, triaged: false, appVersion: ICL.env.build.version, viewport: { w: innerWidth, h: innerHeight }, theme: document.documentElement.dataset.theme || "system", text: "" }, partial);
     // size ladder
-    let s = JSON.stringify(doc); if (s.length > 240 * 1024 && doc.screenshot) { for (const [w, q] of [[900, 0.6], [700, 0.5], [500, 0.4]]) { doc.screenshot = await ICL.fb.rescale(doc.screenshot, w, q); s = JSON.stringify(doc); if (s.length <= 240 * 1024) break; } if (s.length > 240 * 1024) { doc.screenshot = null; doc.screenshotNote = "too large"; } }
+    if (doc.text && doc.text.length > 4000) doc.text = doc.text.slice(0, 4000);
+    const bytes = (o) => new TextEncoder().encode(JSON.stringify(o)).length;
+    if (bytes(doc) > 240 * 1024 && doc.screenshot) { for (const [w, q] of [[900, 0.6], [700, 0.5], [500, 0.4]]) { doc.screenshot = await ICL.fb.rescale(doc.screenshot, w, q); if (bytes(doc) <= 240 * 1024) break; } if (bytes(doc) > 240 * 1024) { doc.screenshot = null; doc.screenshotNote = "too large"; } }
     try { await fb.adapter.set("feedback", id, doc); ICL.toast("Feedback saved" + (fb.adapter.name === "claudeDb" ? " and shared." : " on this device.")); }
-    catch (e) { console.error(e); const local = localAdapter(); await local.set("feedback", id, doc); showBanner("Saving to the shared store failed; this comment was kept on your device. Export it later."); }
+    catch (e) { console.error(e); await fb.local.set("feedback", id, doc); degradeToLocalWrites(); ICL.toast("The shared store refused the write; kept on this device."); }
     return id;
   };
-  fb.rate = async function (screen, patch) { const id = `${fb.viewerId}_${screen}`; const cur = (fb.ratings || []).find((r) => r.id === id) || { id, screen, viewerId: fb.viewerId, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, appVersion: ICL.env.build.version }; try { await fb.adapter.set("ratings", id, Object.assign({}, cur, patch, { updatedAt: new Date().toISOString() })); } catch (e) { ICL.toast("Could not save the rating here."); } };
-  fb.vote = async function (questionId, choice, screen) { const id = `${fb.viewerId}_${questionId}`; try { await fb.adapter.set("votes", id, { id, questionId, choice, screen, viewerId: fb.viewerId, session: ICL.store.get().fb.session, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); ICL.toast(`Vote recorded: ${choice}`); } catch (e) { ICL.toast("Could not save the vote here."); } };
+  fb.rate = async function (screen, patch) { if (!fb.adapter) return; const id = safeId(`${fb.viewerId}_${screen}`); const cur = (fb.ratings || []).find((r) => r.id === id) || { id, screen, viewerId: fb.viewerId, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, appVersion: ICL.env.build.version }; try { await fb.adapter.set("ratings", id, Object.assign({}, cur, patch, { updatedAt: new Date().toISOString() })); } catch (e) { ICL.toast("Could not save the rating here."); } };
+  fb.vote = async function (questionId, choice, screen) { if (!fb.adapter) return; const id = safeId(`${fb.viewerId}_${questionId}`); try { await fb.adapter.set("votes", id, { id, questionId, choice, screen, viewerId: fb.viewerId, session: ICL.store.get().fb.session, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); ICL.toast(`Vote recorded: ${choice}`); } catch (e) { ICL.toast("Could not save the vote here."); } };
   fb.triage = (id, val) => fb.adapter.update("feedback", id, { triaged: !!val, triagedAt: new Date().toISOString(), triagedBy: fb.viewerId });
   fb.remove = (id) => fb.adapter.remove("feedback", id);
   fb.exportAll = async function (format) {
     const dump = await fb.adapter.dump(); const state = ICL.store.get();
     let data, filename;
-    if (format === "csv") { const rows = (dump.feedback || []).map((d) => [d.id, d.createdAt, d.session, d.screen, d.fbId, d.fbLabel, d.fieldId || "", (d.types || []).join(";"), d.severity ?? "", d.group || "", d.viewerLabel || "", d.triaged ? 1 : 0, (d.text || "").replace(/\s+/g, " "), d.rect ? JSON.stringify(d.rect) : "", d.screenshot ? "yes" : "no", d.appVersion]); const head = ["id", "createdAt", "session", "screen", "element", "elementLabel", "fieldId", "types", "severity", "group", "participant", "triaged", "text", "rect", "screenshot", "appVersion"]; data = [head, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n"); filename = `icleaned-feedback-${state.fb.session}.csv`; }
+    const csvCell = (c) => { let v = String(c ?? ""); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return `"${v.replace(/"/g, '""')}"`; };
+    if (format === "csv") { const rows = (dump.feedback || []).map((d) => [d.id, d.createdAt, d.session, d.screen, d.fbId, d.fbLabel, d.fieldId || "", (d.types || []).join(";"), d.severity ?? "", d.group || "", d.viewerLabel || "", d.triaged ? 1 : 0, (d.text || "").replace(/\s+/g, " "), d.rect ? JSON.stringify(d.rect) : "", d.screenshot ? "yes" : "no", d.appVersion]); const head = ["id", "createdAt", "session", "screen", "element", "elementLabel", "fieldId", "types", "severity", "group", "participant", "triaged", "text", "rect", "screenshot", "appVersion"]; data = [head, ...rows].map((r) => r.map(csvCell).join(",")).join("\n"); filename = `icleaned-feedback-${state.fb.session}.csv`; }
     else { data = JSON.stringify(Object.assign({ exportedAt: new Date().toISOString(), appVersion: ICL.env.build.version, adapter: fb.adapter.name }, dump), null, 1); filename = `icleaned-feedback-${state.fb.session}.json`; }
     const dl = ICL.env.caps.downloads;
     if (dl) { try { await dl.save({ filename, data }); ICL.toast("Saved."); return; } catch (e) { if (e && e.code === "declined") return; } }
@@ -106,8 +129,19 @@
   };
   fb.importJson = async function (text) {
     let obj; try { obj = JSON.parse(text); } catch { ICL.toast("That is not valid JSON."); return; }
-    let n = 0; for (const c of COLLS) for (const d of obj[c] || []) if (d && d.id) { await fb.adapter.set(c, d.id, Object.assign({}, d, { source: "import" })); n++; }
-    ICL.toast(`Imported ${n} record${n === 1 ? "" : "s"}.`);
+    const ALLOWED = { feedback: ["id", "v", "createdAt", "updatedAt", "session", "viewerId", "viewerLabel", "group", "screen", "fbId", "fbLabel", "fieldId", "entityId", "wizardState", "text", "types", "severity", "rect", "screenshot", "screenshotNote", "triaged", "triagedAt", "triagedBy", "appVersion", "viewport", "theme"], ratings: ["id", "screen", "viewerId", "clarity", "knowWhat", "session", "createdAt", "updatedAt", "appVersion"], votes: ["id", "questionId", "choice", "screen", "viewerId", "session", "createdAt", "updatedAt"] };
+    let n = 0, failed = 0; const queue = [];
+    for (const c of Object.keys(ALLOWED)) for (const d of Array.isArray(obj[c]) ? obj[c] : []) {
+      if (!d || typeof d !== "object" || typeof d.id !== "string" || !SAFE_ID.test(d.id)) { failed++; continue; }
+      const clean = {}; for (const k of ALLOWED[c]) if (k in d) clean[k] = d[k];
+      if (typeof clean.screenshot === "string" && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(clean.screenshot)) delete clean.screenshot;
+      if (typeof clean.text === "string") clean.text = clean.text.slice(0, 4000);
+      queue.push([c, d.id, clean]);
+    }
+    // at most 4 writes in flight
+    let i = 0; const worker = async () => { while (i < queue.length) { const [c, id, clean] = queue[i++]; try { await fb.adapter.set(c, id, Object.assign(clean, { source: "import" })); n++; } catch (e) { failed++; } } };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    ICL.toast(`Imported ${n} record${n === 1 ? "" : "s"}${failed ? `, ${failed} skipped` : ""}.`);
   };
   fb.flashField = function (fieldId, entityId) {
     const sel = fieldId ? `[data-fb="field:${fieldId}${entityId ? ":" + entityId : ""}"]` : null;
@@ -116,8 +150,10 @@
   };
   fb.focus = function (doc) {
     ICL.store.set((s) => { if (doc.wizardState) { s.ui.variant = Object.assign({}, s.ui.variant, doc.wizardState.variant || {}); s.fb.focusSnapshot = { fbId: doc.fbId, label: doc.fbLabel }; } return s; });
-    location.hash = doc.wizardState && doc.wizardState.route ? doc.wizardState.route : ICL.router.hashFor(doc.screen, doc.entityId);
-    setTimeout(() => { const el = document.querySelector(`[data-fb="${doc.fbId}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("fb-flash"); setTimeout(() => el.classList.remove("fb-flash"), 1600); } else ICL.toast("That element is not visible with the current answers."); if (doc.rect) ICL.fb.showRect(doc.rect, 1); }, 400);
+    const target = doc.wizardState && doc.wizardState.route ? doc.wizardState.route : ICL.router.hashFor(doc.screen, doc.entityId);
+    ICL.store.set((s) => { if (s.fb.focusSnapshot) s.fb.focusSnapshot.route = target; return s; });
+    location.hash = target;
+    setTimeout(() => { const el = document.querySelector(`[data-fb="${String(doc.fbId || "").replace(/["\\]/g, "")}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("fb-flash"); setTimeout(() => el.classList.remove("fb-flash"), 1600); } else ICL.toast("That element is not visible with the current answers."); if (doc.rect) ICL.fb.showRect(doc.rect, 1); }, 400);
   };
   ICL.fb = fb;
 })(window.ICL);

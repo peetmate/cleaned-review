@@ -27,8 +27,22 @@
     const dec = D.decorate(entity, entityType, state);
     return {
       state, entity: dec, entityId: entity.id, collection, errors: val.errors, warnings: val.warnings,
-      onChange: (fid, v, prov) => ICL.store.update(`${collection}[${entity.id}].${fid}`, v, prov === undefined ? "user" : prov),
+      onChange: (fid, v, prov) => {
+        ICL.store.update(`${collection}[${entity.id}].${fid}`, v, prov === undefined ? "user" : prov);
+        // a herd's time pattern re-derives the day for groups whose hours were not typed by hand (F-15)
+        if (collection === "herds" && fid === "herd_pattern") {
+          let n = 0; ICL.store.set((s) => { for (const a of s.animals) if (a.herd_ref === entity.id && !["hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm"].some((k) => s.provenance[`animals[${a.id}].${k}`] === "user")) { for (const k of ["hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm"]) { a[k] = null; delete s.provenance[`animals[${a.id}].${k}`]; } n++; } return s; });
+          if (n) ICL.toast(`Updated the daily hours of ${n} group${n === 1 ? "" : "s"} in this herd (groups with hand-entered hours were left alone).`);
+        }
+      },
     };
+  }
+  const NOUN = { plots: null, seasons: "season", herds: "herd", animals: "animal group", feeds: "feed" };
+  const entityNoun = (collection) => NOUN[collection] || (collection === "plots" ? D.words().plot : collection);
+  /** Collapsed box holding the design-alternative widgets for a screen (F-11). */
+  function variantsBox(ids, state) {
+    const boxes = ids.map((id) => variantVote(id, state)).filter(Boolean); if (!boxes.length) return null;
+    return h("details", { class: "variants-box", dataset: { fb: "variants:" + ids.join("+"), fbLabel: "Design alternatives" } }, h("summary", null, `Design alternatives on this screen (${boxes.length}) · show and vote`), ...boxes);
   }
   function farmCtx(state, val, target = "farm") {
     return { state, entity: state[target], entityId: null, collection: null, errors: val.errors, warnings: val.warnings, onChange: (fid, v, prov) => ICL.store.update(`${target}.${fid}`, v, prov === undefined ? "user" : prov) };
@@ -39,7 +53,10 @@
     return id;
   }
   function removeEntity(collection, id) {
-    ICL.store.set((s) => { s[collection] = s[collection].filter((e) => e.id !== id); if (collection === "feeds" || collection === "animals" || collection === "seasons") for (const sid of Object.keys(s.allocation)) { if (collection === "seasons" && sid === id) delete s.allocation[sid]; else for (const aid of Object.keys(s.allocation[sid] || {})) { if (collection === "animals" && aid === id) delete s.allocation[sid][aid]; else if (collection === "feeds") delete s.allocation[sid][aid][id]; } } return s; });
+    ICL.store.set((s) => { s[collection] = s[collection].filter((e) => e.id !== id);
+      if (collection === "plots") { for (const f of s.feeds) if (f.feed_plot === id) f.feed_plot = null; for (const hd of s.herds) if (Array.isArray(hd.herd_plots)) hd.herd_plots = hd.herd_plots.filter((p) => p !== id); }
+      if (collection === "herds") { for (const a of s.animals) if (a.herd_ref === id) a.herd_ref = null; }
+      if (collection === "feeds" || collection === "animals" || collection === "seasons") for (const sid of Object.keys(s.allocation)) { if (collection === "seasons" && sid === id) delete s.allocation[sid]; else for (const aid of Object.keys(s.allocation[sid] || {})) { if (collection === "animals" && aid === id) delete s.allocation[sid][aid]; else if (collection === "feeds") delete s.allocation[sid][aid][id]; } } return s; });
   }
   function confirmButton(label, onConfirm, cls = "btn danger") {
     // two-step inline confirmation (no confirm() in the artifact viewer)
@@ -52,5 +69,5 @@
     if (!items.length) return null;
     return h("ul", { class: "alert-list" }, ...items.map((e) => h("li", null, h("span", { class: "msg " + cls }, e.msg), e.screen ? h("a", { href: ICL.router.hashFor(e.screen, e.entityId && e.entityId !== "NPK" ? e.entityId : null), onclick: () => setTimeout(() => ICL.fb.flashField(e.fieldId, e.entityId), 250) }, "Go to field →") : null)));
   }
-  ICL.common = { screenHead, variantVote, entityCtx, farmCtx, addEntity, removeEntity, confirmButton, errorList };
+  ICL.common = { screenHead, variantVote, variantsBox, entityNoun, entityCtx, farmCtx, addEntity, removeEntity, confirmButton, errorList };
 })(window.ICL);

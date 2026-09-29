@@ -5,9 +5,9 @@
   // Parameter-set copies: {value,label,base,changes:{table:{rowKey:{col:{from,to,at}}}}}
   const TABLE_KEY = { livetype: "code", feeditems: "feed_item_code", crops: "crop_code", soil: "desc", slope: "code", landcover: "code" };
   let memo = { sig: null, vocab: null };
-  function activeCopy() { const st = ICL.store && ICL.store.get(); if (!st) return null; return (st.paramSets && st.paramSets.copies || []).find((c) => c.value === st.meta.param_set) || null; }
-  function V() {
-    const copy = activeCopy(); const raw = RAW();
+  function activeCopy(state) { const st = state || (ICL.store && ICL.store.get()); if (!st) return null; return (st.paramSets && st.paramSets.copies || []).find((c) => c.value === st.meta.param_set) || null; }
+  function V(state) {
+    const copy = activeCopy(state); const raw = RAW();
     if (!copy || !copy.changes || !Object.keys(copy.changes).length) return raw;
     const sig = copy.value + JSON.stringify(copy.changes);
     if (memo.sig === sig) return memo.vocab;
@@ -46,7 +46,7 @@
       e._milking = !!(lt && T().milkingGroups.includes(lt.desc));
       const pat = (state.herds.find((h) => h.id === e.herd_ref) || {}).herd_pattern;
       e._pattern = pat;
-      for (const k of ["hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm"]) if (e[k] == null) e[k] = defaultFor(field(k), e, state);
+      for (const k of ["hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm"]) if (e[k] == null) { const d = defaultFor(field(k), e, state); e[k] = d ? d.value : null; e._hoursDefaulted = true; }
     }
     if (entityType === "feed") {
       const fi = feedItemOf(e.feed_item);
@@ -67,7 +67,7 @@
     if (ds.startsWith("db:livetype.")) {
       const lt = entity && livetypeOf(entity.livetype); const k = ds.split(".")[1];
       if (lt) {
-        if (k === "adult_weight") { const adultDesc = T().adultOf[lt.desc]; const adult = adultDesc ? V().livetype.find((l) => l.desc === adultDesc) : null; return { value: adult ? adult.body_weight : lt.adult_weight || lt.body_weight, source: "db" }; }
+        if (k === "adult_weight") { if (lt.adult_weight > 0) return { value: lt.adult_weight, source: "db" }; const adultDesc = T().adultOf[lt.desc]; const adult = adultDesc ? V(state).livetype.find((l) => l.desc === adultDesc) : null; return { value: adult ? adult.body_weight : lt.body_weight, source: "db" }; }
         return lt[k] != null ? { value: lt[k], source: "db" } : null;
       }
       return null;
@@ -126,7 +126,7 @@
     if (f.options) return f.options;
     const src = f.options_source || "";
     if (src === "vocab.region") return V().region.map((r) => ({ value: r, label: r }));
-    if (src === "vocab.landcover") return V().landcover.map((l) => ({ value: l.desc, label: l.desc }));
+    if (src === "vocab.landcover") return V().landcover.map((l) => ({ value: l.desc, label: (T().landcoverLabels || {})[l.desc] || l.desc, definition: (T().landcoverLabels || {})[l.desc] ? `Model class: ${l.desc}` : undefined }));
     if (src === "herdPatterns") return S().herdPatterns;
     if (src === "paramSets") return T().paramSets.concat(((state.paramSets && state.paramSets.copies) || []).map((c) => ({ value: c.value, label: c.label + " · my copy" + (changeCount(c) ? ` (${changeCount(c)} change${changeCount(c) === 1 ? "" : "s"})` : "") })));
     if (src === "field:soil_description") return [{ value: "", label: "Same as the farm" }].concat(field("soil_description").options);
@@ -137,6 +137,6 @@
 
   function words() { const st = ICL.store && ICL.store.get(); const sc = (st && st.system && st.system.scale) || "farm"; return S().scaleWords[sc] || S().scaleWords.farm; }
   const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-  function t(str) { if (typeof str !== "string" || str.indexOf("{") === -1) return str; const w = words(); return str.replace(/\{(Farm|farm|Plot|plot|onfarm|offfarm|location|numbers)\}/g, (_, k) => { const lk = k.toLowerCase(); const v = w[lk] || lk; return k[0] === k[0].toUpperCase() && lk !== "onfarm" && lk !== "offfarm" && lk !== "location" && lk !== "numbers" ? cap(v) : v; }); }
+  function t(str) { if (typeof str !== "string" || str.indexOf("{") === -1) return str; const w = words(); return str.replace(/\{(Farm|farm|Plot|plot|onfarm|offfarm|location|numbers|about)\}/g, (_, k) => { const lk = k.toLowerCase(); const v = w[lk] || lk; return k[0] === k[0].toUpperCase() && !["onfarm", "offfarm", "location", "numbers", "about"].includes(lk) ? cap(v) : v; }); }
   ICL.t = t; ICL.dict = { t, words, sections, section, field, fieldsFor, tables: T, vocab: V, rawVocab: RAW, activeCopy, changeCount, TABLE_KEY, livetypeOf, feedItemOf, cropOf, livetypeLabel, displayFeedName, decorate, defaultFor, effective, options };
 })(window.ICL);

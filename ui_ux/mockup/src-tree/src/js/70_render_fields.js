@@ -12,9 +12,11 @@
     const chip = h("button", { type: "button", class: "chip c-" + cls + " chip-menu", "aria-haspopup": "menu", "aria-expanded": "false", title: (f.default_source ? "Source: " + f.default_source + ". " : "") + "How is this value set?" }, (cls === "db" ? "🗄 " : prov === "user" ? "✎ " : prov === "default" ? "≈ " : "○ ") + label, h("span", { "aria-hidden": "true" }, " ▾"));
     const menu = h("div", { class: "prov-menu", role: "menu", hidden: true });
     const item = (txt, fn, note) => h("button", { type: "button", role: "menuitem", onclick: () => { menu.hidden = true; chip.setAttribute("aria-expanded", "false"); fn(); } }, h("span", null, txt), note ? h("small", null, note) : null);
-    const focusInput = () => { const inp = wrap.closest(".field") && wrap.closest(".field").querySelector("input, select, textarea"); if (inp) { inp.focus(); inp.select && inp.select(); } };
+    const focusInput = () => { const box = wrap.closest(".field, fieldset") || wrap.parentElement; const inp = box && box.querySelector("input:not([type=radio]):not([type=checkbox]), select, textarea, input"); if (inp) { inp.focus(); inp.select && inp.select(); } };
     if (prov !== "user") menu.append(item("Enter my own value", focusInput, "for this scenario only"));
+    if (opts && opts.onKeep) menu.append(item("Looks right — keep it", opts.onKeep, "confirms the value as yours"));
     if (prov === "user" && onReset && (f.default !== undefined || f.default_source)) menu.append(item(fromDb ? "Use the value from the parameter set" : f.default_source === "map" ? "Use the value from maps" : "Use the default", onReset, "removes your override"));
+    if (prov === "user" && onReset && !(f.default !== undefined || f.default_source)) menu.append(item("Clear the value", onReset, "leave it blank"));
     if (fromDb) menu.append(item("Change it in the parameter set", () => { ICL.store.update("ui.paramTab", PARAM_TAB[f.entity] || "Animal types"); ICL.router.go("parameters"); }, "affects every scenario that uses it"));
     menu.append(h("div", { class: "prov-legend" }, h("span", { class: "chip c-user" }, "✎ you entered"), h("span", { class: "chip c-db" }, "🗄 from database"), h("span", { class: "chip c-default" }, "≈ assumed / maps"), h("span", { class: "chip c-fixed" }, "🔒 fixed")));
     chip.addEventListener("click", () => { const open = menu.hidden; document.querySelectorAll(".prov-menu").forEach((m) => (m.hidden = true)); menu.hidden = !open; chip.setAttribute("aria-expanded", String(open)); });
@@ -53,7 +55,7 @@
     wrap.append(labelRow);
     if (f.definition || f.help) wrap.append(h("div", { id: popId, class: "help-pop", hidden: true }, f.definition ? h("div", null, f.definition) : null, f.help ? h("div", { class: "small" }, f.help) : null));
     if (f.technical) wrap.append(h("div", { class: "tech" }, "Technical name: " + f.technical));
-    const control = h("div", { class: "control" });
+    const control = h("div", { class: "control" }); let controlAppended = false;
     const setVal = (v, prov = "user") => onChange(f.id, v, prov);
     const reset = () => setVal(null, null);
     const numberInput = (attrs) => {
@@ -81,7 +83,8 @@
           for (const o of opts) { const r = h("input", { type: "radio", name: inputId, value: String(o.value) }); r.checked = eff.value === o.value; r.addEventListener("change", () => setVal(o.value)); g.append(h("label", { class: "radio" }, r, h("span", null, ICL.t(o.label), o.definition ? h("span", { class: "def" }, ICL.t(o.definition)) : null))); }
           control.append(g);
         } else {
-          const sel = h("select", { id: inputId, disabled: f.type === "derived" }); sel.append(h("option", { value: "" }, f.type === "derived" ? (eff.value || "—") : "Choose…"));
+          const derivedVal = f.type === "derived" && f.id === "region" ? (ICL.regionForCountry((entity.location_point || {}).country) || null) : eff.value;
+          const sel = h("select", { id: inputId, disabled: f.type === "derived" }); sel.append(h("option", { value: "" }, f.type === "derived" ? (derivedVal ? derivedVal + " — calculated from the country" : "— set when a country is chosen") : "Choose…"));
           for (const o of opts) { const op = h("option", { value: String(o.value) }, o.label); if (String(eff.value) === String(o.value)) op.selected = true; sel.append(op); }
           sel.addEventListener("change", () => setVal(sel.value === "" ? null : (opts.find((o) => String(o.value) === sel.value) || {}).value ?? sel.value, sel.value === "" ? null : "user"));
           control.append(sel);
@@ -115,7 +118,7 @@
       case "manure": {
         const cur = eff.value || f.default; const S = window.ICL_SCHEMA; const g = h("div", { class: "radios" });
         for (const o of S.manureOptions) { const r = h("input", { type: "radio", name: inputId, value: o.value }); r.checked = cur.handling === o.value; r.addEventListener("change", () => setVal(Object.assign({}, cur, { handling: o.value, followups: {} }))); g.append(h("label", { class: "radio" }, r, h("span", null, o.label, h("span", { class: "def" }, o.definition)))); }
-        control.append(g);
+        control.append(g); wrap.append(control); controlAppended = true;
         const opt = S.manureOptions.find((o) => o.value === cur.handling);
         if (opt && opt.followups) for (const fu of opt.followups) {
           const cv = (cur.followups || {})[fu.id];
@@ -155,9 +158,9 @@
       case "location": break;
       default: control.append(h("span", { class: "muted" }, `[${f.type}]`));
     }
-    if (control.childNodes.length) wrap.append(control);
+    if (control.childNodes.length && !controlAppended) wrap.append(control);
     if (!["manure", "rice", "fert_rates", "triple_pct", "quantity_n", "text", "month_set", "livetype", "feed", "location"].includes(f.type) || (f.type === "month_set" && f.default_source)) {
-      if (!(f.type === "text")) wrap.append(provChip(eff.prov, f, reset));
+      if (!(f.type === "text")) wrap.append(provChip(eff.prov, f, reset, { onKeep: eff.prov === "default" && eff.value != null ? () => setVal(eff.value, "user") : null, hasDefault: !!(f.default !== undefined || f.default_source) }));
     }
     if (err) { msgSlot.textContent = err.msg; msgSlot.className = "msg err"; } else if (warn) { msgSlot.textContent = warn.msg; msgSlot.className = "msg warn"; }
     wrap.append(msgSlot);

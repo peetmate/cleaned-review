@@ -11,7 +11,7 @@
     },
     {
       "id": "about",
-      "title": "About this {farm}",
+      "title": "About this {about}",
       "short": "About",
       "purpose": "A few questions so we only ask what applies to this {farm}.",
       "order": 1,
@@ -98,7 +98,7 @@
       "id": "inputs",
       "title": "Manure & inputs bought in",
       "short": "Inputs",
-      "purpose": "Manure, compost or bedding brought onto the {farm} adds nitrogen to your fields.",
+      "purpose": "Manure, compost or bedding brought in from outside adds nitrogen to the land.",
       "order": 10,
       "wizard": true,
       "visible_if": {
@@ -116,9 +116,9 @@
     },
     {
       "id": "losses",
-      "title": "Losses after the {farm} gate",
+      "title": "Losses after the farm gate",
       "short": "Losses",
-      "purpose": "Optional: milk and meat lost between the {farm} and the consumer.",
+      "purpose": "Optional: milk and meat lost between the producer and the consumer.",
       "order": 12,
       "wizard": true,
       "optional": true
@@ -555,6 +555,28 @@
       "definition": null
     },
     {
+      "id": "farms_represented",
+      "section": "location",
+      "entity": "farm",
+      "group": "Where",
+      "label": "How many farms does this scenario represent?",
+      "unit": "farms",
+      "definition": "Enter the herd and land as totals across the group, or as one typical farm and give the number it stands for.",
+      "type": "integer",
+      "min": 1,
+      "max": 10000000,
+      "visible_if": {
+        "path": "system.scale",
+        "eq": "group"
+      },
+      "required_if": {
+        "path": "system.scale",
+        "eq": "group"
+      },
+      "na_policy": "block",
+      "package_field": "_meta.farms_represented"
+    },
+    {
       "id": "region",
       "section": "location",
       "entity": "farm",
@@ -881,15 +903,15 @@
       "advanced": true,
       "label": "Soil depth",
       "unit": "m",
-      "definition": "Depth to rock or hard layer.",
+      "definition": "Depth of soil counted for carbon stock (IPCC default 0.3 m).",
       "type": "number",
       "min": 0.2,
       "max": 3,
       "typical": [
-        0.5,
-        1.5
+        0.2,
+        1
       ],
-      "default": 1,
+      "default": 0.3,
       "default_source": "assumed",
       "required_if": {
         "path": "system.growsFeed",
@@ -920,7 +942,7 @@
       "help": "1 acre ≈ 0.4 ha. Used to weight soil and practice when plots differ.",
       "type": "number",
       "min": 0.01,
-      "max": 10000,
+      "max": 1000000000,
       "typical": [
         0.2,
         5
@@ -1327,7 +1349,7 @@
       "definition": "Average number present during the year.",
       "type": "integer",
       "min": 1,
-      "max": 10000,
+      "max": 1000000000,
       "typical": [
         1,
         50
@@ -2100,7 +2122,7 @@
       "label": "Residue produced",
       "unit": "t dry matter per ha per year",
       "type": "number",
-      "min": 0,
+      "min": 0.1,
       "max": 60,
       "default_source": "db:crop.residue_dry_yield",
       "visible_if": {
@@ -2216,7 +2238,7 @@
       "advanced": true,
       "label": "Share of the {plot} this crop occupies",
       "unit": "%",
-      "definition": "Only if another crop grows in the same plot at the same time.",
+      "definition": "Only if another crop grows in the same plot at the same time. The model gets the share taken by the other crop (100 minus this).",
       "type": "percent",
       "min": 1,
       "max": 100,
@@ -2325,6 +2347,10 @@
           {
             "path": "entity._isRice",
             "eq": true
+          },
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
           }
         ]
       },
@@ -2336,7 +2362,23 @@
         "feed_items[].cultivation_period"
       ],
       "definition": null,
-      "help": null
+      "help": null,
+      "required_if": {
+        "all": [
+          {
+            "path": "system.rice",
+            "eq": true
+          },
+          {
+            "path": "entity._isRice",
+            "eq": true
+          },
+          {
+            "path": "entity.feed_origin",
+            "eq": "grown"
+          }
+        ]
+      }
     },
     {
       "id": "dm_content",
@@ -2945,7 +2987,70 @@
         "owner": "iCLEANED team",
         "readonly": true
       }
-    ]
+    ],
+    "feedSynonyms": {
+      "1": [
+        "Banana leaves and pseudostem"
+      ],
+      "2": [
+        "Brachiaria",
+        "Mulato",
+        "signal grass"
+      ],
+      "3": [
+        "Dairy meal",
+        "concentrate",
+        "commercial feed"
+      ],
+      "4": [
+        "Desmodium",
+        "greenleaf"
+      ],
+      "5": [
+        "Groundnut haulms",
+        "peanut residue"
+      ],
+      "6": [
+        "Guatemala grass"
+      ],
+      "7": [
+        "Lablab",
+        "dolichos bean"
+      ],
+      "8": [
+        "Maize stover",
+        "maize stalks"
+      ],
+      "9": [
+        "Natural pasture",
+        "natural grazing",
+        "native grass"
+      ],
+      "10": [
+        "Napier grass",
+        "elephant grass",
+        "Pennisetum"
+      ],
+      "11": [
+        "Rhodes grass"
+      ]
+    },
+    "landcoverLabels": {
+      "Badlands hard": "Bare, hard, eroded land",
+      "Badlands soft": "Bare, soft, eroded land",
+      "Fallow plouged": "Ploughed fallow (bare soil)",
+      "Fallow hard": "Fallow, hard crust",
+      "Continuous fallow": "Continuous bare fallow",
+      "Ethiopian teff": "Teff",
+      "Dense grass": "Dense grass or fodder",
+      "Degraded grass": "Sparse or degraded grass",
+      "Dense forest": "Dense trees or forest",
+      "Other forest": "Open trees or woodland",
+      "Pulses": "Beans, pulses, legumes",
+      "Cereals": "Small-grain cereals",
+      "Maize": "Maize",
+      "Sorghum": "Sorghum"
+    }
   },
   "scaleWords": {
     "farm": {
@@ -2954,7 +3059,8 @@
       "onfarm": "on the farm",
       "offfarm": "off the farm (communal land)",
       "location": "Farm location",
-      "numbers": "How many animals in this group?"
+      "numbers": "How many animals in this group?",
+      "about": "farm"
     },
     "group": {
       "farm": "group of farms",
@@ -2962,7 +3068,8 @@
       "onfarm": "on the farms",
       "offfarm": "on communal land",
       "location": "Where the farms are",
-      "numbers": "How many animals in this group, across all the farms?"
+      "numbers": "How many animals in this group, across all the farms?",
+      "about": "group of farms"
     },
     "region": {
       "farm": "region",
@@ -2970,7 +3077,8 @@
       "onfarm": "on private land",
       "offfarm": "on communal or open land",
       "location": "Representative location in the region",
-      "numbers": "How many animals in this group in the region?"
+      "numbers": "How many animals in this group in the region?",
+      "about": "region"
     },
     "national": {
       "farm": "country",
@@ -2978,7 +3086,8 @@
       "onfarm": "on private land",
       "offfarm": "on communal or open land",
       "location": "Representative location for the herd",
-      "numbers": "How many animals in this group in the national herd?"
+      "numbers": "How many animals in this group in the national herd?",
+      "about": "national herd"
     }
   }
 }

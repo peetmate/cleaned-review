@@ -6,7 +6,7 @@ A redesigned data-entry flow for iCLEANED, built to be tested in the user worksh
 
 **Reducing duplication.** Reuse before rebuilding: controlled vocabularies and IPCC constants are extracted from the package JSON at build time (`tools/extract_vocab.mjs`), user-named groups follow CLEANED-flexible's mapping format, screen patterns come from the benchmarked tools (`../04_design_benchmarks.md`), and each fact is asked once (plot attributes live on the plot, not on every feed; herd time patterns live on the herd, not on every group). It compiles plain-language answers into the JSON the `cleaned` R package reads, and captures feedback (pinned comments, highlights, screengrabs, ratings, A/B votes) inside the page.
 
-Design rationale: `../01_uiux_review.md` (section "Redesign directions") and the approved plan.
+Design rationale: `../01_uiux_review.md` (section "Redesign directions") and the approved plan. Adversarial review of this mockup and the fixes made: `../05_mockup_review.md`.
 
 ## Layout
 

@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
 <div id="app" class="app" data-theme-root>
+  <a class="skip" href="#screen">Skip to content</a>
   <header class="topbar" role="banner">
     <a class="brand" href="#home" aria-label="iCLEANED home">
       <span class="brand-mark" aria-hidden="true"></span>
@@ -30,7 +31,7 @@
     </aside>
 
     <main class="main" id="main">
-      <div class="screen-container" id="screen" tabindex="-1" aria-live="polite"></div>
+      <div class="screen-container" id="screen" tabindex="-1"></div>
       <div class="wizard-bar" id="wizard-bar"></div>
       <details class="rating-strip" id="rating-strip" data-html2canvas-ignore>
         <summary>Rate this screen</summary>
@@ -42,7 +43,7 @@
       <div class="preview-head">
         <strong>What the model receives</strong>
         <span class="legend"><i class="prov prov-user"></i>you <i class="prov prov-default"></i>assumed <i class="prov prov-db"></i>database <i class="prov prov-derived"></i>calculated</span>
-        <div class="preview-actions"><button type="button" class="btn-sm" id="btn-copy-json">Copy</button><button type="button" class="btn-sm" id="btn-download-json">Download</button></div>
+        <div class="preview-actions"><button type="button" class="btn-sm" id="btn-copy-json">Copy</button><button type="button" class="btn-sm" id="btn-download-json">Download</button><button type="button" class="btn-sm preview-close" id="btn-preview-close" aria-label="Close the model input panel">✕ Close</button></div>
       </div>
       <pre class="preview-json" id="preview-json" aria-label="Compiled input"></pre>
     </aside>

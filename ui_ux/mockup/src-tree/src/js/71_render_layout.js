@@ -12,13 +12,14 @@
     if (sec.entity) { const list = state[sectionId] || []; if (!list.length) return "none"; }
     if (sectionId === "check") return val.errors.length ? "block" : "done";
     if (sectionId === "results" || sectionId === "home" || sectionId === "parameters") return "opt";
+    if (sectionId === "fertiliser") return Object.values(state.fertilizer || {}).some((v) => v != null && v !== "") ? "done" : "none";
     // touched?
     const prefix = sec.entity ? sectionId + "[" : sectionId === "location" || sectionId === "inputs" || sectionId === "losses" ? "farm." : sectionId;
     const touched = Object.keys(state.provenance).some((p) => p.startsWith(prefix)) || (sec.entity && (state[sectionId] || []).length) || sectionId === "about";
     return touched ? "done" : "none";
   }
-  const statusIcon = (s) => h("span", { class: "status s-" + s, "aria-hidden": "true" }, s === "done" ? "✓" : s === "block" ? "!" : "");
-  const statusText = { none: "not started", partial: "in progress", done: "complete", block: "needs attention", opt: "optional", off: "not needed for this farm" };
+  const statusText = { none: "not started", partial: "in progress", done: "complete", block: "needs attention", opt: "optional", off: "not needed for this enterprise" };
+  const statusIcon = (s) => h("span", null, h("span", { class: "status s-" + s, "aria-hidden": "true" }, s === "done" ? "✓" : s === "block" ? "!" : ""), h("span", { class: "vh" }, statusText[s] + ": "));
 
   function entityLabel(sectionId, e, state) {
     if (sectionId === "plots") return e.plot_name || "New plot";

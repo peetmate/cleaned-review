@@ -3,6 +3,8 @@
   const { h } = ICL; const D = ICL.dict, C = ICL.cond; const { screenHead } = ICL.common;
   ICL.screens.about = function (root, { state }) {
     root.append(screenHead(D.section("about")));
+    const nameField = ICL.fields.renderField(D.field("scenario_name"), { state, entity: state.meta, entityId: null, collection: null, errors: [], warnings: [], onChange: (fid, v) => ICL.store.set((s) => { s.meta.scenario_name = v; const lib = s.library.scenarios.find((x) => x.id === s.meta.id); if (lib) lib.name = v; return s; }) });
+    root.append(h("div", { class: "card", dataset: { fb: "field:scenario_name", fbLabel: "Scenario name" } }, nameField, h("div", { class: "small" }, "Defaults from: ", h("a", { href: "#parameters" }, state.meta.param_set || "choose a parameter set"))));
     const qs = window.ICL_SCHEMA.systemQuestions;
     const ctx = { system: state.system, farm: state.farm, ui: state.ui };
     for (const q of qs) {
@@ -25,7 +27,8 @@
       }
       root.append(wrap);
     }
-    const hidden = D.sections().filter((s) => s.wizard && !C.sectionVisible(s, state)).map((s) => s.title);
-    root.append(h("div", { class: "callout" }, hidden.length ? `Based on these answers we will skip: ${hidden.join(", ")}.` : "All steps apply to this farm.", " You can change any answer later from the sidebar."));
+    const unanswered = qs.filter((q) => C.visible(q, ctx) && (state.system[q.id] == null || (Array.isArray(state.system[q.id]) && !state.system[q.id].length)));
+    const hidden = D.sections().filter((s) => s.wizard && !C.sectionVisible(s, state)).map((s) => ICL.t(s.title));
+    root.append(h("div", { class: "callout" }, unanswered.length ? `Answer the ${unanswered.length} remaining question${unanswered.length > 1 ? "s" : ""} above to see which steps apply.` : hidden.length ? `Based on these answers we will skip: ${hidden.join(", ")}.` : ICL.t("All steps apply to this {farm}."), " You can change any answer later from the sidebar."));
   };
 })(window.ICL);

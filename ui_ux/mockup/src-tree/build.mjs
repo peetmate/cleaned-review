@@ -53,12 +53,17 @@ function validateSchema(schema, fixture) {
     if (!["block", "default_assumed", "not_applicable", "meta"].includes(f.na_policy)) errors.push(`${f.id}: bad na_policy ${f.na_policy}`);
     const pf = f.package_field == null ? [] : Array.isArray(f.package_field) ? f.package_field : [f.package_field];
     for (const p of pf) {
-      if (p.startsWith("_")) continue;
+      if (p.startsWith("_")) { if (!/^_meta\.[a-z_]+$/.test(p)) errors.push(`${f.id}: package_field "${p}" must match _meta.<name>`); continue; }
       if (!fixtureKeys.has(p) && !allowedMeta.has(p)) errors.push(`${f.id}: package_field "${p}" not found in fixtures/Study_1.json`);
     }
     if (f.required_if && typeof f.required_if !== "object" && f.required_if !== "always") errors.push(`${f.id}: required_if must be "always" or a predicate object`);
     if (f.visible_if && typeof f.visible_if !== "object") errors.push(`${f.id}: visible_if must be a predicate object`);
+    for (const o of f.options || []) if (o.visible_if && typeof o.visible_if !== "object") errors.push(`${f.id}: option ${o.value} visible_if must be a predicate object`);
+    const TYPES = ["text", "number", "integer", "percent", "yesno", "radio", "select", "derived", "multiselect", "month_set", "triple_pct", "quantity_n", "manure", "fert_rates", "rice", "livetype", "feed", "location"];
+    if (!TYPES.includes(f.type)) errors.push(`${f.id}: unknown type ${f.type}`);
   }
+  // ids the JS refers to by name must exist
+  for (const req of ["season_name", "season_months", "hours_stable", "hours_pen", "hours_onfarm", "hours_offfarm", "fert_n_pct", "param_set", "scenario_purpose", "milk_l_day", "lactation_days", "body_weight", "adult_weight", "growth_kg_yr", "work_h_day", "soil_description", "climate_zone_2", "annual_prec", "rain_months", "et0", "main_fed_share", "yield_t_dm_ha", "residue_yield_t_dm_ha", "intercrop_share", "manure_to_plot_share", "manure_kept_share", "slope_class", "slope_length_m", "land_cover", "tillage", "orgmatter", "grass_condition", "grass_inputs", "herd_n", "livetype", "herd_ref", "feed_item", "feed_origin", "feed_part", "feed_plot", "feed_imported", "rice_fields", "in_manure", "in_compost", "in_organic", "in_bedding"]) if (!ids.has(req)) errors.push(`required field id missing from schema: ${req}`);
   return errors;
 }
 
@@ -76,7 +81,8 @@ function build() {
   const ver = version();
   const js = jsFiles.map((f) => `/* ---- ${relative(SRC, f)} ---- */\n${readFileSync(f, "utf8")}`).join("\n\n");
   const css = readFileSync(join(SRC, "styles.css"), "utf8");
-  const dataJs = `window.ICL_SCHEMA=${JSON.stringify(schema)};\nwindow.ICL_VOCAB=${JSON.stringify(vocab)};\nwindow.ICL_VARIANTS=${JSON.stringify(variants)};\nwindow.ICL_DEMO=${JSON.stringify(demo)};`;
+  const J = (x) => JSON.stringify(x).replace(/</g, "\\u003c");
+  const dataJs = `window.ICL_SCHEMA=${J(schema)};\nwindow.ICL_VOCAB=${J(vocab)};\nwindow.ICL_VARIANTS=${J(variants)};\nwindow.ICL_DEMO=${J(demo)};`;
   const html = readFileSync(join(SRC, "index.html"), "utf8");
 
   const buildTag = (target) => `<script>window.ICL_BUILD=${JSON.stringify({ version: ver, target, built: new Date().toISOString() })};</script>`;
@@ -94,7 +100,7 @@ function build() {
 
   // offline target (single file); also what we publish in v1
   mkdirSync(join(ROOT, "dist", "offline"), { recursive: true });
-  const inline = html
+  const inline = "<!doctype html>\n" + html
     .replace("<!-- @build -->", buildTag("offline"))
     .replace("<!-- @css -->", `<style>\n${css}\n</style>`)
     .replace("<!-- @data -->", `<script>\n${dataJs}\n</script>`)
