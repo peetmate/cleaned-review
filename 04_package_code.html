@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>04 - Package design, correctness and best-practice review: <code>cleaned</code> v0.7.0</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>04 - Package design, correctness and best-practice review: <code>cleaned</code> v0.7.0</h1>
 <p>Reviewed: <code>CIAT/cleaned</code> @ 800d53a (read-only). Everything was run on a copy under the session scratchpad.
 Tooling: R 4.6.0 (aarch64 macOS), <code>R CMD build</code> + <code>R CMD check --as-cran --no-manual</code> (pandoc from the RStudio bundle), lintr 3.x, and the full model pipeline run end to end. <code>openxlsx</code> and <code>spelling</code> were installed into a scratch library only. devtools, rcmdcheck and covr are not installed, so coverage was judged by reading the tests.</p>
 <h2>Verdict</h2>
@@ -140,7 +142,7 @@ Tooling: R 4.6.0 (aarch64 macOS), <code>R CMD build</code> + <code>R CMD check -
 <td>High</td>
 <td>P</td>
 <td><code>R/ghg_emission.R:213-233</code></td>
-<td><code>n_retained</code> mixes daily and annual units and is used as a fraction in eq. 10.31</td>
+<td><code>n_retained</code> mixes daily and annual units and is used as a fraction in <a class="cite" href="sources.html#eq10.31">eq. 10.31</a></td>
 </tr>
 <tr>
 <td>F08</td>
@@ -327,7 +329,7 @@ Tooling: R 4.6.0 (aarch64 macOS), <code>R CMD build</code> + <code>R CMD check -
 <li><code>feed_quality(fromJSON(system.file(&quot;extdata&quot;,&quot;example_input.json&quot;, package=&quot;cleaned&quot;)))</code> fails with <code>Column 'crop_name' doesn't exist</code> (<code>R/feed_quality.R:44</code>). <code>data/qt_example.json</code> fails the same way.</li>
 <li><code>inst/extdata/example_input.json</code> also lacks <code>dry_yield</code> and <code>residue_dry_yield</code> in <code>feed_items</code>, which <code>land_requirement</code> needs (<code>R/land_requirement.R:94-96</code>). It lacks <code>fat_milkcontent</code>, <code>cp_lys_pregnancy</code>, <code>cp_lys_growth</code>, <code>lw_gain_piglets</code>, <code>proportion_growth_piglets_milk</code> and <code>n_manure_content</code> in <code>livestock</code>, which <code>R/energy_requirement.R:106-144,206-213</code> needs.</li>
 <li><code>data(mufindi)</code> is an older schema: <code>txt_*</code> fields, a <code>ferlitizer</code> typo, and <code>manureman_*</code> at top level. Yet every roxygen example uses it.</li>
-<li><code>data(ghg_para)</code> has the names <code>Table_10.12</code>, <code>table_10.17</code> and so on, but <code>ghg_emission</code> reads <code>&quot;Table 10.12&quot;</code>, <code>&quot;Table 10.13&quot;</code>, <code>&quot;Table_m&quot;</code> and <code>&quot;Table 10.16&quot;</code>. Running <code>ghg_emission(..., ghg_para, ...)</code> fails with <code>replacement has length zero</code>.</li>
+<li><code>data(ghg_para)</code> has the names <code>Table_10.12</code>, <code>table_10.17</code> and so on, but <code>ghg_emission</code> reads <code>&quot;<a class="cite" href="sources.html#table10.12">Table 10.12</a>&quot;</code>, <code>&quot;<a class="cite" href="sources.html#table10.13">Table 10.13</a>&quot;</code>, <code>&quot;<a class="cite" href="sources.html#pkg-table-m">Table_m</a>&quot;</code> and <code>&quot;<a class="cite" href="sources.html#table10.16">Table 10.16</a>&quot;</code>. Running <code>ghg_emission(..., ghg_para, ...)</code> fails with <code>replacement has length zero</code>.</li>
 <li>To exercise the pipeline I had to build a working input by adding <code>crop_name = feed_item_name</code>, deriving <code>dry_yield</code> and <code>residue_dry_yield</code> from <code>fresh_yield</code>, <code>dm_content</code>, <code>harvest_index</code> and <code>water_content</code>, and aliasing six livestock fields.</li>
 </ul>
 <p>Impact: users cannot run the README or vignette example. No golden or regression test is possible, and the input contract is not machine-checked anywhere.</p>
@@ -397,7 +399,7 @@ conc_of_n_from_crop_residue_managed_soil  &lt;- sum(n_from_crop_residues$conc_of
 conc_ip_n_from_crop_residue_managed_soil  &lt;- sum(n_from_crop_residues$conc_ip_n_from_crop_residue,  na.rm = TRUE)
 </code></pre>
 <h3>F06 (High, CONFIRMED statically): residue burning GHG</h3>
-<p><code>table_2.5</code> rows are CO2 1515, CO 92, CH4 2.7, N2O 0.07 and <strong>Nox 2.5</strong>. <code>R/merge_outputs.R:810-812</code>:</p>
+<p><code><a class="cite" href="sources.html#table2.5">table_2.5</a></code> rows are CO2 1515, CO 92, CH4 2.7, N2O 0.07 and <strong>Nox 2.5</strong>. <code>R/merge_outputs.R:810-812</code>:</p>
 <pre><code class="language-r">burning &lt;- sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CO2&quot;, 5]) +
   sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;CH4&quot;, 5]) * methane +
   sum_num(ghg_burn[ghg_burn$ghg_gas == &quot;Nox&quot;, 5]) * N2O
@@ -413,8 +415,8 @@ conc_ip_n_from_crop_residue_managed_soil  &lt;- sum(n_from_crop_residues$conc_ip
 burning &lt;- sum(b[g == &quot;CH4&quot;]) * gwp[[&quot;CH4&quot;]] + sum(b[g == &quot;N2O&quot;]) * gwp[[&quot;N2O&quot;]]
 </code></pre>
 <p>Also check the units: the factors are g/kg DM while the masses are kg.</p>
-<h3>F07 (High, PLAUSIBLE): N retention units in eq. 10.31</h3>
-<p><code>R/ghg_emission.R:226</code>: the non-pig <code>n_retained</code> is divided by <code>no_days</code> when <code>annual_growth == 0</code> and <strong>not</strong> divided in the growth branch, so the two branches have different units. It is then used as a fraction: <code>n_excretion_rate = n_intake*(1-n_retained)*no_days</code> (line 233). IPCC 2019 eq. 10.31 uses <code>N_intake × (1 − N_retention_frac)</code>. When retention is in kg N/day (eq. 10.33), the correct form is <code>N_intake − N_retention</code>.</p>
+<h3>F07 (High, PLAUSIBLE): N retention units in <a class="cite" href="sources.html#eq10.31">eq. 10.31</a></h3>
+<p><code>R/ghg_emission.R:226</code>: the non-pig <code>n_retained</code> is divided by <code>no_days</code> when <code>annual_growth == 0</code> and <strong>not</strong> divided in the growth branch, so the two branches have different units. It is then used as a fraction: <code>n_excretion_rate = n_intake*(1-n_retained)*no_days</code> (line 233). IPCC 2019 <a class="cite" href="sources.html#eq10.31">eq. 10.31</a> uses <code>N_intake × (1 − N_retention_frac)</code>. When retention is in kg N/day (<a class="cite" href="sources.html#eq10.33">eq. 10.33</a>), the correct form is <code>N_intake − N_retention</code>.</p>
 <p>Fix: compute <code>n_retained_kg_day</code> consistently, then <code>n_excretion_rate = (n_intake - n_retained_kg_day) * 365</code>. Pin the result with a hand-calculated golden value for one cow and one steer.</p>
 <h3>F08 (High, CONFIRMED statically): <code>combineOutputs</code> hides upstream failures</h3>
 <p><code>to_df()</code> (<code>R/merge_outputs.R:74-84</code>) wraps <code>as.data.frame</code> in <code>tryCatch(..., error = function(e) data.frame())</code>. <code>sum_col</code>, <code>soil_direct_pick</code> and the <code>if (&quot;col&quot; %in% names(x)) ... else 0</code> branches (lines 736-828) all fall back to 0 or NA. If an upstream column is renamed, for example <code>direct_N2O_emission</code>, the GHG balance quietly reports 0 for that source.</p>

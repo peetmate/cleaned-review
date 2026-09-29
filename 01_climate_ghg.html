@@ -9,14 +9,16 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>CLEANED v0.7.0: adversarial review of GHG and climate science</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>CLEANED v0.7.0: adversarial review of GHG and climate science</h1>
 <p>Reviewer role: IPCC AFOLU inventory methodologist (2006 Guidelines Vol 4 and 2019 Refinement).
 Source reviewed (read-only): <code>CIAT/cleaned</code> @ 800d53a.
 Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requirement.R</code>, <code>R/nitrogen_balance.R</code>, <code>R/land_requirement.R</code>, <code>R/biomass_calculation.R</code>, the GHG aggregation in <code>R/merge_outputs.R</code> and <code>R/differences.R</code>, and <code>inst/extdata/*.json</code>.</p>
 <p><strong>How the findings were checked.</strong> Every finding comes from reading the code. I also ran the full pipeline outside the package: I sourced <code>R/*.R</code> and used <code>data/qt_example.json</code>, with the missing fields patched in a scratch copy only (<code>crop_name</code>, <code>fat_milkcontent</code>, <code>cp_lys_*</code>, <code>n_manure_content</code>). <strong>Neither shipped example input runs against the current code</strong> (<code>inst/extdata/example_input.json</code> and <code>data/qt_example.json</code> both fail on the missing <code>crop_name</code> column). Findings marked &quot;verified&quot; were reproduced numerically in that run.</p>
 <hr />
 <h2>Verdict</h2>
-<p>CLEANED has the right Tier 2 structure: IPCC eqs 10.21, 10.23, 10.24, 10.25–10.27, 10.32–10.34 and 11.1/11.9, with 2019 Refinement Bo, MCF and EF3 tables. But several defects are large enough to change headline results by tens of percent to orders of magnitude.</p>
+<p>CLEANED has the right Tier 2 structure: IPCC <a class="cite" href="sources.html#eq10.21">eqs 10.21</a>, 10.23, 10.24, 10.25–10.27, 10.32–10.34 and 11.1/11.9, with 2019 Refinement Bo, MCF and EF3 tables. But several defects are large enough to change headline results by tens of percent to orders of magnitude.</p>
 <ul>
 <li><strong>Soil carbon (SOC) is structurally wrong.</strong> It treats the measured current soil carbon as the IPCC reference stock and applies the land-use factor every year forever. It also uses a depth convention that gives about 800–1,400 t C/ha in the shipped examples. The result is a very large, perpetual, spurious CO2 source.</li>
 <li><strong>Feed intake is underestimated.</strong> Net-energy requirements are divided by metabolisable-energy density, so DMI and gross energy (GE) come out about 35–45% low when energy limits intake. This flows through to enteric CH4, volatile solids (VS) and N excretion.</li>
@@ -48,7 +50,7 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>Critical</td>
 <td>CONFIRMED</td>
 <td><code>R/energy_requirement.R:79-140, 170, 201-202</code></td>
-<td>IPCC net-energy (NE) requirements are divided by feed ME density. There is no REM/REG (eq 10.16), so DMI, GE and CH4 are about 35–45% low when energy is limiting.</td>
+<td>IPCC net-energy (NE) requirements are divided by feed ME density. There is no REM/REG (<a class="cite" href="sources.html#eq10.16">eq 10.16</a>), so DMI, GE and CH4 are about 35–45% low when energy is limiting.</td>
 </tr>
 <tr>
 <td>F03</td>
@@ -62,7 +64,7 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>High</td>
 <td>CONFIRMED (verified)</td>
 <td><code>R/ghg_emission.R:226, 233</code></td>
-<td>N retention is in kg N/day, divided by 365 twice, then used as a fraction in eq 10.31. Nex ≈ N intake, so dairy Nex is about 25–30% high. Pig growers can get negative Nex.</td>
+<td>N retention is in kg N/day, divided by 365 twice, then used as a fraction in <a class="cite" href="sources.html#eq10.31">eq 10.31</a>. Nex ≈ N intake, so dairy Nex is about 25–30% high. Pig growers can get negative Nex.</td>
 </tr>
 <tr>
 <td>F05</td>
@@ -82,21 +84,21 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>F07</td>
 <td>High</td>
 <td>CONFIRMED (verified)</td>
-<td><code>R/ghg_emission.R:185-200</code>; JSON <code>Table 10.17</code></td>
+<td><code>R/ghg_emission.R:185-200</code>; JSON <code><a class="cite" href="sources.html#table10.17">Table 10.17</a></code></td>
 <td>Manure-system labels don't match the MCF table keys (&quot;Pasture / range / paddock&quot;, &quot;Liquid/Slurry&quot;, ...). MCF becomes NA, so the animal's whole manure CH4 is NA and is summed as 0.</td>
 </tr>
 <tr>
 <td>F08</td>
 <td>High</td>
 <td>CONFIRMED (verified)</td>
-<td>JSON <code>Table 10.21</code>; <code>R/ghg_emission.R:239-250</code></td>
+<td>JSON <code><a class="cite" href="sources.html#table10.21">Table 10.21</a></code>; <code>R/ghg_emission.R:239-250</code></td>
 <td>Duplicate keys (&quot;Liquid/Slurry&quot;, &quot;Burned for fuel or as waste&quot;) create a many-to-many join that duplicates animal rows, doubling PRP N and indirect N.</td>
 </tr>
 <tr>
 <td>F09</td>
 <td>High</td>
 <td>CONFIRMED (verified)</td>
-<td>JSON <code>table_11.1_&amp;_table_11.3</code></td>
+<td>JSON <code><a class="cite" href="sources.html#table11.1">table_11.1_&amp;_table_11.3</a></code></td>
 <td>Soils use 2006 EF3PRP (0.02/0.01), FracGASF 0.10, FracGASM 0.20 and EF1R 0.003, while manure uses 2019 tables. PRP N2O is about 5× high against 2019.</td>
 </tr>
 <tr>
@@ -118,7 +120,7 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>Medium</td>
 <td>CONFIRMED</td>
 <td><code>R/ghg_emission.R:288-291, 441-472</code></td>
-<td>Indirect N2O from leaching/runoff (eqs 10.28–10.29, 11.10) is omitted for manure and soils, although Frac_leach_MS, FracLEACH and EF5 are loaded.</td>
+<td>Indirect N2O from leaching/runoff (<a class="cite" href="sources.html#eq10.28">eqs 10.28</a>–10.29, 11.10) is omitted for manure and soils, although Frac_leach_MS, FracLEACH and EF5 are loaded.</td>
 </tr>
 <tr>
 <td>F13</td>
@@ -138,14 +140,14 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>F15</td>
 <td>Medium</td>
 <td>CONFIRMED</td>
-<td><code>R/ghg_emission.R:564-589</code>; JSON <code>table_5.13</code></td>
+<td><code>R/ghg_emission.R:564-589</code>; JSON <code><a class="cite" href="sources.html#table5.13">table_5.13</a></code></td>
 <td>Rice CH4: SFo is computed from the synthetic N rate. &quot;Flooded pre-season &lt;30 d&quot; has SFp = 0. Rice N is counted under both EF1 and EF1R. <code>if()</code> is applied to a vector.</td>
 </tr>
 <tr>
 <td>F16</td>
 <td>Medium</td>
 <td>PLAUSIBLE</td>
-<td><code>R/ghg_emission.R:90-127</code>; JSON <code>Table 10.12/10.13</code></td>
+<td><code>R/ghg_emission.R:90-127</code>; JSON <code><a class="cite" href="sources.html#table10.12">Table 10.12</a>/10.13</code></td>
 <td>Ym is chosen by DE alone: feedlot Ym 4.0/3.0 applies to any non-dairy animal with DE ≥ 72%. Unmatched category gives Ym = 0. Pigs have Ym = 0. Lambs get 6.7. High-producing dairy Ym is 5.85 (2019 is probably 5.7).</td>
 </tr>
 <tr>
@@ -180,7 +182,7 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>F21</td>
 <td>Low</td>
 <td>CONFIRMED (verified)</td>
-<td>JSON <code>fertilizer_table</code>; <code>R/ghg_emission.R:517-523</code></td>
+<td>JSON <code><a class="cite" href="sources.html#pkg-fertilizer">fertilizer_table</a></code>; <code>R/ghg_emission.R:517-523</code></td>
 <td>Fertiliser production EFs are unsourced, with per-kg-N and per-kg-product bases mixed. &quot;Anhydrous ammonia&quot; is given the urea quantity in the summary table.</td>
 </tr>
 <tr>
@@ -194,8 +196,8 @@ Scope: <code>R/ghg_emission.R</code>, <code>R/soc.R</code>, <code>R/energy_requi
 <td>F23</td>
 <td>Low</td>
 <td>CONFIRMED</td>
-<td><code>R/energy_requirement.R:73-79</code>; <code>R/ghg_emission.R:148-180</code>; JSON <code>Table_m</code></td>
-<td>Lactating Cfi (0.386) applies to all cows year-round. Buffalo get no productivity class, so Bo = NA. Duplicate buffalo row in Table_m. Small-ruminant productivity split at DE 0.72 is arbitrary.</td>
+<td><code>R/energy_requirement.R:73-79</code>; <code>R/ghg_emission.R:148-180</code>; JSON <code><a class="cite" href="sources.html#pkg-table-m">Table_m</a></code></td>
+<td>Lactating Cfi (0.386) applies to all cows year-round. Buffalo get no productivity class, so Bo = NA. Duplicate buffalo row in <a class="cite" href="sources.html#pkg-table-m">Table_m</a>. Small-ruminant productivity split at DE 0.72 is arbitrary.</td>
 </tr>
 </tbody>
 </table>
@@ -212,28 +214,28 @@ field_soc   &lt;- soil_amount * para[[&quot;soil_c&quot;]] * 0.001
 annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 </code></pre>
 <ul>
-<li><strong>Depth convention.</strong> <code>1e6*(depth/100)</code> equals <code>depth*1e4</code>, which is only correct if depth is in metres. The contract gives no unit (<code>vignettes/input-contract.Rmd:53</code>), and both examples use <code>soil_depth = 2</code>. With soil_c = 33 g/kg and bulk density 1.26, <code>example_input.json</code> gives SOC = 832 t C/ha. <code>qt_example.json</code> gives 1,440 t C/ha. Tropical mineral-soil SOC_ref to 30 cm (2006 Vol 4 Table 2.3) is roughly 30–90 t C/ha.</li>
+<li><strong>Depth convention.</strong> <code>1e6*(depth/100)</code> equals <code>depth*1e4</code>, which is only correct if depth is in metres. The contract gives no unit (<code>vignettes/input-contract.Rmd:53</code>), and both examples use <code>soil_depth = 2</code>. With soil_c = 33 g/kg and bulk density 1.26, <code>example_input.json</code> gives SOC = 832 t C/ha. <code>qt_example.json</code> gives 1,440 t C/ha. Tropical mineral-soil SOC_ref to 30 cm (2006 Vol 4 <a class="cite" href="sources.html#table2.3">Table 2.3</a>) is roughly 30–90 t C/ha.</li>
 <li><strong>Perpetual loss.</strong> The farm's current measured stock is treated as SOC_ref, and FLU for &quot;long-term cultivated&quot; (0.48–0.80) is applied every simulated year. Any cropland therefore loses (1 − FLU·FMG·FI)/20 of its stock annually, forever.</li>
-<li><strong>What IPCC does.</strong> Eq 2.25 computes ΔC = (SOC_0 − SOC_(0−T))/D, with SOC = SOC_ref·FLU·FMG·FI for the current and the previous state. SOC_ref is the native, uncultivated value from Table 2.3, not a measured cultivated stock. ΔC is zero when management has not changed for more than D = 20 years.</li>
+<li><strong>What IPCC does.</strong> <a class="cite" href="sources.html#eq2.25">Eq 2.25</a> computes ΔC = (SOC_0 − SOC_(0−T))/D, with SOC = SOC_ref·FLU·FMG·FI for the current and the previous state. SOC_ref is the native, uncultivated value from <a class="cite" href="sources.html#table2.3">Table 2.3</a>, not a measured cultivated stock. ΔC is zero when management has not changed for more than D = 20 years.</li>
 </ul>
 <p><strong>Verified.</strong> The <code>qt_example</code> run gives −2.93 t C/yr (−10.7 t CO2/yr) from 0.17 ha of cropland, i.e. about −63 t CO2/ha/yr. That is larger than all the herd's enteric CH4 (about 11.8 t CO2e).</p>
 <p><strong>Refutation attempt.</strong> Could this be meant as a &quot;scenario minus baseline&quot; quantity where the constant term cancels? No. <code>differences.R:381-396</code> subtracts the absolute value from emissions to form <code>total_carbon_balance_*</code>, and grassland uses a different SOC_ref (40) with FLU = 1, so the terms don't cancel between land types. Finding stands.</p>
 <p><strong>Impact.</strong> This dominates the total carbon balance in any cropland-feed scenario. The sign is always a loss for cultivated land. Magnitude: 1–100 t CO2/ha/yr, depending on depth units.</p>
 <p><strong>Fix.</strong></p>
 <ul>
-<li>Use SOC_ref from Table 2.3 (2019 Refinement update) by climate and soil class, to 30 cm.</li>
+<li>Use SOC_ref from <a class="cite" href="sources.html#table2.3">Table 2.3</a> (2019 Refinement update) by climate and soil class, to 30 cm.</li>
 <li>Compute ΔC only from a stated change in land use or management between baseline and scenario, i.e. (F_scen − F_base)·SOC_ref/20, for 20 years.</li>
 <li>Document the units of <code>soil_depth</code> and <code>soil_c</code>, and validate them.</li>
 </ul>
 <h3>F02 — NE requirements divided by ME density (Critical, CONFIRMED)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
-<li><code>energy_requirement.R:79</code> and the lines after it use IPCC net-energy equations: NEm = Cfi·W^0.75 (eq 10.3), NEa (10.4), NEg (10.6), NEl (10.8) and NEp (10.13). The Cfi values in <code>energy_parameters.json</code> (0.322/0.386/0.370) are the IPCC NEm coefficients.</li>
+<li><code>energy_requirement.R:79</code> and the lines after it use IPCC net-energy equations: NEm = Cfi·W^0.75 (<a class="cite" href="sources.html#eq10.3">eq 10.3</a>), NEa (10.4), NEg (10.6), NEl (10.8) and NEp (10.13). The Cfi values in <code>energy_parameters.json</code> (0.322/0.386/0.370) are the IPCC NEm coefficients.</li>
 <li>Line 140 sums these into <code>energy_required_annually</code>.</li>
 <li>Line 170 computes <code>fresh_intake_required_e = energy_required_by_season/average_me</code>, where <code>average_me</code> is ME per kg fresh (feed <code>me_content</code>, e.g. 12.27 MJ/kg for oat grain).</li>
 <li>Lines 201-202 derive GE = DMI·18.45 and DE = ME/0.81/GE.</li>
 </ul>
-<p><strong>Expected.</strong> IPCC 2006 eq 10.16: GE = [(NEm+NEa+NEl+NEw+NEp)/REM + (NEg+NEwool)/REG]/(DE/100), with REM/REG from eqs 10.14–10.15. Alternatively, divide NE by NE density, not by ME density. At DE = 55%, REM ≈ 0.47, so NE/ME ≈ 0.58.</p>
+<p><strong>Expected.</strong> IPCC 2006 <a class="cite" href="sources.html#eq10.16">eq 10.16</a>: GE = [(NEm+NEa+NEl+NEw+NEp)/REM + (NEg+NEwool)/REG]/(DE/100), with REM/REG from <a class="cite" href="sources.html#eq10.14">eqs 10.14–10.15</a>. Alternatively, divide NE by NE density, not by ME density. At DE = 55%, REM ≈ 0.47, so NE/ME ≈ 0.58.</p>
 <p><strong>Refutation attempt.</strong> Could <code>me_content</code> actually be NE? No: the values match ME tables (maize stover 6.9, oats 12.3 MJ/kg DM). Is it masked by the CP-limited branch (line 174)? Only when CP is limiting. In the test run the cows were CP-limited, so the error there was about −13%.</p>
 <p><strong>Impact.</strong></p>
 <ul>
@@ -241,16 +243,16 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Worked check: a 600 kg cow producing 3,000 kg milk should have GE ≈ 227 MJ/d (Tier 2, DE 65%) and enteric CH4 ≈ 94 kg/yr. The code gives 81.6 kg/yr, and would give about 60 kg/yr if energy were limiting.</li>
 <li>This also affects land and water requirements (out of scope here).</li>
 </ul>
-<p><strong>Fix.</strong> Implement eq 10.16 with REM/REG, or convert the requirements to ME with published km/kl/kg efficiencies (e.g. AFRC/CSIRO) consistently.</p>
+<p><strong>Fix.</strong> Implement <a class="cite" href="sources.html#eq10.16">eq 10.16</a> with REM/REG, or convert the requirements to ME with published km/kl/kg efficiencies (e.g. AFRC/CSIRO) consistently.</p>
 <h3>F03 — Burning total counts biogenic CO2 and uses the N2O GWP for NOx (Critical, CONFIRMED)</h3>
 <p><strong>Evidence.</strong> <code>merge_outputs.R:810-812</code>:</p>
 <pre><code class="language-r">burning &lt;- sum(CO2 row) + sum(CH4 row)*methane + sum(Nox row)*N2O
 </code></pre>
-<p>The <code>table_2.5</code> factors (1515/92/2.7/0.07/2.5 g/kg DM) are the correct 2006 Vol 4 Table 2.5 values for agricultural residues.</p>
+<p>The <code><a class="cite" href="sources.html#table2.5">table_2.5</a></code> factors (1515/92/2.7/0.07/2.5 g/kg DM) are the correct 2006 Vol 4 <a class="cite" href="sources.html#table2.5">Table 2.5</a> values for agricultural residues.</p>
 <p><strong>Expected.</strong></p>
 <ul>
 <li>CO2 from crop-residue burning is not reported, because it is biogenic and resequestered (2006 Vol 4 §2.4 and §5.2.4).</li>
-<li>Only CH4 and N2O count: eq 2.27 → 2.7·28 + 0.07·265 = 94.2 g CO2e per kg DM burnt.</li>
+<li>Only CH4 and N2O count: <a class="cite" href="sources.html#eq2.27">eq 2.27</a> → 2.7·28 + 0.07·265 = 94.2 g CO2e per kg DM burnt.</li>
 <li>The code gives 1515 + 75.6 + 2.5·265 (662.5) = 2,253 g CO2e per kg DM.</li>
 </ul>
 <p><strong>Refutation attempt.</strong> Is burning ever non-zero? Yes, whenever <code>residue_burnt &gt; 0</code>, which is common in SSA cereal systems.</p>
@@ -264,10 +266,10 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <p>Line 233:</p>
 <pre><code class="language-r">n_excretion_rate = n_intake*(1-n_retained)*no_days
 </code></pre>
-<p>Here <code>n_retained</code> is an absolute kg N/day (eq 10.33) used as if it were the fraction in eq 10.31. There is a further scale mismatch: <code>n_intake</code> is for the whole herd (GE × herd size), while <code>n_retained</code> is per head.</p>
+<p>Here <code>n_retained</code> is an absolute kg N/day (<a class="cite" href="sources.html#eq10.33">eq 10.33</a>) used as if it were the fraction in <a class="cite" href="sources.html#eq10.31">eq 10.31</a>. There is a further scale mismatch: <code>n_intake</code> is for the whole herd (GE × herd size), while <code>n_retained</code> is per head.</p>
 <p><strong>Verified.</strong> The improved cows have <code>n_retained</code> = 1.3e-4, against an expected 0.048 kg N/head/day, and the effective retention fraction is 0.03%. The expected fraction is about 22%.</p>
 <p>For pigs, lines 225-228 give growers <code>annual_growth*n_gain</code> (for example 100 kg × 0.024 = 2.4), so <code>1 − 2.4</code> makes Nex negative.</p>
-<p><strong>Expected.</strong> 2019 Refinement: Nex = (N_intake − N_retention)·365 per head, with N_retention from eq 10.33 in kg N/head/day. Equivalently, use eq 10.31 with N_retention_frac = N_retention/N_intake.</p>
+<p><strong>Expected.</strong> 2019 Refinement: Nex = (N_intake − N_retention)·365 per head, with N_retention from <a class="cite" href="sources.html#eq10.33">eq 10.33</a> in kg N/head/day. Equivalently, use <a class="cite" href="sources.html#eq10.31">eq 10.31</a> with N_retention_frac = N_retention/N_intake.</p>
 <p><strong>Impact.</strong></p>
 <ul>
 <li>Dairy Nex is about 25–30% high (1/(1−0.22)). That bias carries into manure N2O (direct and indirect) and PRP N2O.</li>
@@ -281,7 +283,7 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Line 359 then makes <code>n_organic_manure_managed_soil</code> equal to <code>numeric(0)</code>, and the row disappears from <code>rbind</code>. In the run, the direct-soil table has no organic-manure row and indirect <code>organic_n</code> = 0.</li>
 <li>Independently, <code>merge_outputs.R:787-795</code> (<code>soil_direct_pick</code>) doesn't list <code>n_organic_manure_managed_soil</code> at all.</li>
 </ul>
-<p><strong>Expected.</strong> F_AM (eq 10.34, then eq 11.1 with EF1, and eq 11.9 with FracGASM) must be included.</p>
+<p><strong>Expected.</strong> F_AM (eq 10.34, then <a class="cite" href="sources.html#eq11.1">eq 11.1</a> with EF1, and <a class="cite" href="sources.html#eq11.9">eq 11.9</a> with FracGASM) must be included.</p>
 <p><strong>Refutation attempt.</strong> Could <code>nitrogen_balance</code> supply it? No: <code>ghg_emission</code> never reads <code>organic_n_kg_total</code>.</p>
 <p><strong>Impact.</strong> Zero-grazing systems with a lot of stall manure lose about 0.8 kg N2O per cow per year (about 200 kg CO2e/cow, roughly 5–10% of the farm total). Mixed crop-livestock intensification scenarios are biased low.</p>
 <p><strong>Fix.</strong> Use <code>sum_total_n_from_manure_mgmt</code> (excluding PRP; see F14) minus exported manure, plus purchased organic N converted to N units. Add the row to the aggregation.</p>
@@ -292,7 +294,7 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Line 485: indirect = <code>direct_emission*FracGASM*EF4*44/28</code>. That applies FracGASM to the N2O-N emission instead of to the deposited N, which understates it 50–100×.</li>
 <li><code>grep N20N_off_farm R/merge_outputs.R</code> finds nothing, so neither term reaches <code>ghg_balance</code> or the totals in <code>differences.R</code>.</li>
 </ul>
-<p><strong>Expected.</strong> Eq 11.1 applied to F_PRP gives the direct term. Eq 11.9 gives the indirect term as F_PRP·FracGASM·EF4·44/28.</p>
+<p><strong>Expected.</strong> <a class="cite" href="sources.html#eq11.1">Eq 11.1</a> applied to F_PRP gives the direct term. <a class="cite" href="sources.html#eq11.9">Eq 11.9</a> gives the indirect term as F_PRP·FracGASM·EF4·44/28.</p>
 <p><strong>Impact.</strong> In communal or off-farm grazing systems (common across SSA), all PRP N2O for that time is missing. That is typically 5–15% of the herd total at 2006 factors.</p>
 <p><strong>Fix.</strong> Correct the formulas and add the rows to <code>ghg_balance</code> (off-farm roughage block or a separate line).</p>
 <h3>F07 — Manure-system label mismatches null out manure CH4 (High, CONFIRMED, verified)</h3>
@@ -305,13 +307,13 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <p><strong>Verified.</strong> The local cows' manure CH4 is NA with the shipped label and 2.14 kg with &quot;Pasture/Range/Paddock&quot;.</p>
 <p><strong>Impact.</strong> All manure CH4 is silently removed for any category with an unmatched label, including housed-time emissions.</p>
 <p><strong>Fix.</strong> Use one canonical key vocabulary across 10.17/10.21/10.22 and the app. Stop on unmatched keys (as <code>soc.R</code> already does). Replace NA with 0 only where time = 0.</p>
-<h3>F08 — Duplicate keys in Table 10.21 duplicate animal rows (High, CONFIRMED, verified)</h3>
-<p><strong>Evidence.</strong> In <code>Table 10.21</code>, &quot;Liquid/Slurry&quot; appears twice (0.005 and 0), and so does &quot;Burned for fuel or as waste&quot;. The <code>left_join</code> at <code>ghg_emission.R:239</code> is many-to-many (dplyr warns about it).</p>
+<h3>F08 — Duplicate keys in <a class="cite" href="sources.html#table10.21">Table 10.21</a> duplicate animal rows (High, CONFIRMED, verified)</h3>
+<p><strong>Evidence.</strong> In <code><a class="cite" href="sources.html#table10.21">Table 10.21</a></code>, &quot;Liquid/Slurry&quot; appears twice (0.005 and 0), and so does &quot;Burned for fuel or as waste&quot;. The <code>left_join</code> at <code>ghg_emission.R:239</code> is many-to-many (dplyr warns about it).</p>
 <p><strong>Verified.</strong> Assigning &quot;Liquid/Slurry&quot; to the stable produced 4 rows for 3 animals, and on-farm PRP N stayed at 215.3 kg instead of 107.7 kg (doubled).</p>
 <p><strong>Impact.</strong> PRP N2O, indirect N2O and N available for soils are doubled for any animal using these systems.</p>
 <p><strong>Fix.</strong> Disambiguate the keys: &quot;Liquid/Slurry – with crust&quot; 0.005 and &quot;– without crust&quot; 0. Assert that every join key is unique.</p>
 <h3>F09 — Soils use 2006 factors, manure uses 2019 (High, CONFIRMED, verified)</h3>
-<p><strong>Evidence.</strong> JSON <code>table_11.1_&amp;_table_11.3</code> holds:</p>
+<p><strong>Evidence.</strong> JSON <code><a class="cite" href="sources.html#table11.1">table_11.1_&amp;_table_11.3</a></code> holds:</p>
 <table>
 <thead>
 <tr>
@@ -363,17 +365,17 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 </tr>
 </tbody>
 </table>
-<p>The 2019 values are from 2019 Refinement Vol 4 Ch 11 Table 11.1/11.3; I am confident of EF3PRP and EF5 and reasonably confident of the rest. Wet/dry disaggregated values also exist (e.g. EF1 wet 0.016 synthetic, dry 0.005; EF4 wet 0.014, dry 0.005).</p>
+<p>The 2019 values are from 2019 Refinement Vol 4 Ch 11 <a class="cite" href="sources.html#table11.1">Table 11.1</a>/11.3; I am confident of EF3PRP and EF5 and reasonably confident of the rest. Wet/dry disaggregated values also exist (e.g. EF1 wet 0.016 synthetic, dry 0.005; EF4 wet 0.014, dry 0.005).</p>
 <p>Meanwhile, the manure-management tables are 2019 values:</p>
 <ul>
-<li>Bo, Table 10.16: Africa high/low productivity.</li>
-<li>MCF, Table 10.17: including pasture at 0.47%.</li>
-<li>EF3, Table 10.21: including anaerobic digesters.</li>
-<li>Eq 10.34A/B.</li>
+<li>Bo, <a class="cite" href="sources.html#table10.16">Table 10.16</a>: Africa high/low productivity.</li>
+<li>MCF, <a class="cite" href="sources.html#table10.17">Table 10.17</a>: including pasture at 0.47%.</li>
+<li>EF3, <a class="cite" href="sources.html#table10.21">Table 10.21</a>: including anaerobic digesters.</li>
+<li><a class="cite" href="sources.html#eq10.34a">Eq 10.34A</a>/B.</li>
 </ul>
 <p><strong>Verified.</strong> On-farm PRP gives 215 kg N × 0.02 = 6.77 kg N2O (1,794 kg CO2e). At 2019 factors it would be 1.35 kg N2O (359 kg CO2e), a difference of about 11% of the farm total.</p>
 <p><strong>Refutation attempt.</strong> Using 2006 is defensible if it is declared, but mixing the vintages is not. For the most important SSA source (PRP), the 2019 meta-analysis specifically lowered the factor for tropical, dung-dominated systems.</p>
-<p><strong>Fix.</strong> Adopt the 2019 Table 11.1 values, preferably disaggregated by wet/dry climate (the input already has <code>annual_prec</code> and <code>et</code>). Record the vintage in the JSON.</p>
+<p><strong>Fix.</strong> Adopt the 2019 <a class="cite" href="sources.html#table11.1">Table 11.1</a> values, preferably disaggregated by wet/dry climate (the input already has <code>annual_prec</code> and <code>et</code>). Record the vintage in the JSON.</p>
 <h3>F10 — Fertiliser N and CO2 sources are inconsistent or incomplete (High, CONFIRMED, verified)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
@@ -382,13 +384,13 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Verified: the oats item had urea = 400 kg/ha plus N solutions = 50, but <code>fertilizer_rate</code> = 5 kg N/ha, because urea wasn't in <code>para$fertilizer</code>. Urea manufacture emissions were still computed.</li>
 </ul>
 </li>
-<li><strong>CAN is ignored.</strong> CAN, the dominant top-dressing in Kenya and Tanzania, appears in <code>fertilizer_table</code> but not in <code>fertilizer_list</code> or the <code>nitrogen_balance</code> product columns.</li>
+<li><strong>CAN is ignored.</strong> CAN, the dominant top-dressing in Kenya and Tanzania, appears in <code><a class="cite" href="sources.html#pkg-fertilizer">fertilizer_table</a></code> but not in <code>fertilizer_list</code> or the <code>nitrogen_balance</code> product columns.</li>
 <li><strong>Ammonia has no production emissions.</strong> &quot;Ammonia&quot; production EF = 0, while &quot;Anhydrous ammonia&quot; = 2.6 is never used for N2O.</li>
 <li><strong>Urea CO2 is missing.</strong> 2006 Vol 4 §11.4, eq 11.13, EF = 0.20 t C per t urea, i.e. 0.733 kg CO2 per kg urea. The &quot;Urea&quot; production factor (0.785) can't be assumed to include this.</li>
 <li><strong>Liming CO2 is missing.</strong> Eq 11.12 (EF 0.12 limestone, 0.13 dolomite) is absent; &quot;Lime-application&quot; = 0 and isn't wired in.</li>
 </ul>
 <p><strong>Impact.</strong> Fertiliser N2O can be zero while fertiliser manufacture is reported. Urea CO2 is roughly equal to urea manufacture emissions and is fully missing.</p>
-<p><strong>Fix.</strong> Derive product N% from <code>fertilizer_table.percent_N</code>, a single source of truth. Add CAN, urea CO2 and lime CO2.</p>
+<p><strong>Fix.</strong> Derive product N% from <code><a class="cite" href="sources.html#pkg-fertilizer">fertilizer_table</a>.percent_N</code>, a single source of truth. Add CAN, urea CO2 and lime CO2.</p>
 <h3>F11 — Crop residue N is wrong (Medium, CONFIRMED, verified)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
@@ -396,7 +398,7 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Lines 374-375 set <code>conc_of_n_from_crop_residue</code> and <code>conc_ip_n_from_crop_residue</code> equal to <code>sum(nitrogen_balance$conc_of_min_fert_n)</code> and <code>...conc_ip_min_fert_n</code>, which are the fertiliser N totals (copy-paste). Verified: the imported-concentrate residue N was 0.847 kg, identical to its fertiliser N.</li>
 <li>Line 373 reads <code>nitrogen_balance$rough_of_n_from_crop_residue</code>, a column that doesn't exist, so it is 0.</li>
 </ul>
-<p><strong>Expected.</strong> Eq 11.6 (2019 eq 11.6/11.7A): F_CR = AG_DM·N_AG·(1 − Frac_remove − Frac_burnt·Cf) + BG·N_BG, with the BG ratio from Table 11.1a (2019). Below-ground residue is omitted entirely.</p>
+<p><strong>Expected.</strong> <a class="cite" href="sources.html#eq11.6">Eq 11.6</a> (2019 <a class="cite" href="sources.html#eq11.6">eq 11.6</a>/11.7A): F_CR = AG_DM·N_AG·(1 − Frac_remove − Frac_burnt·Cf) + BG·N_BG, with the BG ratio from Table 11.1a (2019). Below-ground residue is omitted entirely.</p>
 <p><strong>Impact.</strong></p>
 <ul>
 <li>Residue N2O is biased in the direction of the ratio of main-product yield to residue yield. For cereals with a harvest index of about 0.4–0.5 it is roughly right in magnitude but for the wrong reason.</li>
@@ -407,11 +409,11 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <h3>F12 — Leaching/runoff indirect N2O is omitted (Medium, CONFIRMED)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
-<li><code>ghg_emission.R:288-291</code> computes only volatilisation. The comment &quot;equation 10.28&quot; is the leaching equation, but the code is volatilisation (eq 10.27).</li>
+<li><code>ghg_emission.R:288-291</code> computes only volatilisation. The comment &quot;<a class="cite" href="sources.html#eq10.28">equation 10.28</a>&quot; is the leaching equation, but the code is volatilisation (eq 10.27).</li>
 <li><code>Frac_leach_MS_*</code> is loaded but used only in Frac_LOSS.</li>
-<li>For soils (lines 468-472), only eq 11.9 is implemented. FracLEACH and EF5 are in the JSON but unused.</li>
+<li>For soils (lines 468-472), only <a class="cite" href="sources.html#eq11.9">eq 11.9</a> is implemented. FracLEACH and EF5 are in the JSON but unused.</li>
 </ul>
-<p><strong>Expected.</strong> Eqs 10.28–10.29 (manure) and 11.10 (soils): N2O_L = (F_SN + F_ON + F_PRP + F_CR + F_SOM)·FracLEACH·EF5·44/28, where the water balance indicates leaching. The model has <code>annual_prec</code> and <code>et</code> for that test.</p>
+<p><strong>Expected.</strong> <a class="cite" href="sources.html#eq10.28">Eqs 10.28</a>–10.29 (manure) and 11.10 (soils): N2O_L = (F_SN + F_ON + F_PRP + F_CR + F_SOM)·FracLEACH·EF5·44/28, where the water balance indicates leaching. The model has <code>annual_prec</code> and <code>et</code> for that test.</p>
 <p><strong>Impact.</strong> In humid zones, 0.24·0.011 (2019) = 0.0026 per kg N, about 26% of direct EF1. So soil N2O is biased low by up to about 20% in wet areas.</p>
 <p><strong>Fix.</strong> Implement both equations, applying the leaching condition from the water balance.</p>
 <h3>F13 — Inconsistent area and allocation basis (Medium, CONFIRMED)</h3>
@@ -436,14 +438,14 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <h3>F15 — Rice CH4 and rice N2O errors (Medium, CONFIRMED)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
-<li><code>ghg_emission.R:581</code>: <code>SFo = (1 + fertilizer_rate*conversion_factor)^0.59</code>. <code>fertilizer_rate</code> is synthetic N (kg N/ha). Eq 5.3 requires the organic amendment rate ROA in t fresh weight/ha.</li>
-<li>JSON <code>table_5.13</code> sets &quot;flooded pre-season (&lt;30 days)&quot; to SFp = 0. That zeroes the emission; the 2006 Table 5.13 note says short pre-season flooding is not considered (treat as non-flooded, about 1.0).</li>
+<li><code>ghg_emission.R:581</code>: <code>SFo = (1 + fertilizer_rate*conversion_factor)^0.59</code>. <code>fertilizer_rate</code> is synthetic N (kg N/ha). <a class="cite" href="sources.html#eq5.3">Eq 5.3</a> requires the organic amendment rate ROA in t fresh weight/ha.</li>
+<li>JSON <code><a class="cite" href="sources.html#table5.13">table_5.13</a></code> sets &quot;flooded pre-season (&lt;30 days)&quot; to SFp = 0. That zeroes the emission; the 2006 <a class="cite" href="sources.html#table5.13">Table 5.13</a> note says short pre-season flooding is not considered (treat as non-flooded, about 1.0).</li>
 <li>Rice N is in <code>farm_min_fert_n</code> (EF1) and again in <code>n_synthetic_fertilizer_flooded_rice</code> (EF1R). Both are aggregated (<code>merge_outputs.R:787-795</code>).</li>
 <li>EFc = 1.30 is the 2006 value. The 2019 Refinement revised the default (I believe 1.19 kg CH4/ha/d globally; verify).</li>
 <li><code>if (rice$source_type != &quot;Purchased&quot;)</code> errors when there are multiple rice rows (R ≥ 4.2). <code>source_type</code> takes the values Main/Residue, so the test is always TRUE.</li>
 </ul>
 <p><strong>Impact.</strong> With 50 kg N/ha and FYM, SFo is 3.4× instead of about 1.0–1.7×. Rice CH4 is either inflated about 2–3× or zeroed.</p>
-<p><strong>Fix.</strong> Add an ROA input, correct SFp, remove the rice N double count, and update to 2019 Table 5.11–5.14.</p>
+<p><strong>Fix.</strong> Add an ROA input, correct SFp, remove the rice N double count, and update to 2019 <a class="cite" href="sources.html#table5.11">Table 5.11</a>–5.14.</p>
 <h3>F16 — Ym selection (Medium, PLAUSIBLE)</h3>
 <p><strong>Evidence.</strong> <code>ghg_emission.R:117-125</code>. With the default <code>ym_prod = FALSE</code>:</p>
 <ul>
@@ -451,15 +453,15 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <li>Any &quot;Non-dairy&quot; animal with DE ≥ 0.72 gets the feedlot Ym of 4.0, and ≥ 0.75 gets 3.0. With DE computed as ME/0.81/18.45, a concentrate-heavy calf or heifer diet reaches this easily.</li>
 <li>Any label not matched exactly (e.g. &quot;Dairy Cows&quot;) falls through to Ym = 0 with no warning.</li>
 <li>Pigs get Ym = 0. The IPCC Tier 1 swine enteric factor is about 1–1.5 kg CH4/head/yr.</li>
-<li>Lambs get the adult Ym of 6.7. The 2019 Table 10.13 lamb value is 4.5, as I recall.</li>
-<li>JSON <code>Table 10.12[0]</code> has high-producing dairy at Ym 5.85, MY 19.5. My recollection of 2019 Table 10.12 is Ym 5.7, MY 19.0 (verify). The medium, low and non-dairy rows match.</li>
+<li>Lambs get the adult Ym of 6.7. The 2019 <a class="cite" href="sources.html#table10.13">Table 10.13</a> lamb value is 4.5, as I recall.</li>
+<li>JSON <code><a class="cite" href="sources.html#table10.12">Table 10.12</a>[0]</code> has high-producing dairy at Ym 5.85, MY 19.5. My recollection of 2019 <a class="cite" href="sources.html#table10.12">Table 10.12</a> is Ym 5.7, MY 19.0 (verify). The medium, low and non-dairy rows match.</li>
 </ul>
 <p><strong>Impact.</strong> Up to −40 to −55% enteric CH4 for young stock on good diets. The exact-match fallback silently zeroes enteric CH4.</p>
 <p><strong>Fix.</strong> Restrict the feedlot rows to an explicit feedlot flag. Stop on unmatched categories. Add a lamb row and a swine Tier 1 value.</p>
 <h3>F17 — SOC parameter and scope problems (Medium, CONFIRMED)</h3>
 <p><strong>Evidence.</strong></p>
 <ul>
-<li>JSON <code>grassland.management</code> includes <code>&quot;Medium&quot;: 1.5</code>. No such FMG exists in 2006 Table 6.2; the values there are nominal 1.0, moderately degraded 0.95–0.97, severely degraded 0.7, improved 1.14–1.17. The cropland factors match 2006 Table 5.5 exactly, but the 2019 Refinement revised Table 5.5; verify the update.</li>
+<li>JSON <code>grassland.management</code> includes <code>&quot;Medium&quot;: 1.5</code>. No such FMG exists in 2006 <a class="cite" href="sources.html#table6.2">Table 6.2</a>; the values there are nominal 1.0, moderately degraded 0.95–0.97, severely degraded 0.7, improved 1.14–1.17. The cropland factors match 2006 <a class="cite" href="sources.html#table5.5">Table 5.5</a> exactly, but the 2019 Refinement revised <a class="cite" href="sources.html#table5.5">Table 5.5</a>; verify the update.</li>
 <li>FI (<code>High</code> = 1.11) is applied whatever the FMG, although IPCC defines it only for improved grassland.</li>
 <li>Grassland SOC_ref is hardcoded at 40 t C/ha (<code>soc.R:142, 176</code>) with no climate or soil lookup, which is inconsistent with the measured value used for cropland.</li>
 <li>Off-farm and imported-concentrate land gets the farm's <code>soil_c</code> and management factors (<code>soc.R:106</code>).</li>
@@ -487,7 +489,7 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <p>It is not documented, and there is no AR6 option (CH4 non-fossil 27.0, fossil 29.8; N2O 273) or GWP* for biogenic CH4. That matters for livestock mitigation claims.</p>
 <p><strong>Fix.</strong> Parameterise and document the GWP set.</p>
 <h3>F21 — Fertiliser manufacturing factors (Low, CONFIRMED)</h3>
-<p><strong>Evidence.</strong> In JSON <code>fertilizer_table</code>:</p>
+<p><strong>Evidence.</strong> In JSON <code><a class="cite" href="sources.html#pkg-fertilizer">fertilizer_table</a></code>:</p>
 <ul>
 <li>DAP is stored as 2.8 kg CO2e/kg N × 0.18 = 0.504 per kg product.</li>
 <li>AN is stored as 2.8 per kg product (about 8.2 per kg N at 34% N). That is plausible for plants without N2O abatement, but it suggests the bases were mixed.</li>
@@ -509,15 +511,15 @@ annual_change = ((C * FLU * FMG * FI) - C) / 20 * area
 <ul>
 <li>Lactating Cfi 0.386 is applied to all cows year-round (<code>energy_requirement.R:47-50, 73-79</code>). IPCC applies it only during lactation, so NEm is about 5–10% high for cows with long dry periods.</li>
 <li>Buffalo get no class in <code>productivity1</code> (<code>ghg_emission.R:148-167</code>), so Bo is NA and manure CH4 is NA.</li>
-<li><code>Table_m</code> lists &quot;Buffalo - Steers/heifers&quot; twice, which duplicates rows in the VS join.</li>
-<li>The small-ruminant and swine high/low productivity split at DE 0.72 has no IPCC basis. 2019 Table 10.16 defines productivity by system.</li>
+<li><code><a class="cite" href="sources.html#pkg-table-m">Table_m</a></code> lists &quot;Buffalo - Steers/heifers&quot; twice, which duplicates rows in the VS join.</li>
+<li>The small-ruminant and swine high/low productivity split at DE 0.72 has no IPCC basis. 2019 <a class="cite" href="sources.html#table10.16">Table 10.16</a> defines productivity by system.</li>
 <li>Deep-bedding EF3 &quot;no mixing&quot; and &quot;active mixing&quot; are relabelled as &quot;&gt; 1 month&quot; and &quot;&lt; 1 month&quot;.</li>
 <li>The <code>N20N</code> naming implies N2O-N, but most of those values are already N2O (×44/28).</li>
 </ul>
 <hr />
 <h2>What's done well</h2>
 <ul>
-<li>The Tier 2 chain is correctly structured for the IPCC equations: enteric (eq 10.21, /55.65 correct), VS (eq 10.24, 18.45 MJ/kg), manure CH4 (eq 10.23, 0.67 kg/m³, MCF as fractions consistent with the JSON), direct and volatilisation N2O (eqs 10.25–10.27), and eq 10.34A/B (2019).</li>
+<li>The Tier 2 chain is correctly structured for the IPCC equations: enteric (<a class="cite" href="sources.html#eq10.21">eq 10.21</a>, /55.65 correct), VS (eq 10.24, 18.45 MJ/kg), manure CH4 (eq 10.23, 0.67 kg/m³, MCF as fractions consistent with the JSON), direct and volatilisation N2O (eqs 10.25–10.27), and <a class="cite" href="sources.html#eq10.34a">eq 10.34A</a>/B (2019).</li>
 <li>The 2019 Refinement Bo for Africa (high/low productivity), the MCF by climate zone (including pasture 0.47% and the anaerobic-digester rows) and the EF3 tables are loaded as data, not hardcoded.</li>
 <li>Units in the GHG path are carried consistently as annual herd totals, and 44/28 is applied before the GWP in every aggregated N2O term.</li>
 <li>The SOC factor lookup stops on unknown keys (<code>soc.R:39-71</code>). That pattern should be copied to the GHG joins (F07, F08).</li>

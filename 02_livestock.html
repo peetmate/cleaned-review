@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>02 — Livestock nutrition, energy and herd review of <code>cleaned</code> v0.7.0</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>02 — Livestock nutrition, energy and herd review of <code>cleaned</code> v0.7.0</h1>
 <p>Reviewer role: ruminant nutrition / livestock systems (adversarial). Source: <code>CIAT/cleaned</code> @ 800d53a (read-only). How I checked it: I sourced <code>R/feed_quality.R</code> and <code>R/energy_requirement.R</code> into Rscript and ran them on <code>inst/extdata/example_input.json</code>. The example needed two patches before it would run (both are findings: C-01 and M-01). I reproduced the livestock-N block of <code>R/ghg_emission.R</code> by hand and compared it with IPCC 2006/2019 Tier 2. Scripts are in the session scratchpad (<code>run2.R</code>, <code>run3.R</code>). I did not change the source.</p>
 <h2>Verdict</h2>
 <p>The feed-demand engine has a basic unit error. It adds up IPCC <strong>net energy</strong> requirements (NEm, NEa, NEg, NEl, NEp) and divides them by the feed's <strong>metabolisable energy</strong> density. There is no km/kl/kg or REM/REG conversion anywhere. This makes energy-driven DMI about 35–50% too low for cattle, and too low by a larger margin for growth and for small ruminants. The error carries through to land requirement, enteric CH4, VS and N excretion. In the example the bias is hidden because DMI is taken as <code>max(DMI_energy, DMI_CP)</code> with no intake cap. For low-CP tropical diets this gives physically impossible intakes: 4.4% of body weight for a 600 kg cow on a 5.3 MJ ME/kg DM ration. In the IPCC N-excretion block, retention is in kg N/day but the code uses it as a fraction. For dairy cows it is also divided by 365 twice. So N excretion comes out 30–45% too high and N retention is effectively zero. Neither shipped example dataset runs end-to-end: the column names, the DM units and the livestock labels don't match the code. Herd dynamics (mortality, replacement, offtake) are not modelled at all. As it stands, I would not trust absolute DMI, land, CH4 or N outputs from this model. Scenario differences inherit the same biases, but less severely.</p>
@@ -163,14 +165,14 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>Low</td>
 <td>PLAUSIBLE</td>
 <td>R/energy_requirement.R:84,86,100</td>
-<td>Sheep Ca for housed ewes is 0.0096 (IPCC 2006 Table 10.5: 0.0090). Goat grazing uses 0.019 and lambs use a = 2.3, b = 0.4; I could not match either to IPCC.</td>
+<td>Sheep Ca for housed ewes is 0.0096 (IPCC 2006 <a class="cite" href="sources.html#table10.5">Table 10.5</a>: 0.0090). Goat grazing uses 0.019 and lambs use a = 2.3, b = 0.4; I could not match either to IPCC.</td>
 </tr>
 <tr>
 <td>L-05</td>
 <td>Low</td>
 <td>CONFIRMED</td>
 <td>R/energy_requirement.R:109</td>
-<td>Eq 10.10 uses the weaning <strong>weight</strong>, where IPCC uses the lamb's <strong>gain</strong> from birth to weaning (about 15–25% high). Litter size is ignored.</td>
+<td><a class="cite" href="sources.html#eq10.10">Eq 10.10</a> uses the weaning <strong>weight</strong>, where IPCC uses the lamb's <strong>gain</strong> from birth to weaning (about 15–25% high). Litter size is ignored.</td>
 </tr>
 <tr>
 <td>L-06</td>
@@ -199,16 +201,16 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <h2>Detailed findings</h2>
 <h3>C-01 NE requirements met with ME (no efficiency conversion). Critical, CONFIRMED</h3>
 <ul>
-<li><strong>Evidence.</strong> <code>energy_parameters.json</code> &quot;Table 10.4&quot; gives the IPCC NEm Cfi (0.322/0.386/0.370/0.217/0.236/0.315). L79 computes <code>er_maintenance = Cfi*BW^0.75</code>, which is <strong>NEm</strong>. L93-101 compute NEg (IPCC 10.6/10.7), L106-111 NEl (10.8), L117 NEp and L122 NEwork. L140 sums them and L170 does <code>fresh_intake_required_e = energy_required_by_season/average_me</code>, where <code>average_me</code> is ME from <code>me_content</code> (MJ ME/kg DM). I found no km, kl, kg, REM or REG anywhere in <code>R/</code>.</li>
-<li><strong>Expected.</strong> IPCC 2006/2019 Eq 10.16: GE = [(NEm+NEa+NEl+NEwork+NEp)/REM + NEg/REG]/(DE%/100). Or, in an ME system (AFRC 1993/CSIRO), MEm = NEm/km (≈0.70), MEl = NEl/kl (≈0.62), MEg = NEg/kg (≈0.3–0.45).</li>
+<li><strong>Evidence.</strong> <code>energy_parameters.json</code> &quot;<a class="cite" href="sources.html#table10.4">Table 10.4</a>&quot; gives the IPCC NEm Cfi (0.322/0.386/0.370/0.217/0.236/0.315). L79 computes <code>er_maintenance = Cfi*BW^0.75</code>, which is <strong>NEm</strong>. L93-101 compute NEg (IPCC 10.6/10.7), L106-111 NEl (10.8), L117 NEp and L122 NEwork. L140 sums them and L170 does <code>fresh_intake_required_e = energy_required_by_season/average_me</code>, where <code>average_me</code> is ME from <code>me_content</code> (MJ ME/kg DM). I found no km, kl, kg, REM or REG anywhere in <code>R/</code>.</li>
+<li><strong>Expected.</strong> IPCC 2006/2019 <a class="cite" href="sources.html#eq10.16">Eq 10.16</a>: GE = [(NEm+NEa+NEl+NEwork+NEp)/REM + NEg/REG]/(DE%/100). Or, in an ME system (AFRC 1993/CSIRO), MEm = NEm/km (≈0.70), MEl = NEl/kl (≈0.62), MEg = NEg/kg (≈0.3–0.45).</li>
 <li><strong>Magnitude.</strong> I ran the example (run3.R). Code DMI as a share of IPCC DMI: cow 0.58/0.61/0.63, heifers 0.51/0.55/0.58, calves 0.49/0.53/0.56, at DE = 55/60/65% respectively. The DB's own ME system (<code>lkp_livetype</code>) gives about 119 MJ ME/d for the example cow; the code uses 82.8. For small ruminants: DB ewe me_maintenance is 8.64 MJ ME/d, while the code gives 0.217·53^0.75 = 3.76 (−56%).</li>
 <li><strong>Impact.</strong> Energy-limited DMI is about 35–50% too low, which drives land requirement, enteric CH4 (GE = DMI·18.45), VS and N intake down. Pigs are internally consistent (Cfi 0.44 is ME, NRC 1998), so ruminant and pig results are on different bases.</li>
-<li><strong>Fix.</strong> Implement IPCC Eq 10.14–10.16 (REM/REG from diet DE) and derive GE→DMI. Alternatively, convert each NE term with AFRC km/kl/kg from qm = ME/GE. Then use the same DMI for land and GHG.</li>
+<li><strong>Fix.</strong> Implement IPCC <a class="cite" href="sources.html#eq10.14">Eq 10.14–10.16</a> (REM/REG from diet DE) and derive GE→DMI. Alternatively, convert each NE term with AFRC km/kl/kg from qm = ME/GE. Then use the same DMI for land and GHG.</li>
 </ul>
 <h3>C-02 IPCC N retention used as a fraction and double-annualised. Critical, CONFIRMED</h3>
 <ul>
 <li><strong>Evidence.</strong> <code>ghg_emission.R:226</code>: <code>n_retained = ifelse(!Pigs, ifelse(annual_growth==0, milkN/6.38/no_days, milkN+growthN)/no_days, …)</code>. The <code>/no_days</code> outside the ifelse applies again to the dairy branch, so dairy retention is divided by 365². Then L233 does <code>n_excretion_rate = n_intake*(1-n_retained)*no_days</code>.</li>
-<li><strong>Expected.</strong> IPCC 2019 Eq 10.31 is Nex = (N_intake − N_retention)·365, with both terms in kg N/animal/day. The 2006 form uses N_intake·(1 − N_retention_frac) with a <em>fraction</em> from Table 10.20.</li>
+<li><strong>Expected.</strong> IPCC 2019 <a class="cite" href="sources.html#eq10.31">Eq 10.31</a> is Nex = (N_intake − N_retention)·365, with both terms in kg N/animal/day. The 2006 form uses N_intake·(1 − N_retention_frac) with a <em>fraction</em> from <a class="cite" href="sources.html#table10.20">Table 10.20</a>.</li>
 <li><strong>Magnitude (example).</strong> Nex code vs correct: cow 89.4 vs 68.2 kg N/yr (+31%); heifers (herd) 49.7 vs 43.3 (+15%); calf 12.8 vs 8.8 (+46%). Cow retention used: 0.00016 against the correct 0.058 kg N/d. The overstatement propagates to direct and indirect manure N2O, and to <code>total_n_from_manure_mgmt</code>.</li>
 <li><strong>Fix.</strong> Compute everything per animal per day (milk/365, WG = annual_growth/365), use Nex = N_intake − N_ret, then multiply by herd.</li>
 </ul>
@@ -279,9 +281,9 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <ul>
 <li><strong>L-01.</strong> <code>sum(dmi_required_e, na.omit=TRUE)</code>: <code>na.omit</code> is swallowed by <code>...</code> as the value 1. Verified: <code>sum(c(1,2),na.omit=TRUE)</code> returns 4.</li>
 <li><strong>L-02.</strong> IPCC C = 0.8 for females; mixed &quot;steers/heifers&quot; and calves use 1.0.</li>
-<li><strong>L-03.</strong> IPCC Table 10.7: sheep and goats 0.077/0.126. The pregnancy term is also applied to any class with birth_interval &gt; 0; the finite guard only catches 0.</li>
+<li><strong>L-03.</strong> IPCC <a class="cite" href="sources.html#table10.7">Table 10.7</a>: sheep and goats 0.077/0.126. The pregnancy term is also applied to any class with birth_interval &gt; 0; the finite guard only catches 0.</li>
 <li><strong>L-04.</strong> Sheep Ca values. Unsure of the goat source; please cite.</li>
-<li><strong>L-05.</strong> Eq 10.10 WG_wean is the gain from birth to weaning, not the weaning weight.</li>
+<li><strong>L-05.</strong> <a class="cite" href="sources.html#eq10.10">Eq 10.10</a> WG_wean is the gain from birth to weaning, not the weaning weight.</li>
 <li><strong>L-06.</strong> FPCM uses FAO/GLEAM 0.337 + 0.116F + 0.06P, which is correct for cow milk. Protein should be taken from raw milk. The fallback at merge_outputs:457 is per head.</li>
 <li><strong>L-07.</strong> AME divisor is 2500 vs 2100.</li>
 <li><strong>L-08.</strong> No days normalisation; <code>season_length()</code> omits the end day and is unused.</li>

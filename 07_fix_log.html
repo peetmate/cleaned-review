@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>Proposed fixes: test log</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>Proposed fixes: test log</h1>
 <ul>
 <li><strong>Date:</strong> 2026-09-29</li>
 <li><strong>Package:</strong> <code>cleaned</code> v0.7.0 (<code>staging</code> @ <code>800d53a</code>)</li>
@@ -60,7 +62,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 </thead>
 <tbody>
 <tr>
-<td>01 control NEm (Eq. 10.3)</td>
+<td>01 control NEm (<a class="cite" href="sources.html#eq10.3">Eq. 10.3</a>)</td>
 <td>✅</td>
 <td>✅</td>
 <td>✅</td>
@@ -74,7 +76,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>01 intake per Eq. 10.14–10.16</td>
+<td>01 intake per <a class="cite" href="sources.html#eq10.14">Eq. 10.14–10.16</a></td>
 <td>❌</td>
 <td>✅</td>
 <td>❌</td>
@@ -102,7 +104,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>02 control N intake (Eq. 10.32)</td>
+<td>02 control N intake (<a class="cite" href="sources.html#eq10.32">Eq. 10.32</a>)</td>
 <td>✅</td>
 <td>✅</td>
 <td>✅</td>
@@ -116,7 +118,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>02 N retention (Eq. 10.33)</td>
+<td>02 N retention (<a class="cite" href="sources.html#eq10.33">Eq. 10.33</a>)</td>
 <td>❌</td>
 <td>❌</td>
 <td>✅</td>
@@ -130,7 +132,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>02 N excretion (Eq. 10.31A)</td>
+<td>02 N excretion (<a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a>)</td>
 <td>❌</td>
 <td>❌</td>
 <td>✅</td>
@@ -144,7 +146,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>03 control Eq. 2.25</td>
+<td>03 control <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a></td>
 <td>✅</td>
 <td>✅</td>
 <td>✅</td>
@@ -172,7 +174,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>03 guard: land-use change per Eq. 2.25</td>
+<td>03 guard: land-use change per <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a></td>
 <td>❌</td>
 <td>❌</td>
 <td>❌</td>
@@ -186,7 +188,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <td>✅</td>
 </tr>
 <tr>
-<td>04 control Table 2.5 factors</td>
+<td>04 control <a class="cite" href="sources.html#table2.5">Table 2.5</a> factors</td>
 <td>✅</td>
 <td>✅</td>
 <td>✅</td>
@@ -412,24 +414,24 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <tbody>
 <tr>
 <td><strong>F01</strong></td>
-<td>Convert net energy to intake with IPCC REM/REG (2019 Eq. 10.14–10.16). Energy-based DMI = GE/18.45 for cattle, buffalo, sheep and goats. Pigs are unchanged.</td>
+<td>Convert net energy to intake with IPCC REM/REG (2019 <a class="cite" href="sources.html#eq10.14">Eq. 10.14–10.16</a>). Energy-based DMI = GE/18.45 for cattle, buffalo, sheep and goats. Pigs are unchanged.</td>
 <td><code>R/energy_requirement.R</code> (annual NE split into REM and REG groups; seasonal DMI)</td>
 <td><strong>Author decision</strong></td>
 <td>(1) DE is derived from the package's ME with its own ME/DE = 0.81. (2) DE is floored at <strong>45%</strong> for REM/REG: IPCC 2019 p. 10.21 gives the common ruminant DE ranges as starting at 45%. The package warns below that. Without the floor, the example diet (35–40% DE) gave negative intakes and one of 57,831 kg DM. The guard test catches this. (3) It changes every livestock output.</td>
 </tr>
 <tr>
 <td><strong>F02</strong></td>
-<td>N retention in kg N/head/day (Eq. 10.33), and N excretion = (N intake − retention × herd) × 365 (Eq. 10.31A)</td>
+<td>N retention in kg N/head/day (<a class="cite" href="sources.html#eq10.33">Eq. 10.33</a>), and N excretion = (N intake − retention × herd) × 365 (<a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a>)</td>
 <td><code>R/ghg_emission.R:226, 233</code></td>
 <td>Ready for cattle</td>
 <td>Sheep and goats reuse the cattle equation, 10.33; IPCC gives it for cattle, so confirm for small ruminants. The pig pathway is unchanged.</td>
 </tr>
 <tr>
 <td><strong>F03</strong></td>
-<td>Soil carbon changes only when land use or management changes (2006 Eq. 2.25). Adds optional inputs <code>cropland_system_previous</code>, <code>cropland_tillage_previous</code>, <code>cropland_orgmatter_previous</code>, <code>grassland_management_previous</code> and <code>grassland_implevel_previous</code>; if they're absent, the change is 0.</td>
+<td>Soil carbon changes only when land use or management changes (2006 <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a>). Adds optional inputs <code>cropland_system_previous</code>, <code>cropland_tillage_previous</code>, <code>cropland_orgmatter_previous</code>, <code>grassland_management_previous</code> and <code>grassland_implevel_previous</code>; if they're absent, the change is 0.</td>
 <td><code>R/soc.R</code> (3 stock-change blocks)</td>
 <td><strong>Author decision</strong></td>
-<td>The measured stock is treated as SOC₀, and SOCref = SOC₀/F₀. The alternative is IPCC Table 2.3 SOCref by climate and soil. The app would need fields for the previous state to show real land-use change. The stock size/units question (about 10×) is not addressed.</td>
+<td>The measured stock is treated as SOC₀, and SOCref = SOC₀/F₀. The alternative is IPCC <a class="cite" href="sources.html#table2.3">Table 2.3</a> SOCref by climate and soil. The app would need fields for the previous state to show real land-use change. The stock size/units question (about 10×) is not addressed.</td>
 </tr>
 <tr>
 <td><strong>F04</strong></td>

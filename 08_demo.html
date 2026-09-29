@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned v0.7.0: critical issues, demonstrated</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned v0.7.0: critical issues, demonstrated</h1>
 <p>This page shows each critical issue in the <code>cleaned</code> R package (v0.7.0, <code>staging</code> @ <code>800d53a</code>), which the iCLEANED app uses for its calculations. For each issue it compares three things:</p>
 <ul>
 <li><strong>Current:</strong> the package as it is today.</li>
@@ -18,7 +20,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 </ul>
 <p>Every number is produced when this page is built, from the code shown. The full fix log is in <code>07_fix_log.md</code>.</p>
 <h2>1. Feed intake: net energy treated as metabolisable energy</h2>
-<p>The IPCC equations give an animal's energy requirement as <strong>net energy</strong> (NE). Feed supplies <strong>metabolisable energy</strong> (ME), and only part of it becomes net energy. IPCC 2019 Eq. 10.14–10.16 (Vol 4 Ch 10, pp. 10.29–10.30) converts between them with the efficiency ratios REM and REG. The package skips that step (<code>R/energy_requirement.R:170</code>), so it underestimates how much an animal eats. Enteric CH4, manure, land and N are all calculated from that intake.</p>
+<p>The IPCC equations give an animal's energy requirement as <strong>net energy</strong> (NE). Feed supplies <strong>metabolisable energy</strong> (ME), and only part of it becomes net energy. IPCC 2019 <a class="cite" href="sources.html#eq10.14">Eq. 10.14–10.16</a> (Vol 4 Ch 10, pp. 10.29–10.30) converts between them with the efficiency ratios REM and REG. The package skips that step (<code>R/energy_requirement.R:170</code>), so it underestimates how much an animal eats. Enteric CH4, manure, land and N are all calculated from that intake.</p>
 <p>The test diet gives every feed 9.5 MJ ME/kg DM, which is about 64% digestible.</p>
 <table>
 <thead>
@@ -58,14 +60,14 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 </tr>
 </tbody>
 </table>
-<p>Currently the package gives these animals only 55–63% of the IPCC intake when energy is the limiting factor. The fix applies Eq. 10.14–10.16 to cattle, buffalo, sheep and goats, and warns if the diet is too poor for the equations to be valid.</p>
+<p>Currently the package gives these animals only 55–63% of the IPCC intake when energy is the limiting factor. The fix applies <a class="cite" href="sources.html#eq10.14">Eq. 10.14–10.16</a> to cattle, buffalo, sheep and goats, and warns if the diet is too poor for the equations to be valid.</p>
 <pre class="diff"><code>--- a/R/energy_requirement.R	2026-09-29 10:30:38
 +++ b/R/energy_requirement.R	2026-09-29 10:30:38
 @@ -138,6 +138,9 @@
    #Compute annual energy and protein required
    annual_requirement &lt;- lactation_cp%&gt;%
      mutate(energy_required_annually=(er_maintenance+er_activity+er_growth+er_lactation+er_pregnancy+er_work+er_wool)*no_days*herd_composition,
-+           # IPCC 2019 Eq. 10.16 splits NE into terms divided by REM and by REG
++           # IPCC 2019 <a class="cite" href="sources.html#eq10.16">Eq. 10.16</a> splits NE into terms divided by REM and by REG
 +           ne_rem_annually=(er_maintenance+er_activity+er_lactation+er_pregnancy+er_work)*no_days*herd_composition,
 +           ne_reg_annually=(er_growth+er_wool)*no_days*herd_composition,
             protein_required_annually =((cp_maintenance*no_days)+
@@ -79,12 +81,12 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 -             dmi_required_e = fresh_intake_required_e*average_dm/100,
 +      mutate(de_pct = ((average_me*100/average_dm)/0.81)/18.45*100, #DE as % of GE, package ME/DE = 0.81
 +             # IPCC 2019 p. 10.21: common ruminant DE ranges start at 45%; below that REG
-+             # (Eq. 10.15) approaches 0 and intake diverges, so 45% is used as a floor.
++             # (<a class="cite" href="sources.html#eq10.15">Eq. 10.15</a>) approaches 0 and intake diverges, so 45% is used as a floor.
 +             de_eq = pmax(de_pct, 45),
-+             rem = 1.123-(4.092e-3*de_eq)+(1.126e-5*de_eq^2)-(25.4/de_eq), #IPCC 2019 equation 10.14
-+             reg = 1.164-(5.16e-3*de_eq)+(1.308e-5*de_eq^2)-(37.4/de_eq), #IPCC 2019 equation 10.15
++             rem = 1.123-(4.092e-3*de_eq)+(1.126e-5*de_eq^2)-(25.4/de_eq), #IPCC 2019 <a class="cite" href="sources.html#eq10.14">equation 10.14</a>
++             reg = 1.164-(5.16e-3*de_eq)+(1.308e-5*de_eq^2)-(37.4/de_eq), #IPCC 2019 <a class="cite" href="sources.html#eq10.15">equation 10.15</a>
 +             ipcc_ruminant = grepl(&quot;^(Cattle|Buffalo|Sheep|Goats)&quot;, livestock_category_name),
-+             ge_required_by_season = ((ne_rem_annually*sl/no_days)/rem+(ne_reg_annually*sl/no_days)/reg)/(de_eq/100), #IPCC 2019 equation 10.16
++             ge_required_by_season = ((ne_rem_annually*sl/no_days)/rem+(ne_reg_annually*sl/no_days)/reg)/(de_eq/100), #IPCC 2019 <a class="cite" href="sources.html#eq10.16">equation 10.16</a>
 +             dmi_required_e = ifelse(ipcc_ruminant, ge_required_by_season/18.45, (energy_required_by_season/average_me)*average_dm/100),
 +             fresh_intake_required_e = dmi_required_e*100/average_dm,
               fresh_intake_required_cp = protein_required_by_season/(average_cp/100),
@@ -92,7 +94,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 ... (14 more lines in results/F01.diff)
 </code></pre>
 <h2>2. N excretion: N retention used with the wrong units</h2>
-<p>IPCC 2019 Eq. 10.33 (p. 10.85) gives N retained in milk and weight gain in <strong>kg N per animal per day</strong>. On the same page, IPCC says cattle excretion then uses Eq. 10.31A: Nex = (N intake − N retention) × 365.</p>
+<p>IPCC 2019 <a class="cite" href="sources.html#eq10.33">Eq. 10.33</a> (p. 10.85) gives N retained in milk and weight gain in <strong>kg N per animal per day</strong>. On the same page, IPCC says cattle excretion then uses <a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a>: Nex = (N intake − N retention) × 365.</p>
 <p>The package divides milk retention by 365 twice (<code>R/ghg_emission.R:226</code>). It then uses the result as a <em>fraction</em> of intake (<code>:233</code>).</p>
 <table>
 <thead>
@@ -132,32 +134,32 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 </tr>
 </tbody>
 </table>
-<p>For the dairy cow, the package's N retention is about 365× too small, so almost all intake N is counted as excreted. That overstates manure N2O and the nitrogen balance. The last column applies IPCC Eq. 10.31A to the package's own N intake, so it isolates the retention error from the intake error in section 1. With the fix, the package matches it exactly (test 02).</p>
+<p>For the dairy cow, the package's N retention is about 365× too small, so almost all intake N is counted as excreted. That overstates manure N2O and the nitrogen balance. The last column applies IPCC <a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a> to the package's own N intake, so it isolates the retention error from the intake error in section 1. With the fix, the package matches it exactly (test 02).</p>
 <pre class="diff"><code>--- a/R/ghg_emission.R	2026-09-29 10:30:51
 +++ b/R/ghg_emission.R	2026-09-29 10:30:51
 @@ -223,14 +223,17 @@
                                                   ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(40,80),0.024,
                                                          ifelse(livetype_desc== &quot;Pigs - growers&quot; &amp; body_weight %gel% c(80,120),0.021,
                                                                 ifelse(livetype_desc== &quot;Pigs - dry sows/boars&quot;,0.021,0))))))),
--           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),ifelse(annual_growth == 0,(annual_milk*(protein_milkcontent/100))/6.38/no_days,((annual_milk*(protein_milkcontent/100))/6.38)+(((annual_growth*(268-(7.03*er_growth/annual_growth)))/1000)/6.25))/no_days,#equation 10.33
-+           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),((annual_milk/no_days)*(protein_milkcontent/100))/6.38+ifelse(annual_growth &gt; 0,(((annual_growth/no_days)*(268-(7.03*er_growth/(annual_growth/no_days))))/1000)/6.25,0),#equation 10.33, kg N/head/day
+-           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),ifelse(annual_growth == 0,(annual_milk*(protein_milkcontent/100))/6.38/no_days,((annual_milk*(protein_milkcontent/100))/6.38)+(((annual_growth*(268-(7.03*er_growth/annual_growth)))/1000)/6.25))/no_days,#<a class="cite" href="sources.html#eq10.33">equation 10.33</a>
++           n_retained = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),((annual_milk/no_days)*(protein_milkcontent/100))/6.38+ifelse(annual_growth &gt; 0,(((annual_growth/no_days)*(268-(7.03*er_growth/(annual_growth/no_days))))/1000)/6.25,0),#<a class="cite" href="sources.html#eq10.33">equation 10.33</a>, kg N/head/day
                                 ifelse(livetype_desc==&quot;Pigs - lactating/pregnant sows&quot;,n_gain+n_weaned, #equation 10.33A
                                        ifelse(livetype_desc== &quot;Pigs - growers&quot; | livetype_desc== &quot;Pigs - dry sows/boars&quot;,(annual_growth*n_gain),0)))) #equation 10.33C
  
  
    #Nitrogen excretion rates
    n_excretion &lt;- n_retention1%&gt;%
--    mutate(n_excretion_rate = n_intake*(1-n_retained)*no_days) #equation 10.31
+-    mutate(n_excretion_rate = n_intake*(1-n_retained)*no_days) #<a class="cite" href="sources.html#eq10.31">equation 10.31</a>
 +    # n_intake is a herd total (ge_intake carries herd_composition); n_retained is per head
 +    mutate(n_excretion_rate = ifelse(!grepl(&quot;Pigs&quot;,livetype_desc),
-+                                     (n_intake-(n_retained*herd_composition))*no_days, #equation 10.31A
-+                                     n_intake*(1-n_retained)*no_days)) #equation 10.31
++                                     (n_intake-(n_retained*herd_composition))*no_days, #<a class="cite" href="sources.html#eq10.31a">equation 10.31A</a>
++                                     n_intake*(1-n_retained)*no_days)) #<a class="cite" href="sources.html#eq10.31">equation 10.31</a>
  
    #################################################################################################################################
    #Direct N2O emissions
 </code></pre>
 <h2>3. Soil carbon: a permanent loss on land that hasn't changed</h2>
-<p>IPCC 2006 Eq. 2.25 (Vol 4 Ch 2, p. 2.30) calculates soil carbon change from a <em>change</em> in land use or management between two points in time: ΔC = (SOC₀ − SOC₍₀₋T₎)/D. The package applies the stock-change factors to the measured stock every year (<code>R/soc.R:125-132</code>). So any cropland whose factors are below 1 shows a carbon loss every year, even if nothing has changed.</p>
+<p>IPCC 2006 <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a> (Vol 4 Ch 2, p. 2.30) calculates soil carbon change from a <em>change</em> in land use or management between two points in time: ΔC = (SOC₀ − SOC₍₀₋T₎)/D. The package applies the stock-change factors to the measured stock every year (<code>R/soc.R:125-132</code>). So any cropland whose factors are below 1 shows a carbon loss every year, even if nothing has changed.</p>
 <table>
 <thead>
 <tr>
@@ -176,7 +178,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 </tr>
 </tbody>
 </table>
-<p>The fix adds optional <code>*_previous</code> inputs for the previous land use and management. If they aren't given, the change is 0, as Eq. 2.25 requires. This changes the method, so the authors need to agree it (see the fix log).</p>
+<p>The fix adds optional <code>*_previous</code> inputs for the previous land use and management. If they aren't given, the change is 0, as <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a> requires. This changes the method, so the authors need to agree it (see the fix log).</p>
 <pre class="diff"><code>--- a/R/soc.R	2026-09-29 10:31:04
 +++ b/R/soc.R	2026-09-29 10:31:04
 @@ -33,6 +33,12 @@

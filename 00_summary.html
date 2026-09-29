@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned package: adversarial review summary</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>cleaned package: adversarial review summary</h1>
 <ul>
 <li><strong>Date:</strong> 2026-09-29</li>
 <li><strong>Package reviewed:</strong> <code>cleaned</code> v0.7.0 (CIAT/cleaned <code>staging</code> @ <code>800d53a</code>)</li>
@@ -121,21 +123,21 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <tbody>
 <tr>
 <td>1</td>
-<td>Net-energy requirements ÷ ME density, with no REM/REG conversion (IPCC Eq. 10.14–10.16)</td>
+<td>Net-energy requirements ÷ ME density, with no REM/REG conversion (IPCC <a class="cite" href="sources.html#eq10.14">Eq. 10.14–10.16</a>)</td>
 <td>CL F02, LV C-01</td>
 <td>FAIL: DMI 0.55–0.63× IPCC</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>2</td>
-<td>N retention in kg N/day, used as a fraction and divided by 365 twice (Eq. 10.31A/10.33)</td>
+<td>N retention in kg N/day, used as a fraction and divided by 365 twice (<a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a>/10.33)</td>
 <td>LV C-02, H-04; CL F04; PK F07</td>
 <td>FAIL: cow Nex +31%</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>3</td>
-<td>SOC stock-change factors applied every year to the measured stock (Eq. 2.25)</td>
+<td>SOC stock-change factors applied every year to the measured stock (<a class="cite" href="sources.html#eq2.25">Eq. 2.25</a>)</td>
 <td>CL F01, LU S-02</td>
 <td>FAIL: −7 t C/ha/yr on unchanged land</td>
 <td>Yes, the largest effect: −4.5 t CO2/yr vs 5.1 t emissions in Study_1</td>
@@ -226,7 +228,7 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <ul>
 <li>REM/REG in <code>energy_requirement()</code></li>
 <li>an intake cap with a flag for CP-limited diets</li>
-<li>SOC based on SOCref (IPCC Table 2.3) with a baseline land-use and management state</li>
+<li>SOC based on SOCref (IPCC <a class="cite" href="sources.html#table2.3">Table 2.3</a>) with a baseline land-use and management state</li>
 </ul>
 </li>
 <li><strong>Guards:</strong>

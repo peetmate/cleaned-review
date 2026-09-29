@@ -9,7 +9,9 @@ pre { background: #f6f8fa; padding: .8em; overflow-x: auto; border-radius: 4px; 
 nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white-space: nowrap; }
 .box { background: #f6f8fa; border: 1px solid #ddd; border-radius: 4px; padding: .8em 1em; margin: 1em 0; }
 .comments { margin-top: 3em; border-top: 1px solid #ddd; padding-top: 1em; }
-</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>Critical findings: unit tests against authoritative methods</h1>
+a.cite { color: inherit; text-decoration: underline dotted #888; } a.cite:hover { color: #0366d6; }
+h3 small { color: #666; font-weight: normal; }
+</style></head><body><nav><a href="index.html">Home</a><a href="00_summary.html">summary</a><a href="01_climate_ghg.html">climate ghg</a><a href="02_livestock.html">livestock</a><a href="03_landuse.html">landuse</a><a href="04_package_code.html">package code</a><a href="05_app_relevance_and_workshop.html">app relevance and workshop</a><a href="06_critical_tests.html">critical tests</a><a href="07_fix_log.html">fix log</a><a href="08_demo.html">demo</a><a href="issues/index.html">Critical issues</a><a href="sources.html">Sources</a><a href="https://github.com/peetmate/cleaned-review">Repository</a></nav><h1>Critical findings: unit tests against authoritative methods</h1>
 <p>This file is kept locally and has not been pushed.</p>
 <ul>
 <li><strong>Package tested:</strong> <code>cleaned</code> v0.7.0 (<code>staging</code> @ <code>800d53a</code>)</li>
@@ -39,14 +41,14 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <tr>
 <td>01</td>
 <td>NE requirements met with ME, no REM/REG (F02, C-01)</td>
-<td>PASS: NEm = 0.386·BW^0.75 (Eq. 10.3, Table 10.4)</td>
+<td>PASS: NEm = 0.386·BW^0.75 (<a class="cite" href="sources.html#eq10.3">Eq. 10.3</a>, <a class="cite" href="sources.html#table10.4">Table 10.4</a>)</td>
 <td><strong>FAIL</strong></td>
-<td>Energy DMI is <strong>0.55–0.63×</strong> IPCC Eq. 10.16 on a controlled diet at 64% DE (cows 0.63, steers 0.57, calves 0.55)</td>
+<td>Energy DMI is <strong>0.55–0.63×</strong> IPCC <a class="cite" href="sources.html#eq10.16">Eq. 10.16</a> on a controlled diet at 64% DE (cows 0.63, steers 0.57, calves 0.55)</td>
 </tr>
 <tr>
 <td>02a</td>
 <td>N retention units (C-02, H-04, F04, F07)</td>
-<td>PASS: N intake = Eq. 10.32</td>
+<td>PASS: N intake = <a class="cite" href="sources.html#eq10.32">Eq. 10.32</a></td>
 <td><strong>FAIL</strong></td>
 <td>Cow N retention <strong>0.00016 vs 0.058</strong> kg N/day (365× too small)</td>
 </tr>
@@ -60,14 +62,14 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <tr>
 <td>03</td>
 <td>SOC factors applied every year to the measured stock (F01, S-02)</td>
-<td>PASS: Eq. 2.25 reference gives 0 when nothing changes</td>
+<td>PASS: <a class="cite" href="sources.html#eq2.25">Eq. 2.25</a> reference gives 0 when nothing changes</td>
 <td><strong>FAIL</strong></td>
-<td>1 ha of unchanged cropland shows <strong>−7.02 t C/yr</strong> (Eq. 2.25 gives 0)</td>
+<td>1 ha of unchanged cropland shows <strong>−7.02 t C/yr</strong> (<a class="cite" href="sources.html#eq2.25">Eq. 2.25</a> gives 0)</td>
 </tr>
 <tr>
 <td>04</td>
 <td>Burning counts CO2 and uses the N2O GWP for NOx (F03, F06)</td>
-<td>PASS: EFs = Table 2.5</td>
+<td>PASS: EFs = <a class="cite" href="sources.html#table2.5">Table 2.5</a></td>
 <td><strong>FAIL</strong></td>
 <td>1 t DM burnt: <strong>1,802 vs 75</strong> kg CO2e (<strong>24×</strong>)</td>
 </tr>
@@ -120,17 +122,17 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <p><strong>IPCC 2019 Refinement, Vol. 4, Ch. 10</strong>
 (<a href="https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/19R_V4_Ch10_Livestock.pdf">PDF</a>)</p>
 <ul>
-<li><strong>Eq. 10.3 and Table 10.4 (pp. 10.23–10.24):</strong> NEm = Cfi · Weight^0.75. Cfi for lactating cattle is 0.386.</li>
-<li><strong>Eq. 10.14 (p. 10.29):</strong> REM = 1.123 − (4.092·10⁻³ · DE) + 1.126·10⁻⁵ · DE² − 25.4/DE.</li>
-<li><strong>Eq. 10.15 (p. 10.30):</strong> REG = 1.164 − (5.16·10⁻³ · DE) + 1.308·10⁻⁵ · DE² − 37.4/DE.</li>
-<li><strong>Eq. 10.16 (p. 10.30):</strong> GE = [(NEm + NEa + NEl + NEwork + NEp)/REM + (NEg + NEwool)/REG] / (DE%/100).
+<li><strong><a class="cite" href="sources.html#eq10.3">Eq. 10.3</a> and <a class="cite" href="sources.html#table10.4">Table 10.4</a> (pp. 10.23–10.24):</strong> NEm = Cfi · Weight^0.75. Cfi for lactating cattle is 0.386.</li>
+<li><strong><a class="cite" href="sources.html#eq10.14">Eq. 10.14</a> (p. 10.29):</strong> REM = 1.123 − (4.092·10⁻³ · DE) + 1.126·10⁻⁵ · DE² − 25.4/DE.</li>
+<li><strong><a class="cite" href="sources.html#eq10.15">Eq. 10.15</a> (p. 10.30):</strong> REG = 1.164 − (5.16·10⁻³ · DE) + 1.308·10⁻⁵ · DE² − 37.4/DE.</li>
+<li><strong><a class="cite" href="sources.html#eq10.16">Eq. 10.16</a> (p. 10.30):</strong> GE = [(NEm + NEa + NEl + NEwork + NEp)/REM + (NEg + NEwool)/REG] / (DE%/100).
 <ul>
 <li>The text after it: &quot;To convert from GE … to dry matter intake (DMI), divide GE by the energy density of the feed. A default value of 18.45 MJ kg-1 …&quot;</li>
 </ul>
 </li>
-<li><strong>Eq. 10.31A, Option 2 (p. 10.81):</strong> Nex = (N_intake − N_retention) · 365. N_retention is in kg N/animal/day.</li>
-<li><strong>Eq. 10.32 (p. 10.82):</strong> N_intake = (GE/18.45) · ((CP%/100)/6.25).</li>
-<li><strong>Eq. 10.33 (p. 10.85):</strong> N_retention = [Milk · (Milk PR%/100)/6.38] + [WG · (268 − 7.03·NEg/WG)/1000/6.25].
+<li><strong><a class="cite" href="sources.html#eq10.31a">Eq. 10.31A</a>, Option 2 (p. 10.81):</strong> Nex = (N_intake − N_retention) · 365. N_retention is in kg N/animal/day.</li>
+<li><strong><a class="cite" href="sources.html#eq10.32">Eq. 10.32</a> (p. 10.82):</strong> N_intake = (GE/18.45) · ((CP%/100)/6.25).</li>
+<li><strong><a class="cite" href="sources.html#eq10.33">Eq. 10.33</a> (p. 10.85):</strong> N_retention = [Milk · (Milk PR%/100)/6.38] + [WG · (268 − 7.03·NEg/WG)/1000/6.25].
 <ul>
 <li>MILK is in kg/animal/day and WG in kg/day.</li>
 <li>The same page says: &quot;Nitrogen excretion is calculated using Equation 10.31a, Option 2.&quot;</li>
@@ -140,16 +142,16 @@ nav { font-size: 14px; margin-bottom: 1.5em; } nav a { margin-right: .9em; white
 <p><strong>IPCC 2006, Vol. 4, Ch. 2</strong>
 (<a href="https://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/4_Volume4/V4_02_Ch2_Generic.pdf">PDF</a>)</p>
 <ul>
-<li><strong>Eq. 2.25 (p. 2.30):</strong> ΔC = (SOC₀ − SOC₍₀₋T₎)/D, with SOC = Σ SOCref · FLU · FMG · FI · A. D is commonly 20 years.</li>
+<li><strong><a class="cite" href="sources.html#eq2.25">Eq. 2.25</a> (p. 2.30):</strong> ΔC = (SOC₀ − SOC₍₀₋T₎)/D, with SOC = Σ SOCref · FLU · FMG · FI · A. D is commonly 20 years.</li>
 <li><strong>Section 2.4 (p. 2.41):</strong> for Cropland and Grassland, only non-CO2 emissions from burning are counted, on the assumption that the CO2 is taken back up when the vegetation regrows.</li>
-<li><strong>Eq. 2.27 (p. 2.42):</strong> Lfire = A · MB · Cf · Gef · 10⁻³.</li>
-<li><strong>Table 2.5 (p. 2.47), agricultural residues (g/kg DM):</strong> CO2 1515, CO 92, CH4 2.7, N2O 0.07, NOx 2.5.</li>
+<li><strong><a class="cite" href="sources.html#eq2.27">Eq. 2.27</a> (p. 2.42):</strong> Lfire = A · MB · Cf · Gef · 10⁻³.</li>
+<li><strong><a class="cite" href="sources.html#table2.5">Table 2.5</a> (p. 2.47), agricultural residues (g/kg DM):</strong> CO2 1515, CO 92, CH4 2.7, N2O 0.07, NOx 2.5.</li>
 </ul>
 <p><strong>Code-contract standards (tests 06 and 08)</strong></p>
 <p>These aren't IPCC tests. They check against standard R package practice: signal a condition when a result is impossible (R Packages 2e), and don't make a result depend on objects in the caller's environment (Advanced R 2e §6.4).</p>
 <h2>Where the tests disagree with the reviews</h2>
 <ul>
-<li><strong>Finding 01.</strong> On the shipped example diet (about 5.3 MJ ME/kg DM, DE about 35%), the package-to-IPCC ratio was 0.34 for cows and <em>negative</em> for young stock. At that DE, IPCC REG (Eq. 10.15) goes below zero, because the equation isn't valid for such poor diets. So I tested at 64% DE, which reproduces the reviewers' 50–63%. The example diet quality is itself a separate problem (M-01: DM given as fractions, and 0 DM for the concentrate).</li>
+<li><strong>Finding 01.</strong> On the shipped example diet (about 5.3 MJ ME/kg DM, DE about 35%), the package-to-IPCC ratio was 0.34 for cows and <em>negative</em> for young stock. At that DE, IPCC REG (<a class="cite" href="sources.html#eq10.15">Eq. 10.15</a>) goes below zero, because the equation isn't valid for such poor diets. So I tested at 64% DE, which reproduces the reviewers' 50–63%. The example diet quality is itself a separate problem (M-01: DM given as fractions, and 0 DM for the concentrate).</li>
 <li><strong>Finding 02.</strong> The package's intake columns are herd totals, while retention is per head. The reference scales retention by <code>herd_composition</code>, which makes the gap <em>smaller</em> than an unscaled comparison would. That makes 02b a conservative test.</li>
 <li><strong>Finding 03.</strong> The tests show the permanent annual loss but don't check the size of the carbon stock. With 30 cm depth, bulk density 1.3 and 1.5% C, the package stock works out at about 585 t C/ha, where the physical value is 58.5. That 10× is only an error if the inputs are in cm and %. The input contract (<code>vignettes/input-contract.Rmd:50-53</code>) gives no units, so I left it as a documentation finding rather than a test.</li>
 <li><strong>Finding 07b.</strong> I couldn't retrieve the NUTMON leaching regression from a primary source, so the test is skipped with that reason. To enable it, add the page reference from Smaling et al. (1993) or De Willigen (2000).</li>
