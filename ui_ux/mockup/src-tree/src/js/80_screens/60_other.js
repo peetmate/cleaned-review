@@ -102,6 +102,7 @@
     root.append(screenHead(D.section("check")));
     const blocking = val.errors;
     root.append(h("div", { class: "tile-row" }, tile(blocking.length, "to fix", blocking.length ? "var(--danger)" : "var(--success)"), tile(val.warnings.length, "to double-check", "var(--warn)"), tile(val.assumptions.length, "assumed values", "var(--prov-default)"), tile(state.animals.reduce((s, a) => s + (Number(a.herd_n) || 0), 0), "animals"), tile(state.feeds.length, "feeds"), tile(state.plots.length, "plots")));
+    root.append(ICL.common.disclaimer({ where: "check", extra: `This scenario carries ${val.assumptions.length} assumed value${val.assumptions.length === 1 ? "" : "s"}, listed below. Every one of them is a number nobody typed.` }));
     root.append(h("div", { class: "card", dataset: { fb: "check:blocking", fbLabel: "Blocking list" } }, h("h2", null, blocking.length ? `Fix these ${blocking.length} things before running` : "Nothing is blocking ✓"), errorList(blocking, "err") || h("p", { class: "small" }, "Every needed value is present and within range.")));
     if (val.warnings.length) root.append(h("div", { class: "card", dataset: { fb: "check:warnings", fbLabel: "Warnings list" } }, h("h2", null, "Worth a second look"), errorList(val.warnings, "warn")));
     const byScreen = {}; for (const a of val.assumptions) (byScreen[a.screen] = byScreen[a.screen] || []).push(a);
@@ -116,6 +117,7 @@
 
   ICL.screens.results = function (root, { state, compiled }) {
     root.append(screenHead(D.section("results")));
+    root.append(ICL.common.disclaimer({ where: "results", short: true }));
     root.append(h("div", { class: "callout", dataset: { fb: "results:what", fbLabel: "Where results come from", noNumber: "" } },
       h("strong", null, "This mockup does not run the model. "),
       "In the real app, Check & run sends the description you built to the ", h("em", null, "cleaned"), " model and the answers land on this screen: greenhouse gases, land needed, water, soil loss and the nitrogen balance, per hectare and per kilogram of milk, with a link from every number back to the inputs that drive it. ",

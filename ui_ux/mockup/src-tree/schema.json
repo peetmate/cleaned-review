@@ -159,9 +159,9 @@
   },
   {
    "id": "batch",
-   "title": "Batch upload",
-   "short": "Batch",
-   "purpose": "Check and run many enterprises at once from a spreadsheet or a JSON file.",
+   "title": "Batch processing",
+   "short": "Batch processing",
+   "purpose": "Check, compile and summarise many enterprises at once from a spreadsheet or a JSON file.",
    "order": 16,
    "wizard": false
   },

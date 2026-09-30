@@ -33,6 +33,8 @@
           ["Herd and animal group", "A herd is animals kept together and managed the same way. Inside it, an animal group is one category — milking cows, calves — because each eats and produces differently."],
         ].map(([t, dd]) => [h("dt", null, t), h("dd", null, dd)]).flat()));
 
+    root.append(ICL.common.disclaimer({ where: "welcome" }));
+
     root.append(h("div", { class: "callout", dataset: { fb: "welcome:mockup", fbLabel: "Mockup notice" } },
       h("strong", null, "This is a mockup for testing. "),
       "It does not run the model and it does not save to a server. Everything you type stays in this browser. Numbered headings (",

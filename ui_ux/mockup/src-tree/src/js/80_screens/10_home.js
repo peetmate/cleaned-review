@@ -24,12 +24,18 @@
     for (const s of list) grid.append(scenarioCard(s, state));
     root.append(grid);
 
+    root.append(h("div", { class: "card", dataset: { fb: "home:batch", fbLabel: "Batch card" } },
+      h("div", { class: "card-head" }, h("h2", null, "Many enterprises at once"), h("a", { class: "btn", href: "#batch" }, "Open batch processing \u2192")),
+      h("p", { class: "small" }, "If the descriptions already exist \u2014 a household survey, a monitoring sheet, a district inventory \u2014 upload the spreadsheet instead of typing each one. Every enterprise is checked the same way as a typed scenario, and you get a QAQC report naming the sheet, the column and the row of anything the model would reject, plus the compiled model input to download.")));
+
     root.append(h("div", { class: "card soft", style: "margin-top:18px" },
       h("h2", null, "Projects"),
       h("p", { class: "small" }, h("strong", null, "A project groups related scenarios"), " \u2014 one study, one district, one piece of work \u2014 and the people who may see them. A scenario is one description of an enterprise; a project is the folder it sits in. Scenarios in a project can be compared with each other."),
       ...(state.library.projects || []).map((p) => h("p", { class: "small", style: "margin:2px 0" }, h("strong", null, p.name), " · ", p.members.join(", "))),
       h("p", { class: "small" }, "Everyone in a project sees its scenarios and any parameter set shared with it."),
       h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague by email.") }, "Invite a colleague")));
+
+    root.append(ICL.common.disclaimer({ where: "home", short: true }));
 
     root.append(h("p", { class: "small", style: "margin-top:14px" }, "Mockup controls: ",
       h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.reset(); ICL.toast("Example scenarios restored."); } }, "Reset all example data"), " ",

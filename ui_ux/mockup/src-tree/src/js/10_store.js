@@ -31,6 +31,10 @@
     const saved = ICL.storage.get(KEY, null);
     if (saved && saved.meta) {
       for (const k of PERSIST) if (saved[k] !== undefined) state[k] = saved[k];
+      ICL.draft = { savedAt: saved._savedAt ? Date.parse(saved._savedAt) : null, restored: true };
+      // Say so: a form this long is often reopened after an interruption, and silence
+      // leaves the user wondering whether their work survived.
+      if (saved._savedAt) setTimeout(() => ICL.toast && ICL.toast(`Unfinished draft restored \u2014 last change ${new Date(saved._savedAt).toLocaleString()}.`), 600);
       // merge shape changes from a newer dictionary onto persisted objects
       const fresh = freshState();
       state.system = Object.assign({}, fresh.system, state.system || {});
@@ -47,7 +51,20 @@
       let done = false; const run = () => { if (done) return; done = true; scheduled = false; for (const fn of subs) { try { fn(state); } catch (e) { console.error(e); } } };
       const t = setTimeout(run, 40); requestAnimationFrame(() => { clearTimeout(t); run(); });
     };
-    const persist = () => { clearTimeout(saveT); saveT = setTimeout(() => { const out = { _schema: SCHEMA_VERSION, _build: ICL.env.build.version }; for (const k of PERSIST) out[k] = state[k]; ICL.storage.set(KEY, out); ICL.storage.set(PREFS_KEY, { session: state.fb.session, viewerLabel: state.fb.viewerLabel, group: state.fb.group }); }, 300); };
+    // A form this long must survive a closed tab, a flat battery or a dropped
+    // connection: every change is written to the local draft within 300 ms, and the
+    // time of the last write is shown so the user can trust it.
+    const persist = () => {
+      clearTimeout(saveT);
+      saveT = setTimeout(() => {
+        const out = { _schema: SCHEMA_VERSION, _build: ICL.env.build.version, _savedAt: new Date().toISOString() };
+        for (const k of PERSIST) out[k] = state[k];
+        const ok = ICL.storage.set(KEY, out) !== false;
+        ICL.storage.set(PREFS_KEY, { session: state.fb.session, viewerLabel: state.fb.viewerLabel, group: state.fb.group });
+        ICL.draft = { savedAt: ok ? Date.now() : null, failed: !ok };
+        const el = document.getElementById("draft-state"); if (el) ICL.layout && ICL.layout.renderDraft && ICL.layout.renderDraft();
+      }, 300);
+    };
     const api = {
       get: () => state,
       set(patch) { state = typeof patch === "function" ? patch(state) : Object.assign(state, patch); persist(); notify(); },

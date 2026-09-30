@@ -73,5 +73,16 @@
     if (!items.length) return null;
     return h("ul", { class: "alert-list" }, ...items.map((e) => h("li", null, h("span", { class: "msg " + cls }, e.msg), e.screen ? h("a", { href: ICL.router.hashFor(e.screen, e.entityId && e.entityId !== "NPK" ? e.entityId : null), onclick: () => setTimeout(() => ICL.fb.flashField(e.fieldId, e.entityId), 250) }, "Go to field →") : null)));
   }
-  ICL.common = { screenHead, variantVote, variantsBox, entityNoun, entityCtx, farmCtx, addEntity, removeEntity, confirmButton, errorList };
+  /** Garbage in, garbage out — stated wherever a number is about to be believed. */
+  const DISCLAIMER_TEXT = "iCLEANED calculates from the description you enter and the defaults you accept. It cannot tell whether a number is right: a wrong herd size, unit or yield produces a wrong result that looks just as confident as a right one. Check the inputs, and the assumed values listed on Check & run, before quoting any output. Results are indicative, for comparing scenarios rather than for reporting absolute figures, and the developers and their institutions accept no responsibility for the accuracy of the outputs or for decisions taken on them.";
+  const DISCLAIMER_SHORT = "Results are only as good as the data entered. iCLEANED cannot tell whether a number is right; check your inputs before quoting any output. No responsibility is accepted for the accuracy of results or decisions based on them.";
+  function disclaimer(opts) {
+    const o = opts || {};
+    return h("div", { class: "callout disclaimer", dataset: { fb: "disclaimer" + (o.where ? ":" + o.where : ""), fbLabel: "Disclaimer", noNumber: "" } },
+      h("strong", null, "Garbage in, garbage out. "),
+      o.short ? DISCLAIMER_SHORT : DISCLAIMER_TEXT,
+      o.extra ? h("div", { class: "small", style: "margin-top:6px" }, o.extra) : null);
+  }
+
+  ICL.common = { disclaimer, DISCLAIMER_TEXT, DISCLAIMER_SHORT, screenHead, variantVote, variantsBox, entityNoun, entityCtx, farmCtx, addEntity, removeEntity, confirmButton, errorList };
 })(window.ICL);

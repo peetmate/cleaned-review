@@ -346,6 +346,8 @@
       "The file is checked the same way as a typed scenario, enterprise by enterprise, and anything the model would reject is listed with the sheet, the column and the row it came from. ",
       h("strong", null, "This mockup checks and compiles but does not run the model.")));
 
+    root.append(ICL.common.disclaimer({ where: "batch", extra: "A batch multiplies this: one mistaken column applies to every row in the file. The QAQC check below finds what the model would reject, not what is simply wrong." }));
+
     // 1. template
     const tpl = h("div", { class: "card", dataset: { fb: "batch:template", fbLabel: "Template section" } },
       h("h2", null, "Get the template"),
@@ -473,13 +475,13 @@
   }
 
   function exportTab(root, b) {
-    const report = [["enterprise_id", "name", "status", "errors", "warnings", "assumed", "animals", "area_ha", "annual_milk_kg", "severity", "where", "problem"]];
+    const report = [["# " + ICL.common.DISCLAIMER_SHORT], ["enterprise_id", "name", "status", "errors", "warnings", "assumed", "animals", "area_ha", "annual_milk_kg", "severity", "where", "problem"]];
     for (const r of b.rows) {
       const list = [...r.problems, ...r.val.errors.map((e) => ({ severity: "error", where: e.label, msg: e.msg })), ...r.val.warnings.map((e) => ({ severity: "warning", where: e.label, msg: e.msg }))];
       if (!list.length) report.push([r.id, r.name, r.status, r.errors, r.warnings, r.assumptions, r.head, r.area, Math.round(r.milk), "", "", ""]);
       for (const p of list) report.push([r.id, r.name, r.status, r.errors, r.warnings, r.assumptions, r.head, r.area, Math.round(r.milk), p.severity, p.where, p.msg]);
     }
-    const bundle = { exportedAt: new Date().toISOString(), appVersion: ICL.env.build.version, source: b.source, parameter_set: ICL.store.get().meta.param_set, enterprises: b.rows.map((r) => ({ enterprise_id: r.id, name: r.name, status: r.status, input: r.compiled.input, assumed: r.compiled.assumed, blocked: r.compiled.blocked, livestock_mapping: r.compiled.livestock_mapping })) };
+    const bundle = { disclaimer: ICL.common.DISCLAIMER_SHORT, exportedAt: new Date().toISOString(), appVersion: ICL.env.build.version, source: b.source, parameter_set: ICL.store.get().meta.param_set, enterprises: b.rows.map((r) => ({ enterprise_id: r.id, name: r.name, status: r.status, input: r.compiled.input, assumed: r.compiled.assumed, blocked: r.compiled.blocked, livestock_mapping: r.compiled.livestock_mapping })) };
     const readyBundle = Object.assign({}, bundle, { enterprises: bundle.enterprises.filter((e) => e.status !== "blocked") });
     root.append(h("div", { class: "card", dataset: { fb: "batch:export", fbLabel: "Download section" } },
       h("h2", null, "Download"),

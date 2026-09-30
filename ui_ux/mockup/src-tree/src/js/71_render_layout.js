@@ -41,7 +41,7 @@
     const CHILDREN = {}; for (const sec of D.sections()) if (sec.parent) (CHILDREN[sec.parent] = CHILDREN[sec.parent] || []).push(sec);
     for (const sec of D.sections()) {
       if (sec.id === "results" || sec.parent || REFERENCE.includes(sec.id)) continue;
-      if (sec.id === "parameters") ul.append(h("li", { class: "sep" }));
+      if (sec.id === "parameters") ul.append(h("li", { class: "sep" }), h("li", { class: "grp" }, "Tools and reference"));
       const st = statusFor(sec.id, state, val);
       const num = ICL.num.prefix(sec.id);
       const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
@@ -75,8 +75,25 @@
     nav.append(ul);
   }
 
+  /** "Draft saved · just now" — the visible half of the crash-safety requirement. */
+  function renderDraft() {
+    const el = document.getElementById("draft-state"); if (!el) return;
+    const d = ICL.draft || {};
+    el.innerHTML = "";
+    if (d.failed) {
+      el.append(h("span", { class: "msg err", title: "This browser refused to store the draft (private window, or storage full). Export from Check & run so the work is not lost." }, "Draft not saved"));
+      return;
+    }
+    if (!d.savedAt) { el.append(h("span", { class: "small" }, "Nothing typed yet")); return; }
+    const secs = Math.round((Date.now() - d.savedAt) / 1000);
+    const when = secs < 10 ? "just now" : secs < 90 ? `${secs}s ago` : `${Math.round(secs / 60)} min ago`;
+    el.append(h("span", { class: "small", title: "Every change is kept in this browser as you type, so closing the tab or losing the connection does not lose the form. In the real app this draft also syncs to your account." },
+      "\u2713 Draft saved \u00b7 " + when));
+  }
+
   function wizardOrder(state) { return D.sections().filter((s) => s.wizard && C.sectionVisible(s, state)).map((s) => s.id); }
   function renderWizardBar(state, val) {
+    renderDraft();
     const bar = document.getElementById("wizard-bar"); bar.innerHTML = "";
     const order = wizardOrder(state); const i = order.indexOf(state.route.screen);
     if (i === -1) { bar.hidden = true; return; } bar.hidden = false;
@@ -161,5 +178,5 @@
     body.append(h("span", null, "How clear is this screen? ", h("small", null, "1 = confusing, 5 = very clear")), scale, h("span", null, "Would you know what to enter here?"), know);
   }
 
-  ICL.layout = { renderSidebar, renderWizardBar, renderTopbar, renderPreview, renderRating, wizardOrder, statusFor, entityLabel };
+  ICL.layout = { renderDraft, renderSidebar, renderWizardBar, renderTopbar, renderPreview, renderRating, wizardOrder, statusFor, entityLabel };
 })(window.ICL);

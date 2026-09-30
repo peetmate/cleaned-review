@@ -67,4 +67,6 @@
   ICL.fb.installUI();
   ICL.fb.init().catch((e) => console.error("feedback init failed", e));
   console.info("iCLEANED mockup", ICL.env.build, "claude runtime:", ICL.env.hasClaude);
+  // the "saved N min ago" label has to age on its own
+  setInterval(() => { try { ICL.layout.renderDraft(); } catch {} }, 30000);
 })(window.ICL);

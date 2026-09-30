@@ -115,6 +115,9 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .filterchip.bad[aria-pressed="true"] { background: var(--danger); border-color: var(--danger); color: #fff; }
 .filterchip .cnt { background: var(--surface-2); border-radius: 999px; padding: 0 6px; font-size: .74rem; color: var(--muted); }
 .listfilter input[type="search"] { min-width: 220px; flex: 1; }
+.callout.disclaimer { border-left: 4px solid var(--warn); }
+.draft-state { padding: 0 var(--gutter) 6px; text-align: right; min-height: 18px; }
+.sidebar-nav .grp { padding: 10px 12px 2px; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .tb-chip .k { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; margin-right: 5px; }
 .tb-chip .v { font-weight: 600; }
 .tb-chip.c-db .k { color: inherit; opacity: .75; }

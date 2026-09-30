@@ -43,6 +43,7 @@
 
   ICL.screens.help = function (root, { state }) {
     root.append(screenHead(D.section("help")));
+    root.append(ICL.common.disclaimer({ where: "help" }));
 
     root.append(h("div", { class: "callout", dataset: { fb: "help:stuck", fbLabel: "Stuck right now", noNumber: "" } },
       h("strong", null, "Stuck right now? "),
