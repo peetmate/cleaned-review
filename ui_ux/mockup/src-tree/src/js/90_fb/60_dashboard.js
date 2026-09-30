@@ -61,6 +61,7 @@
       h("label", { class: "small" }, h("input", { type: "checkbox", checked: !!f.hideTriaged, onchange: (e) => set("hideTriaged", e.target.checked) }), " hide triaged"),
       h("span", { style: "flex:1" }),
       h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("json") }, "Export JSON"), h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("csv") }, "Export CSV"),
+      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportIssues() }, "Export as issues (Markdown)"),
       h("button", { type: "button", class: "btn-sm", onclick: () => { const inp = h("input", { type: "file", accept: ".json,application/json", hidden: true }); inp.addEventListener("change", () => { const fr = new FileReader(); fr.onload = () => ICL.fb.importJson(String(fr.result)); fr.readAsText(inp.files[0]); }); document.body.append(inp); inp.click(); } }, "Import JSON"));
     root.append(filt);
     const sess = h("div", { class: "control small", style: "margin-bottom:10px" }, "Session label: ", h("input", { type: "text", value: state.fb.session, "aria-label": "Session label", onchange: (e) => ICL.store.update("fb.session", e.target.value.trim() || "workshop") }), h("span", { class: "muted" }, "stamped on every new record"));
@@ -76,7 +77,8 @@
           h("div", { class: "tags" }, ...(d.types || []).map((t) => h("span", { class: "chip" }, TYPE_LABEL[t] || t))),
           h("div", null, d.text || h("em", { class: "muted" }, "(no text)")),
           h("div", { class: "small" }, `${d.viewerLabel || "anonymous"}${d.group ? " · " + d.group : ""} · ${(d.createdAt || "").slice(0, 16).replace("T", " ")} · ${d.appVersion || ""}`),
-          h("div", { class: "control", style: "margin-top:6px" }, h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.focus(d) }, "Jump to element →"), state.fb.canWrite !== false ? h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.triage(d.id, !d.triaged) }, d.triaged ? "Un-triage" : "Mark triaged") : null, state.fb.canWrite !== false ? ICL.common.confirmButton("Delete", () => ICL.fb.remove(d.id), "btn-sm") : null))));
+          h("div", { class: "control", style: "margin-top:6px" }, h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.focus(d) }, "Jump to element →"),
+          h("a", { class: "btn-sm", href: ICL.fb.issueUrl(d), target: "_blank", rel: "noopener", title: "Opens GitHub with the title, body and labels filled in. You press Create." }, "File as issue ↗"), state.fb.canWrite !== false ? h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.triage(d.id, !d.triaged) }, d.triaged ? "Un-triage" : "Mark triaged") : null, state.fb.canWrite !== false ? ICL.common.confirmButton("Delete", () => ICL.fb.remove(d.id), "btn-sm") : null))));
     }
     root.append(list);
     root.append(h("p", { class: "small" }, "Types and severity match the workshop feedback form so exports can be filed as GitHub issues (bug / data / feature / question)."));

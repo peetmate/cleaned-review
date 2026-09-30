@@ -116,6 +116,70 @@
     };
   };
 
+  /* ---- filing to GitHub ----------------------------------------------------------
+     A static page cannot hold a GitHub token: anything shipped to the browser is public,
+     and a token that can open issues can also close them and read private repositories.
+     So there is no silent submit. What there is: a prefilled "new issue" link, which needs
+     no credentials and leaves the participant one click from filing, and a bulk export
+     that a facilitator feeds to `tools/file_feedback_issues.mjs`, which authenticates as
+     them through the gh CLI. */
+  const REPO = "peetmate/cleaned-review";
+  const TYPE_WORD = { confusing: "confusing", missing: "missing", wrong_unit: "wrong unit or value", love_it: "works well", dont_need: "not needed", bug: "bug" };
+  const SEV_WORD = { 3: "blocker", 2: "high", 1: "low" };
+
+  /** The issue body for one comment. Also what the bulk script writes, so they match. */
+  fb.issueBody = function (d) {
+    const L = [];
+    L.push(d.text || "(no text)");
+    L.push("");
+    L.push("| | |");
+    L.push("|---|---|");
+    L.push(`| Screen | ${(d.screen || "?")} |`);
+    if (d.fbLabel) L.push(`| Element | ${d.fbLabel} |`);
+    if (d.fieldId) L.push(`| Field | \`${d.fieldId}\` |`);
+    if ((d.types || []).length) L.push(`| Kind | ${d.types.map((t) => TYPE_WORD[t] || t).join(", ")} |`);
+    if (d.severity) L.push(`| Severity | ${SEV_WORD[d.severity] || d.severity} |`);
+    if (d.group) L.push(`| Group | ${d.group} |`);
+    if (d.viewerLabel) L.push(`| Reported by | ${d.viewerLabel} |`);
+    L.push(`| Session | ${d.session || "?"} |`);
+    L.push(`| Build | ${d.appVersion || "?"} |`);
+    if (d.viewport) L.push(`| Viewport | ${d.viewport.w}\u00d7${d.viewport.h}${d.theme ? ", " + d.theme : ""} |`);
+    L.push("");
+    if (d.screenshot) L.push("A screengrab was attached in the mockup. Drag it in from the exported JSON \u2014 it cannot travel in a link.");
+    L.push("");
+    L.push(`<!-- fb-id: ${d.id} -->`);
+    return L.join("\n");
+  };
+  fb.issueTitle = function (d) {
+    const where = d.fbLabel || d.screen || "mockup";
+    const txt = (d.text || "").replace(/\s+/g, " ").trim();
+    const t = `[mockup] ${where}: ${txt}`;
+    return t.length > 110 ? t.slice(0, 107) + "\u2026" : t;
+  };
+  /** Prefilled new-issue URL. No token, no server; the person clicks Create. */
+  fb.issueUrl = function (d) {
+    const labels = ["workshop-feedback"];
+    if ((d.types || []).includes("bug")) labels.push("bug");
+    if (d.severity === 3) labels.push("blocker");
+    const qs = new URLSearchParams({ title: fb.issueTitle(d), body: fb.issueBody(d), labels: labels.join(",") });
+    const url = `https://github.com/${REPO}/issues/new?${qs.toString()}`;
+    return url.length > 7500 ? `https://github.com/${REPO}/issues/new?${new URLSearchParams({ title: fb.issueTitle(d), body: (d.text || "") + "\n\n(too long for a link \u2014 paste the rest from the export)\n\n<!-- fb-id: " + d.id + " -->", labels: labels.join(",") }).toString()}` : url;
+  };
+
+  /** One Markdown file holding every comment as a ready issue, for the bulk script. */
+  fb.exportIssues = async function () {
+    const docs = (ICL.store.get().fb.docs || []).slice().sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
+    const state = ICL.store.get();
+    const L = [`# Workshop feedback as issues \u2014 session ${state.fb.session}`, "",
+      `${docs.length} item${docs.length === 1 ? "" : "s"}, exported ${new Date().toISOString()} from build ${ICL.env.build.version}.`, "",
+      "Each block below is one issue. File them with:", "", "```bash",
+      "node ui_ux/mockup/tools/file_feedback_issues.mjs icleaned-feedback-" + state.fb.session + ".json",
+      "```", "",
+      "That script authenticates as you through the gh CLI, skips anything already filed, and needs the JSON export rather than this file. This Markdown is for reading and for pasting by hand.", "", "---", ""];
+    for (const d of docs) { L.push("## " + fb.issueTitle(d), "", fb.issueBody(d), "", "---", ""); }
+    await ICL.download(`icleaned-feedback-issues-${state.fb.session}.md`, L.join("\n"), "text/markdown");
+  };
+
   /** Write a throwaway document, read it back, delete it. Proves the path end to end. */
   fb.testStore = async function () {
     const id = "selftest_" + ICL.uid("").slice(1);

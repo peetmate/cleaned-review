@@ -271,3 +271,26 @@ The repository had no agent-facing or contributor-facing documentation, so three
 **A bug the self-test found immediately:** both local adapters pre-created an event emitter for each known collection and threw `Cannot read properties of undefined (reading 'emit')` on any other — so the self-test could not run against them, and any future collection would have failed the same way. Collections are now created on demand. An adapter that cannot be tested is an adapter that should not be trusted.
 
 **Still unproven:** whether the shared store works *inside the published artifact*. The local build always reports "outside the artifact runtime", correctly, because it is. That verdict can only be read in the artifact itself.
+
+### Where the two deployments store feedback (and why the artifact's database was empty)
+
+The empty database was not a bug. There are two deployments and they cannot share a store:
+
+| | Shared store | What a facilitator must do |
+|---|---|---|
+| **GitHub Pages** (`peetmate.github.io/cleaned-review/ui_ux/mockup/`) | None — a static page has no backend | Export at the end of every session, on every device |
+| **claude.ai artifact** (private link) | Yes, if the runtime grants the page a database and the viewer may write | Nothing, if the storage card says "shared store" |
+
+The two comments that prompted this were made on the Pages copy, which reports "outside the artifact runtime" exactly as it should. Whether the artifact's shared store actually works still has to be read off the storage card **in the artifact**.
+
+## v0.9.3 — filing feedback to GitHub without a token
+
+**The limit first.** A static page cannot submit to GitHub on its own. Anything shipped to the browser is public, so a token with permission to open issues would also let any visitor close them and read private repositories. There is therefore no silent submit, and there should not be one. Two routes that need no secret:
+
+- **Per item, one click.** Every comment on the dashboard has **File as issue ↗**, which opens GitHub's new-issue form with the title, the body and the labels already filled in — screen, numbered element, field id, kind, severity, group, reporter, session, build and viewport as a table, plus a hidden `fb-id` marker. The person presses Create. Typical link is ~500–700 characters; if a comment is long enough to threaten the URL limit the link degrades to the text plus a pointer to the export rather than truncating silently.
+- **In bulk, as the facilitator.** `tools/file_feedback_issues.mjs` takes the JSON export and files every comment through the `gh` CLI, so it authenticates as whoever runs it and no credential is ever published. It is **idempotent** — each body carries `<!-- fb-id: … -->` and the script searches for that before creating, so re-running after a partial failure files only what is missing. `--dry-run` prints what it would do, `--min-severity 2` files only the serious ones, `--repo` points it elsewhere. It creates the `workshop-feedback` label if absent. Screengrabs cannot be attached by the CLI, so they are written out as image files next to the export and each issue names the file to drag in.
+- **Export as issues (Markdown)** produces one file with every comment already written as an issue, for reading, pasting by hand, or attaching to a report.
+
+Issues are filed to **`peetmate/cleaned-review`**, the development repository, not to the upstream `CIAT` repositories — per the rule in `CLAUDE.md`. Changing that is a one-flag change when the team decides.
+
+**What was rejected:** a serverless proxy holding the token (real zero-click submission, but it needs infrastructure to run and maintain, and it lets anyone with the link file issues under the project's name); and a third-party form service (the data leaves, which is exactly what the workshop's consent statement says will not happen).
