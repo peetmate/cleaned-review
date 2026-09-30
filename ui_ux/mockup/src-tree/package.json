@@ -1,6 +1,6 @@
 {
   "name": "icleaned-mockup",
-  "version": "0.7.0",
+  "version": "0.8.3",
   "private": true,
   "type": "module",
   "description": "Clickable mockup of a redesigned iCLEANED data-entry flow with built-in feedback capture",

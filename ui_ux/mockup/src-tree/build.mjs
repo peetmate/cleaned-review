@@ -20,6 +20,24 @@ function walk(dir) {
   return out;
 }
 
+/** The header version is only useful if it tracks the release notes. Warn when it does not:
+    this drifted silently from 0.7.0 through four documented releases. */
+function checkVersionAgainstNotes(pkg) {
+  try {
+    const notes = readFileSync(join(ROOT, "..", "05_mockup_review.md"), "utf8");
+    const seen = [...notes.matchAll(/^##+\s*v(\d+)\.(\d+)(?:\.(\d+))?/gm)]
+      .map((m) => [Number(m[1]), Number(m[2]), Number(m[3] || 0)]);
+    if (!seen.length) return null;
+    const top = seen.sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0];
+    const newest = `${top[0]}.${top[1]}.${top[2]}`;
+    const [a, b, c] = pkg.split(".").map(Number);
+    if (a !== top[0] || b !== top[1] || c !== top[2]) {
+      return `version drift: package.json says ${pkg}, the newest heading in 05_mockup_review.md is v${newest}`;
+    }
+  } catch {}
+  return null;
+}
+
 function version() {
   let sha = "dev";
   try { sha = execSync("git rev-parse --short HEAD", { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch {}
@@ -112,6 +130,8 @@ function build() {
     .replace("<!-- @data -->", `<script>\n${dataJs}\n</script>`)
     .replace("<!-- @js -->", `<script>\n${js.replace(/<\/script/g, "<\\/script")}\n</script>`);
   writeFileSync(join(ROOT, "dist", "offline", "icleaned-mockup.html"), inline);
+  const drift = checkVersionAgainstNotes(ver.semver);
+  if (drift) console.warn(`  !! ${drift}`);
   console.log(`built ${ver.label} (${ver.sha}) in ${Date.now() - t0} ms: ${jsFiles.length} js files, offline ${(inline.length / 1024).toFixed(0)} KB, ${schema.fields.length} dictionary fields, ${Object.keys(scenarios.scenarios).length} example scenarios`);
 }
 
