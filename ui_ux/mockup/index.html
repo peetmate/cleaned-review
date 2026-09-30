@@ -5,7 +5,7 @@
 <meta name="description" content="Clickable mockup of a redesigned iCLEANED data-entry flow, with built-in feedback capture for workshop testing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Merriweather+Sans:wght@300;400;600;700&display=swap">
-<script>window.ICL_BUILD={"version":"v0.9.0 · 2026-09-30 14:47","semver":"0.9.0","sha":"dev","stamp":"2026-09-30 14:47","target":"offline","built":"2026-09-30T11:47:56.983Z"};</script>
+<script>window.ICL_BUILD={"version":"v0.9.1 · 2026-09-30 15:35","semver":"0.9.1","sha":"dev","stamp":"2026-09-30 15:35","target":"offline","built":"2026-09-30T12:35:22.898Z"};</script>
 <style>
 /* iCLEANED Farm Builder mockup — tokens, themes, layout */
 :root {
@@ -57,8 +57,8 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
 .brand-mark { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(from 200deg, var(--success-fill), var(--primary) 60%, var(--accent)); flex: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; } .brand-text strong { font-family: var(--font-head); color: var(--primary); } .brand-text small { color: var(--muted); font-size: .72rem; }
-.topbar-scenario { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
-.topbar-scenario .chip { max-width: 100%; }
+.topbar-assessment { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
+.topbar-assessment .chip { max-width: 100%; }
 .topbar-actions { order: 2; margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
 .tb-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: .84rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .tb-btn[aria-pressed="true"] { background: var(--tint); border-color: var(--primary); color: var(--primary); }
@@ -289,9 +289,9 @@ td.cell-locked { color: var(--muted); } .lock { color: var(--muted); font-size: 
   .topbar-actions { order: 2; margin-left: auto; flex-wrap: nowrap; overflow-x: auto; max-width: 62vw; scrollbar-width: none; }
   .topbar-actions::-webkit-scrollbar { display: none; }
   .topbar-actions .tb-btn { padding: 4px 7px; font-size: .74rem; white-space: nowrap; }
-  .topbar-scenario { order: 3; flex: 0 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .topbar-scenario::-webkit-scrollbar { display: none; }
-  .topbar-scenario .chip { flex: none; }
+  .topbar-assessment { order: 3; flex: 0 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .topbar-assessment::-webkit-scrollbar { display: none; }
+  .topbar-assessment .chip { flex: none; }
 }
 
 /* ---- numbering ---- */
@@ -494,7 +494,7 @@ window.ICL = window.ICL || {};
     return JSON.parse(JSON.stringify(sc));
   }
   const DATA_KEYS = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"];
-  // `features` is a queue about the tool, not about a assessment, so it survives loads and resets
+  // `features` is a queue about the tool, not about an assessment, so it survives loads and resets
 
   function freshState() {
     const d = dataset(LIB().default);
@@ -503,7 +503,7 @@ window.ICL = window.ICL || {};
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
       fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { assessments: (LIB().library || []).slice(), enterprises: (LIB().enterprises || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
-      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
+      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, projectFilter: null, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
       features: [],
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };
@@ -572,7 +572,7 @@ window.ICL = window.ICL || {};
         const lib = state.library; const known = lib.assessments.find((x) => x.id === id);
         for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
         if (known && known.owner) state.meta.owner = known.owner;
-        if (known) { state.meta.enterprise = known.enterprise || null; state.meta.as_of = known.as_of || null; state.meta.kind = known.kind || "observed"; state.meta.label = known.label || null; }
+        if (known) { state.meta.enterprise = known.enterprise || null; state.meta.as_of = known.as_of || null; state.meta.kind = known.kind || "observed"; state.meta.label = known.label || null; state.meta.project = known.project || null; }
         state.library = lib;
         state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, listFilter: {}, listView: {}, validateAll: false, homeTab: state.ui.homeTab });
         persist(); notify(); return true;
@@ -1868,7 +1868,7 @@ window.ICL = window.ICL || {};
 
 
 /* ---- js/80_screens/05_welcome.js ---- */
-/* Welcome: what iCLEANED is, what you are about to do, what a assessment is. */
+/* Welcome: what iCLEANED is, what you are about to do, what an assessment is. */
 (function (ICL) {
   const { h } = ICL; const D = ICL.dict;
   ICL.screens.welcome = function (root, { state }) {
@@ -1898,8 +1898,8 @@ window.ICL = window.ICL || {};
         ...[
           ["Livestock enterprise", "The animals, the land that grows their feed, and the manure they produce — treated as one unit for one year. This can be one household's cows, a cooperative's herd, a district, or a national herd. iCLEANED is a herd model, not a farm model: crops that are not fed to the animals stay outside it."],
           ["Assessment", "One complete description of an enterprise, saved under a name. A baseline assessment describes things as they are now. An intervention assessment is a copy with something changed — a new feed, better manure storage, more animals — so the two can be compared. You need at least one; comparing needs two."],
-          ["Project", "A folder for assessments that belong together \u2014 one study, one district, one piece of work \u2014 plus the people who may see them. A project holds many assessments; a assessment belongs to one project. Sharing a project shares every assessment in it, and any parameter set shared with it, so colleagues compare like with like instead of mailing files around."],
-          ["Parameter set", "The reference values a assessment starts from: animal weights, feed quality, soil erodibility for your region. Shipped sets are read-only so results stay comparable; you can copy one and edit it."],
+          ["Project", "A folder for enterprises that belong together \u2014 one study, one district, one piece of work \u2014 plus the people who may see them. A project holds enterprises, an enterprise holds its assessments, and an enterprise sits in one project or none. Sharing a project shares everything under it, and any parameter set shared with it, so colleagues compare like with like instead of mailing files around."],
+          ["Parameter set", "The reference values an assessment starts from: animal weights, feed quality, soil erodibility for your region. Shipped sets are read-only so results stay comparable; you can copy one and edit it."],
           ["Season", "A feeding period within the year. Animals usually eat differently in the rains and in the dry season, so the diet is described per season."],
           ["Herd and animal group", "A herd is animals kept together and managed the same way. Inside it, an animal group is one category — milking cows, calves — because each eats and produces differently."],
         ].map(([t, dd]) => [h("dt", null, t), h("dd", null, dd)]).flat()));
@@ -1947,10 +1947,21 @@ window.ICL = window.ICL || {};
     for (const e of ents) counts[bucket(e)]++;
     const tabs = h("div", { class: "tabs", role: "tablist" });
     for (const [k, l] of [["mine", "My assessments"], ["shared", "Shared with me"], ["templates", "Templates"]])
-      tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => ICL.store.update("ui.homeTab", k) }, `${l} (${counts[k]})`));
+      tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => ICL.store.set((s) => { s.ui.homeTab = k; s.ui.projectFilter = "all"; return s; }) }, `${l} (${counts[k]})`));
     root.append(tabs);
 
-    const shown = ents.filter((e) => bucket(e) === tab);
+    // Project was named in the chip and the glossary but had no control anywhere.
+    const projects = state.library.projects || [];
+    const inTab = ents.filter((e) => bucket(e) === tab);
+    const pFilter = state.ui.projectFilter || "all";
+    const chips = h("div", { class: "chips" });
+    const countIn = (name) => inTab.filter((e) => (name === "__none" ? !e.project : e.project === name)).length;
+    chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === "all"), onclick: () => ICL.store.update("ui.projectFilter", "all") }, "All projects", h("span", { class: "cnt" }, String(inTab.length))));
+    for (const p of projects) if (countIn(p.name)) chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === p.name), onclick: () => ICL.store.update("ui.projectFilter", p.name) }, p.name, h("span", { class: "cnt" }, String(countIn(p.name)))));
+    if (countIn("__none")) chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === "__none"), onclick: () => ICL.store.update("ui.projectFilter", "__none") }, "No project", h("span", { class: "cnt" }, String(countIn("__none")))));
+    if (projects.length || countIn("__none")) root.append(h("div", { class: "listfilter", dataset: { fb: "home:projectfilter", fbLabel: "Project filter" } }, chips));
+
+    const shown = inTab.filter((e) => pFilter === "all" || (pFilter === "__none" ? !e.project : e.project === pFilter));
     const grid = h("div", { class: "scen-grid", dataset: { fb: "home:list", fbLabel: "Enterprise list" } });
     if (tab === "mine") grid.append(newCard(state));
     for (const e of shown) grid.append(enterpriseCard(e, state));
@@ -1961,11 +1972,7 @@ window.ICL = window.ICL || {};
       h("div", { class: "card-head" }, h("h2", null, "Many assessments at once"), h("a", { class: "btn", href: "#batch" }, "Open batch processing →")),
       h("p", { class: "small" }, "If the descriptions already exist — a household survey, a monitoring sheet, a district inventory — upload the spreadsheet instead of typing each one. Every enterprise is checked the same way as a typed assessment, and you get a QAQC report naming the sheet, the column and the row of anything the model would reject, plus the compiled model input to download.")));
 
-    root.append(h("div", { class: "card soft", style: "margin-top:18px" },
-      h("h2", null, "Projects"),
-      h("p", { class: "small" }, h("strong", null, "A project groups related enterprises"), " — one study, one district, one piece of work — and the people who may see them. Enterprises in a project can be compared with each other."),
-      ...(state.library.projects || []).map((p) => h("p", { class: "small", style: "margin:2px 0" }, h("strong", null, p.name), " · ", p.members.join(", "))),
-      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague by email.") }, "Invite a colleague")));
+    root.append(projectsCard(state));
 
     root.append(ICL.common.disclaimer({ where: "home", short: true }));
 
@@ -1973,6 +1980,54 @@ window.ICL = window.ICL || {};
       h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.reset(); ICL.toast("Example data restored."); } }, "Reset all example data"), " ",
       h("button", { type: "button", class: "btn-sm", onclick: () => startBlank() }, "Start an empty assessment")));
   };
+
+  function moveToProject(e, value) {
+    ICL.store.set((s) => {
+      const ent = s.library.enterprises.find((x) => x.id === e.id); if (ent) ent.project = value || null;
+      for (const r of s.library.assessments) if (r.enterprise === e.id) r.project = value || null;
+      if (s.meta.enterprise === e.id) s.meta.project = value || null;
+      return s;
+    });
+    ICL.toast(value ? `${e.name} moved to ${value}.` : `${e.name} removed from its project.`);
+  }
+
+  /** Projects: what exists, what is in each, and how to make one. */
+  function projectsCard(state) {
+    const projects = state.library.projects || [];
+    const ents = state.library.enterprises || [];
+    const rows = state.library.assessments || [];
+    const card = h("div", { class: "card", dataset: { fb: "home:projects", fbLabel: "Projects" } },
+      h("h2", null, "Projects"),
+      h("p", { class: "small" }, h("strong", null, "A project groups related enterprises"), " — one study, one district, one piece of work — and the people who may see them. Assessments inside a project can be compared with each other, and a parameter set shared with the project is available to all of them. An enterprise can sit in one project or none."));
+    if (projects.length) {
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Project"), h("th", null, "Enterprises"), h("th", null, "Assessments"), h("th", null, "People"), h("th", null, ""))));
+      const tb = h("tbody");
+      for (const p of projects) {
+        const inP = ents.filter((e) => e.project === p.name);
+        const asmt = rows.filter((r) => inP.some((e) => e.id === r.enterprise)).length;
+        tb.append(h("tr", null,
+          h("td", null, h("strong", null, p.name)),
+          h("td", null, String(inP.length)),
+          h("td", null, String(asmt)),
+          h("td", { class: "small" }, (p.members || []).join(", ")),
+          h("td", null,
+            h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.update("ui.projectFilter", p.name); ICL.toast(`Showing ${p.name}.`); } }, "Show"), " ",
+            h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague to " + p.name + " by email.") }, "Invite"))));
+      }
+      t.append(tb);
+      card.append(h("div", { class: "tablewrap" }, t));
+    } else card.append(h("div", { class: "empty" }, "No projects yet. Work can sit outside a project; make one when more than one person needs the same set of enterprises."));
+    const np = h("input", { type: "text", placeholder: "e.g. Njombe dairy 2027", "aria-label": "Name for a new project" });
+    card.append(h("div", { class: "control" }, np,
+      h("button", { type: "button", class: "btn-sm", onclick: () => {
+        const name = np.value.trim();
+        if (!name) { ICL.toast("Give the project a name."); np.focus(); return; }
+        if ((state.library.projects || []).some((p) => p.name === name)) { ICL.toast("There is already a project with that name."); return; }
+        ICL.store.set((s) => { s.library.projects.push({ id: ICL.uid("prj"), name, members: ["you"] }); return s; });
+        np.value = ""; ICL.toast(`Project "${name}" created. Put an enterprise in it from its card.`);
+      } }, "Create a project")));
+    return card;
+  }
 
   function enterpriseCard(e, state) {
     const rows = rowsOf(state, e.id);
@@ -1984,7 +2039,11 @@ window.ICL = window.ICL || {};
         h("span", { class: "chip" }, e.place || "—"),
         e.scale && e.scale !== "farm" ? h("span", { class: "chip c-derived" }, SCALE_LABEL[e.scale]) : null,
         observed.length > 1 ? h("span", { class: "chip c-user" }, `${observed.length} years`) : null),
-      h("div", { class: "meta" }, `by ${e.owner}${e.project ? " · " + e.project : ""}`));
+      h("div", { class: "meta" }, `by ${e.owner}`));
+    const projSel = h("select", { "aria-label": "Project for " + e.name, onchange: (ev) => moveToProject(e, ev.target.value) },
+      h("option", { value: "", selected: !e.project }, "No project"),
+      ...(state.library.projects || []).map((p) => h("option", { value: p.name, selected: e.project === p.name }, p.name)));
+    card.append(h("div", { class: "control", style: "margin:2px 0 8px" }, h("span", { class: "small" }, "Project"), projSel));
 
     // the timeline: one line per assessment, oldest first
     const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Year"), h("th", null, "Assessment"), h("th", null, "Size"), h("th", null, ""))));
@@ -2033,6 +2092,12 @@ window.ICL = window.ICL || {};
   function newCard(state) {
     const name = h("input", { type: "text", id: "new_ent_name", placeholder: "e.g. Njombe smallholder dairy", "aria-label": "Enterprise name" });
     const place = h("input", { type: "text", id: "new_ent_place", placeholder: "e.g. Njombe, Tanzania", "aria-label": "Where it is" });
+    const proj = h("select", { id: "new_ent_project", "aria-label": "Project" },
+      h("option", { value: "" }, "No project"),
+      ...(state.library.projects || []).map((p) => h("option", { value: p.name, selected: state.meta.project === p.name }, p.name)),
+      h("option", { value: "__new" }, "+ New project…"));
+    const newProjName = h("input", { type: "text", placeholder: "Name of the new project", "aria-label": "Name of the new project for this assessment", hidden: true });
+    proj.addEventListener("change", () => { newProjName.hidden = proj.value !== "__new"; if (!newProjName.hidden) newProjName.focus(); });
     const ps = h("select", { id: "new_ent_param", "aria-label": "Parameter set" }, ...D.options(D.field("param_set"), state).map((o) => h("option", { value: o.value, selected: o.value === state.meta.param_set }, o.label)));
     const from = h("select", { id: "new_ent_from", "aria-label": "Start from" }, h("option", { value: "" }, "Empty description"),
       ...(state.library.assessments || []).map((s) => h("option", { value: s.id }, `Copy of ${s.name}`)));
@@ -2040,7 +2105,14 @@ window.ICL = window.ICL || {};
       if (!name.value.trim()) { ICL.toast("Name the enterprise this assessment describes."); name.focus(); return; }
       const entId = ICL.uid("ent");
       const year = new Date().getFullYear();
-      ICL.store.set((s) => { s.library.enterprises.unshift({ id: entId, name: name.value.trim(), place: place.value.trim() || null, owner: "you", project: s.meta.project, scale: "farm" }); return s; });
+      const projectName = proj.value === "__new" ? newProjName.value.trim() : (proj.value || null);
+      if (proj.value === "__new" && !projectName) { ICL.toast("Name the new project, or choose No project."); newProjName.focus(); return; }
+      ICL.store.set((s) => {
+        if (projectName && !(s.library.projects || []).some((p) => p.name === projectName)) s.library.projects.push({ id: ICL.uid("prj"), name: projectName, members: ["you"] });
+        s.meta.project = projectName;
+        s.library.enterprises.unshift({ id: entId, name: name.value.trim(), place: place.value.trim() || null, owner: "you", project: projectName, scale: "farm" });
+        return s;
+      });
       if (from.value) { ICL.store.load(from.value); const id = ICL.store.duplicateOpen(`${name.value.trim()} — Assessment ${year}`, { enterprise: entId, as_of: year, kind: "observed", label: `Assessment ${year}` }); ICL.store.load(id); }
       else startBlank(false, entId, name.value.trim());
       ICL.store.set((s) => { s.meta.param_set = ps.value; const row = s.library.assessments.find((x) => x.id === s.meta.id); if (row) row.param_set = ps.value; return s; });
@@ -2049,6 +2121,7 @@ window.ICL = window.ICL || {};
     return h("div", { class: "card scen-card scen-new", dataset: { fb: "home:new", fbLabel: "New assessment card" } }, h("h3", null, "New assessment"),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_name" }, "Enterprise this describes"), name),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_place" }, "Where it is"), place),
+      h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_project" }, "Project"), proj, newProjName, h("div", { class: "small" }, "A project groups related enterprises and the people who may see them. Optional.")),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_from" }, "Start from"), from, h("div", { class: "small" }, "Copying a similar enterprise is usually faster than starting empty.")),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_param" }, "Defaults from ", h("span", { class: "unit" }, "(parameter set)")), ps),
       h("div", { class: "actions" }, start));
@@ -2861,7 +2934,7 @@ window.ICL = window.ICL || {};
     "Feeds & crops": { table: "feeditems", cols: [["feed_item_name", "Feed", "text"], ["dm_content", "DM %"], ["me_content", "ME MJ/kg DM"], ["cp_content", "CP % DM"]], second: { table: "crops", cols: [["crop_name", "Crop", "text"], ["category", "Type", "locked"], ["dry_yield", "Yield t DM/ha"], ["residue_dry_yield", "Residue t DM/ha"], ["main_n", "N in product"], ["residue_n", "N in residue"]] }, note: "Feed quality and typical crop yields for this region." },
     "Soils & slopes": { table: "soil", cols: [["desc", "Soil", "text"], ["k", "Erodibility K"]], second: { table: "slope", cols: [["desc", "Slope class", "locked"], ["p", "P factor"]] }, note: "USLE erosion factors. Slope classes are fixed because the model matches them by name." },
     "Land cover": { table: "landcover", cols: [["desc", "Cover", "text"], ["c", "C factor (lower = more protected)"]] },
-    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in a assessment always wins." },
+    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in an assessment always wins." },
   };
   ICL.screens.parameters = function (root, { state }) {
     root.append(screenHead(D.section("parameters")));
@@ -2874,7 +2947,7 @@ window.ICL = window.ICL || {};
       h("div", { class: "card-head" }, h("h2", null, copy ? `${copy.label} · my copy` : shipped.label), h("div", { class: "actions" }, switcher)),
       copy
         ? h("p", { class: "small" }, `Your editable copy of "${shipped.label}". ${nChanges ? `${nChanges} value${nChanges === 1 ? "" : "s"} changed` : "No changes yet"}. Every assessment that uses this copy gets these values as its defaults. `, copy.shared ? h("span", { class: "chip c-derived" }, "shared with project") : h("span", { class: "chip c-blank" }, "private"))
-        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on a assessment card (that assessment only), or make your own copy of the set (all your assessments that use the copy).`),
+        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on an assessment card (that assessment only), or make your own copy of the set (all your assessments that use the copy).`),
       h("div", { class: "control" },
         copy ? h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.set((s) => { const c = s.paramSets.copies.find((x) => x.value === copy.value); c.shared = !c.shared; return s; }) }, copy.shared ? "Stop sharing" : "Share with project") : h("button", { type: "button", class: "btn", onclick: () => makeCopy(shipped) }, "Make my own copy"),
         copy && nChanges ? ICL.common.confirmButton("Discard all changes", () => ICL.store.set((s) => { s.paramSets.copies.find((x) => x.value === copy.value).changes = {}; return s; }), "btn-sm") : null,
@@ -3487,14 +3560,26 @@ window.ICL = window.ICL || {};
     root.append(h("p", { class: "small" }, "Every check here is the same one the wizard runs, so a batch that passes would pass field by field. “Open in the builder” loads one enterprise into the wizard so you can see and fix it in context; the batch keeps the original."));
   }
 
+  /** One row of the batch, opened in the wizard. It has to arrive as a proper assessment
+      under a proper enterprise, or the Assessments screen — which lists enterprises — will
+      never show it again. */
   function openInBuilder(r) {
+    const PROJECT = "Batch upload";
     ICL.store.set((s) => {
       for (const k of ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"]) s[k] = JSON.parse(JSON.stringify(r.data[k]));
       s.meta.id = "b_" + r.id;
-      if (!s.library.assessments.find((x) => x.id === s.meta.id)) s.library.assessments.unshift({ id: s.meta.id, name: r.name, owner: "you", project: "Batch upload", param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
+      if (!(s.library.projects || []).some((p) => p.name === PROJECT)) s.library.projects.push({ id: ICL.uid("prj"), name: PROJECT, members: ["you"] });
+      const loc = (r.data.farm && r.data.farm.location_point) || {};
+      const place = [loc.district, loc.region, loc.country].filter(Boolean).join(", ") || null;
+      let ent = (s.library.enterprises || []).find((e) => e.id === "ent_b_" + r.id);
+      if (!ent) { ent = { id: "ent_b_" + r.id, name: r.name, place, owner: "you", project: PROJECT, scale: s.system.scale || "farm" }; s.library.enterprises.unshift(ent); }
+      const year = Number(r.data.meta && r.data.meta.as_of) || new Date().getFullYear();
+      const label = `From the batch (${r.id})`;
+      Object.assign(s.meta, { enterprise: ent.id, as_of: year, kind: "observed", label, project: PROJECT, owner: "you" });
+      if (!s.library.assessments.find((x) => x.id === s.meta.id)) s.library.assessments.unshift({ id: s.meta.id, name: r.name, enterprise: ent.id, as_of: year, kind: "observed", label, owner: "you", project: PROJECT, param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
       return s;
     });
-    ICL.toast(`Opened "${r.name}" from the batch.`);
+    ICL.toast(`Opened "${r.name}" from the batch. It is now an assessment under the "${PROJECT}" project.`);
     ICL.router.go("about");
   }
 
@@ -3968,8 +4053,8 @@ window.ICL = window.ICL || {};
     ["What does iCLEANED actually calculate?",
      "For one livestock enterprise over one year: the land needed to feed the animals, water use, soil loss, the nitrogen balance, and greenhouse gas emissions — with the emissions following the IPCC 2019 Tier 2 method. It does not calculate profit, labour or animal health.",
      null],
-    ["What is the difference between a assessment and a project?",
-     "A assessment is one complete description of one enterprise for one year. A project is the folder that groups related assessments and the people who may see them. You compare assessments within a project: a baseline against an intervention.",
+    ["What is the difference between an assessment and a project?",
+     "An assessment is one complete description of one enterprise for one year. A project is the folder that groups related assessments and the people who may see them. You compare assessments within a project: a baseline against an intervention.",
      "#welcome"],
     ["Which crops and animals belong in the description, and which do not?",
      "Only what feeds the herd, plus the herd itself and its manure. A maize field counts if the stover is fed; if the whole crop is sold for people to eat, it stays outside. There is a diagram of this under “What the model counts”.",

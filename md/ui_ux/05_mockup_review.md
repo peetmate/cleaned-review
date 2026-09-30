@@ -229,3 +229,30 @@ The section, the tab and the counts are all **Assessments** — that is the thin
 - **Test a range of values, not one value at a time.** Enter several candidate values for one or more inputs and run every combination; ranked results and the inputs that move the answer most. Covers sensitivity and option screening, and is the cheapest honest answer to the uncertainty problem: if an input can plausibly take three values and the ranking does not change, the ranking is robust.
 
 **Also:** queue cross-references are now by name rather than by number, since they broke twice when the queue was reordered; the collection key in the data model was renamed with the vocabulary, not just the labels; and the mangled auto-rename of the first queue item ("Assessment planning for ex-ante assessment") was rewritten as "Ex-ante appraisal".
+
+## v0.9.1 — projects become a control, and three things the rename broke
+
+**Project was named everywhere and controlled nowhere.** It appeared as a labelled chip in the top bar, in the tooltip explaining how things nest, in the welcome glossary and on a card at the bottom of the list — and no screen let anyone create one, put anything in one, or filter by one. Now:
+
+- **Filter chips** above the list: *All projects · one per project with its count · No project*, shown only when there is something to filter, and reset when you switch between mine / shared / templates so a filter can never leave an unexplained empty list.
+- **A project select on every enterprise card**, which moves the enterprise, all of its assessments, and the open assessment's top-bar chip in one action.
+- **A project field on the new-assessment card**, with `+ New project…` revealing a name box and creating the project on save.
+- **The Projects card is now a control**: project, enterprises, assessments, people, a *Show* button that applies the filter, a mocked *Invite*, and a create box. Its empty state says plainly that work can sit outside a project and that one is worth making when more than one person needs the same set.
+
+**Three defects, all introduced by the v0.9 split rather than pre-existing:**
+
+- **Opening an assessment did not change its project.** `load()` copied the enterprise, date, kind and label from the library row onto `meta` but not the project, so the top-bar chip kept whatever the previously open assessment had — the kind of quiet wrongness that only shows up when someone works across two projects in one sitting.
+- **Batch rows became orphans.** "Open in the builder" created an assessment with no enterprise, so it vanished from the Assessments screen the moment you navigated away, and it invented a "Batch upload" project that existed in no project list. It now creates a real enterprise (named and placed from the batch row), attaches the assessment to it with the right year, and registers the project once so the whole batch shows up as a group.
+- **Seven "a assessment"s** left by the blind rename, and a glossary entry that was wrong on substance rather than grammar: it said a project holds assessments, when after v0.9 a project holds enterprises and an enterprise holds its assessments.
+
+The lesson for the second one is worth keeping: a structural change is not finished when the screens it targeted work. Everything that *creates* one of the moved objects has to be found — there were three such places, and the batch was the one nobody would have opened during a demo.
+
+Two more things the audit turned up while checking the projects work, both also rename fallout: `styles.css` still targeted `.topbar-scenario` after the markup and the JavaScript had moved to `.topbar-assessment`, so the top-bar chips had silently lost their layout rules; and the two "new project name" inputs shared one accessible name, which a screen-reader user could not tell apart. A class audit — every class referenced in the code against every class defined in the stylesheet — now comes back clean apart from two deliberate cases.
+
+## Project documentation (2026-09-30)
+
+The repository had no agent-facing or contributor-facing documentation, so three were written:
+
+- **`CLAUDE.md`** at the repository root: what each document is, the four non-negotiable rules (no funding content in the tool or site, no issues filed on the upstream repositories, never commit from the stale `site/` clone, read before overwriting), how to ship a mockup change end to end, the version-bump discipline, how to verify in the browser, the house style, and the four traps this repository has already fallen into.
+- **`ui_ux/DECISIONS.md`**: thirteen decisions with their reasoning — herd not farm, assessment not scenario, the three levels, why the results are deliberately a visible sketch, the four provenance states, blank as unknown, manure at herd level and why the head-weighted merge is compulsory rather than convenient, asking what people know, computed numbering, comparison before absolutes, two-level navigation, no funding content, and stating every limitation where it bites. Several of these reverse a choice that looks obvious, which is exactly why they are written down.
+- **`ui_ux/mockup/README.md`** brought up to date: it still described a flat list of six scenarios and the old screen set.

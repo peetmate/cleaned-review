@@ -13,7 +13,7 @@
     return JSON.parse(JSON.stringify(sc));
   }
   const DATA_KEYS = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"];
-  // `features` is a queue about the tool, not about a assessment, so it survives loads and resets
+  // `features` is a queue about the tool, not about an assessment, so it survives loads and resets
 
   function freshState() {
     const d = dataset(LIB().default);
@@ -22,7 +22,7 @@
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
       fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { assessments: (LIB().library || []).slice(), enterprises: (LIB().enterprises || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
-      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
+      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, projectFilter: null, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
       features: [],
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };
@@ -91,7 +91,7 @@
         const lib = state.library; const known = lib.assessments.find((x) => x.id === id);
         for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
         if (known && known.owner) state.meta.owner = known.owner;
-        if (known) { state.meta.enterprise = known.enterprise || null; state.meta.as_of = known.as_of || null; state.meta.kind = known.kind || "observed"; state.meta.label = known.label || null; }
+        if (known) { state.meta.enterprise = known.enterprise || null; state.meta.as_of = known.as_of || null; state.meta.kind = known.kind || "observed"; state.meta.label = known.label || null; state.meta.project = known.project || null; }
         state.library = lib;
         state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, listFilter: {}, listView: {}, validateAll: false, homeTab: state.ui.homeTab });
         persist(); notify(); return true;

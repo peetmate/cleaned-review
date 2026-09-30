@@ -27,10 +27,21 @@
     for (const e of ents) counts[bucket(e)]++;
     const tabs = h("div", { class: "tabs", role: "tablist" });
     for (const [k, l] of [["mine", "My assessments"], ["shared", "Shared with me"], ["templates", "Templates"]])
-      tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => ICL.store.update("ui.homeTab", k) }, `${l} (${counts[k]})`));
+      tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => ICL.store.set((s) => { s.ui.homeTab = k; s.ui.projectFilter = "all"; return s; }) }, `${l} (${counts[k]})`));
     root.append(tabs);
 
-    const shown = ents.filter((e) => bucket(e) === tab);
+    // Project was named in the chip and the glossary but had no control anywhere.
+    const projects = state.library.projects || [];
+    const inTab = ents.filter((e) => bucket(e) === tab);
+    const pFilter = state.ui.projectFilter || "all";
+    const chips = h("div", { class: "chips" });
+    const countIn = (name) => inTab.filter((e) => (name === "__none" ? !e.project : e.project === name)).length;
+    chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === "all"), onclick: () => ICL.store.update("ui.projectFilter", "all") }, "All projects", h("span", { class: "cnt" }, String(inTab.length))));
+    for (const p of projects) if (countIn(p.name)) chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === p.name), onclick: () => ICL.store.update("ui.projectFilter", p.name) }, p.name, h("span", { class: "cnt" }, String(countIn(p.name)))));
+    if (countIn("__none")) chips.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(pFilter === "__none"), onclick: () => ICL.store.update("ui.projectFilter", "__none") }, "No project", h("span", { class: "cnt" }, String(countIn("__none")))));
+    if (projects.length || countIn("__none")) root.append(h("div", { class: "listfilter", dataset: { fb: "home:projectfilter", fbLabel: "Project filter" } }, chips));
+
+    const shown = inTab.filter((e) => pFilter === "all" || (pFilter === "__none" ? !e.project : e.project === pFilter));
     const grid = h("div", { class: "scen-grid", dataset: { fb: "home:list", fbLabel: "Enterprise list" } });
     if (tab === "mine") grid.append(newCard(state));
     for (const e of shown) grid.append(enterpriseCard(e, state));
@@ -41,11 +52,7 @@
       h("div", { class: "card-head" }, h("h2", null, "Many assessments at once"), h("a", { class: "btn", href: "#batch" }, "Open batch processing →")),
       h("p", { class: "small" }, "If the descriptions already exist — a household survey, a monitoring sheet, a district inventory — upload the spreadsheet instead of typing each one. Every enterprise is checked the same way as a typed assessment, and you get a QAQC report naming the sheet, the column and the row of anything the model would reject, plus the compiled model input to download.")));
 
-    root.append(h("div", { class: "card soft", style: "margin-top:18px" },
-      h("h2", null, "Projects"),
-      h("p", { class: "small" }, h("strong", null, "A project groups related enterprises"), " — one study, one district, one piece of work — and the people who may see them. Enterprises in a project can be compared with each other."),
-      ...(state.library.projects || []).map((p) => h("p", { class: "small", style: "margin:2px 0" }, h("strong", null, p.name), " · ", p.members.join(", "))),
-      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague by email.") }, "Invite a colleague")));
+    root.append(projectsCard(state));
 
     root.append(ICL.common.disclaimer({ where: "home", short: true }));
 
@@ -53,6 +60,54 @@
       h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.reset(); ICL.toast("Example data restored."); } }, "Reset all example data"), " ",
       h("button", { type: "button", class: "btn-sm", onclick: () => startBlank() }, "Start an empty assessment")));
   };
+
+  function moveToProject(e, value) {
+    ICL.store.set((s) => {
+      const ent = s.library.enterprises.find((x) => x.id === e.id); if (ent) ent.project = value || null;
+      for (const r of s.library.assessments) if (r.enterprise === e.id) r.project = value || null;
+      if (s.meta.enterprise === e.id) s.meta.project = value || null;
+      return s;
+    });
+    ICL.toast(value ? `${e.name} moved to ${value}.` : `${e.name} removed from its project.`);
+  }
+
+  /** Projects: what exists, what is in each, and how to make one. */
+  function projectsCard(state) {
+    const projects = state.library.projects || [];
+    const ents = state.library.enterprises || [];
+    const rows = state.library.assessments || [];
+    const card = h("div", { class: "card", dataset: { fb: "home:projects", fbLabel: "Projects" } },
+      h("h2", null, "Projects"),
+      h("p", { class: "small" }, h("strong", null, "A project groups related enterprises"), " — one study, one district, one piece of work — and the people who may see them. Assessments inside a project can be compared with each other, and a parameter set shared with the project is available to all of them. An enterprise can sit in one project or none."));
+    if (projects.length) {
+      const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Project"), h("th", null, "Enterprises"), h("th", null, "Assessments"), h("th", null, "People"), h("th", null, ""))));
+      const tb = h("tbody");
+      for (const p of projects) {
+        const inP = ents.filter((e) => e.project === p.name);
+        const asmt = rows.filter((r) => inP.some((e) => e.id === r.enterprise)).length;
+        tb.append(h("tr", null,
+          h("td", null, h("strong", null, p.name)),
+          h("td", null, String(inP.length)),
+          h("td", null, String(asmt)),
+          h("td", { class: "small" }, (p.members || []).join(", ")),
+          h("td", null,
+            h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.update("ui.projectFilter", p.name); ICL.toast(`Showing ${p.name}.`); } }, "Show"), " ",
+            h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: invite a colleague to " + p.name + " by email.") }, "Invite"))));
+      }
+      t.append(tb);
+      card.append(h("div", { class: "tablewrap" }, t));
+    } else card.append(h("div", { class: "empty" }, "No projects yet. Work can sit outside a project; make one when more than one person needs the same set of enterprises."));
+    const np = h("input", { type: "text", placeholder: "e.g. Njombe dairy 2027", "aria-label": "Name for a new project" });
+    card.append(h("div", { class: "control" }, np,
+      h("button", { type: "button", class: "btn-sm", onclick: () => {
+        const name = np.value.trim();
+        if (!name) { ICL.toast("Give the project a name."); np.focus(); return; }
+        if ((state.library.projects || []).some((p) => p.name === name)) { ICL.toast("There is already a project with that name."); return; }
+        ICL.store.set((s) => { s.library.projects.push({ id: ICL.uid("prj"), name, members: ["you"] }); return s; });
+        np.value = ""; ICL.toast(`Project "${name}" created. Put an enterprise in it from its card.`);
+      } }, "Create a project")));
+    return card;
+  }
 
   function enterpriseCard(e, state) {
     const rows = rowsOf(state, e.id);
@@ -64,7 +119,11 @@
         h("span", { class: "chip" }, e.place || "—"),
         e.scale && e.scale !== "farm" ? h("span", { class: "chip c-derived" }, SCALE_LABEL[e.scale]) : null,
         observed.length > 1 ? h("span", { class: "chip c-user" }, `${observed.length} years`) : null),
-      h("div", { class: "meta" }, `by ${e.owner}${e.project ? " · " + e.project : ""}`));
+      h("div", { class: "meta" }, `by ${e.owner}`));
+    const projSel = h("select", { "aria-label": "Project for " + e.name, onchange: (ev) => moveToProject(e, ev.target.value) },
+      h("option", { value: "", selected: !e.project }, "No project"),
+      ...(state.library.projects || []).map((p) => h("option", { value: p.name, selected: e.project === p.name }, p.name)));
+    card.append(h("div", { class: "control", style: "margin:2px 0 8px" }, h("span", { class: "small" }, "Project"), projSel));
 
     // the timeline: one line per assessment, oldest first
     const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Year"), h("th", null, "Assessment"), h("th", null, "Size"), h("th", null, ""))));
@@ -113,6 +172,12 @@
   function newCard(state) {
     const name = h("input", { type: "text", id: "new_ent_name", placeholder: "e.g. Njombe smallholder dairy", "aria-label": "Enterprise name" });
     const place = h("input", { type: "text", id: "new_ent_place", placeholder: "e.g. Njombe, Tanzania", "aria-label": "Where it is" });
+    const proj = h("select", { id: "new_ent_project", "aria-label": "Project" },
+      h("option", { value: "" }, "No project"),
+      ...(state.library.projects || []).map((p) => h("option", { value: p.name, selected: state.meta.project === p.name }, p.name)),
+      h("option", { value: "__new" }, "+ New project…"));
+    const newProjName = h("input", { type: "text", placeholder: "Name of the new project", "aria-label": "Name of the new project for this assessment", hidden: true });
+    proj.addEventListener("change", () => { newProjName.hidden = proj.value !== "__new"; if (!newProjName.hidden) newProjName.focus(); });
     const ps = h("select", { id: "new_ent_param", "aria-label": "Parameter set" }, ...D.options(D.field("param_set"), state).map((o) => h("option", { value: o.value, selected: o.value === state.meta.param_set }, o.label)));
     const from = h("select", { id: "new_ent_from", "aria-label": "Start from" }, h("option", { value: "" }, "Empty description"),
       ...(state.library.assessments || []).map((s) => h("option", { value: s.id }, `Copy of ${s.name}`)));
@@ -120,7 +185,14 @@
       if (!name.value.trim()) { ICL.toast("Name the enterprise this assessment describes."); name.focus(); return; }
       const entId = ICL.uid("ent");
       const year = new Date().getFullYear();
-      ICL.store.set((s) => { s.library.enterprises.unshift({ id: entId, name: name.value.trim(), place: place.value.trim() || null, owner: "you", project: s.meta.project, scale: "farm" }); return s; });
+      const projectName = proj.value === "__new" ? newProjName.value.trim() : (proj.value || null);
+      if (proj.value === "__new" && !projectName) { ICL.toast("Name the new project, or choose No project."); newProjName.focus(); return; }
+      ICL.store.set((s) => {
+        if (projectName && !(s.library.projects || []).some((p) => p.name === projectName)) s.library.projects.push({ id: ICL.uid("prj"), name: projectName, members: ["you"] });
+        s.meta.project = projectName;
+        s.library.enterprises.unshift({ id: entId, name: name.value.trim(), place: place.value.trim() || null, owner: "you", project: projectName, scale: "farm" });
+        return s;
+      });
       if (from.value) { ICL.store.load(from.value); const id = ICL.store.duplicateOpen(`${name.value.trim()} — Assessment ${year}`, { enterprise: entId, as_of: year, kind: "observed", label: `Assessment ${year}` }); ICL.store.load(id); }
       else startBlank(false, entId, name.value.trim());
       ICL.store.set((s) => { s.meta.param_set = ps.value; const row = s.library.assessments.find((x) => x.id === s.meta.id); if (row) row.param_set = ps.value; return s; });
@@ -129,6 +201,7 @@
     return h("div", { class: "card scen-card scen-new", dataset: { fb: "home:new", fbLabel: "New assessment card" } }, h("h3", null, "New assessment"),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_name" }, "Enterprise this describes"), name),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_place" }, "Where it is"), place),
+      h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_project" }, "Project"), proj, newProjName, h("div", { class: "small" }, "A project groups related enterprises and the people who may see them. Optional.")),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_from" }, "Start from"), from, h("div", { class: "small" }, "Copying a similar enterprise is usually faster than starting empty.")),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_param" }, "Defaults from ", h("span", { class: "unit" }, "(parameter set)")), ps),
       h("div", { class: "actions" }, start));

@@ -1,4 +1,4 @@
-/* Welcome: what iCLEANED is, what you are about to do, what a assessment is. */
+/* Welcome: what iCLEANED is, what you are about to do, what an assessment is. */
 (function (ICL) {
   const { h } = ICL; const D = ICL.dict;
   ICL.screens.welcome = function (root, { state }) {
@@ -28,8 +28,8 @@
         ...[
           ["Livestock enterprise", "The animals, the land that grows their feed, and the manure they produce — treated as one unit for one year. This can be one household's cows, a cooperative's herd, a district, or a national herd. iCLEANED is a herd model, not a farm model: crops that are not fed to the animals stay outside it."],
           ["Assessment", "One complete description of an enterprise, saved under a name. A baseline assessment describes things as they are now. An intervention assessment is a copy with something changed — a new feed, better manure storage, more animals — so the two can be compared. You need at least one; comparing needs two."],
-          ["Project", "A folder for assessments that belong together \u2014 one study, one district, one piece of work \u2014 plus the people who may see them. A project holds many assessments; a assessment belongs to one project. Sharing a project shares every assessment in it, and any parameter set shared with it, so colleagues compare like with like instead of mailing files around."],
-          ["Parameter set", "The reference values a assessment starts from: animal weights, feed quality, soil erodibility for your region. Shipped sets are read-only so results stay comparable; you can copy one and edit it."],
+          ["Project", "A folder for enterprises that belong together \u2014 one study, one district, one piece of work \u2014 plus the people who may see them. A project holds enterprises, an enterprise holds its assessments, and an enterprise sits in one project or none. Sharing a project shares everything under it, and any parameter set shared with it, so colleagues compare like with like instead of mailing files around."],
+          ["Parameter set", "The reference values an assessment starts from: animal weights, feed quality, soil erodibility for your region. Shipped sets are read-only so results stay comparable; you can copy one and edit it."],
           ["Season", "A feeding period within the year. Animals usually eat differently in the rains and in the dry season, so the diet is described per season."],
           ["Herd and animal group", "A herd is animals kept together and managed the same way. Inside it, an animal group is one category — milking cows, calves — because each eats and produces differently."],
         ].map(([t, dd]) => [h("dt", null, t), h("dd", null, dd)]).flat()));

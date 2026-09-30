@@ -121,7 +121,7 @@
     "Feeds & crops": { table: "feeditems", cols: [["feed_item_name", "Feed", "text"], ["dm_content", "DM %"], ["me_content", "ME MJ/kg DM"], ["cp_content", "CP % DM"]], second: { table: "crops", cols: [["crop_name", "Crop", "text"], ["category", "Type", "locked"], ["dry_yield", "Yield t DM/ha"], ["residue_dry_yield", "Residue t DM/ha"], ["main_n", "N in product"], ["residue_n", "N in residue"]] }, note: "Feed quality and typical crop yields for this region." },
     "Soils & slopes": { table: "soil", cols: [["desc", "Soil", "text"], ["k", "Erodibility K"]], second: { table: "slope", cols: [["desc", "Slope class", "locked"], ["p", "P factor"]] }, note: "USLE erosion factors. Slope classes are fixed because the model matches them by name." },
     "Land cover": { table: "landcover", cols: [["desc", "Cover", "text"], ["c", "C factor (lower = more protected)"]] },
-    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in a assessment always wins." },
+    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in an assessment always wins." },
   };
   ICL.screens.parameters = function (root, { state }) {
     root.append(screenHead(D.section("parameters")));
@@ -134,7 +134,7 @@
       h("div", { class: "card-head" }, h("h2", null, copy ? `${copy.label} · my copy` : shipped.label), h("div", { class: "actions" }, switcher)),
       copy
         ? h("p", { class: "small" }, `Your editable copy of "${shipped.label}". ${nChanges ? `${nChanges} value${nChanges === 1 ? "" : "s"} changed` : "No changes yet"}. Every assessment that uses this copy gets these values as its defaults. `, copy.shared ? h("span", { class: "chip c-derived" }, "shared with project") : h("span", { class: "chip c-blank" }, "private"))
-        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on a assessment card (that assessment only), or make your own copy of the set (all your assessments that use the copy).`),
+        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on an assessment card (that assessment only), or make your own copy of the set (all your assessments that use the copy).`),
       h("div", { class: "control" },
         copy ? h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.set((s) => { const c = s.paramSets.copies.find((x) => x.value === copy.value); c.shared = !c.shared; return s; }) }, copy.shared ? "Stop sharing" : "Share with project") : h("button", { type: "button", class: "btn", onclick: () => makeCopy(shipped) }, "Make my own copy"),
         copy && nChanges ? ICL.common.confirmButton("Discard all changes", () => ICL.store.set((s) => { s.paramSets.copies.find((x) => x.value === copy.value).changes = {}; return s; }), "btn-sm") : null,

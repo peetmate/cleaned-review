@@ -433,14 +433,26 @@
     root.append(h("p", { class: "small" }, "Every check here is the same one the wizard runs, so a batch that passes would pass field by field. “Open in the builder” loads one enterprise into the wizard so you can see and fix it in context; the batch keeps the original."));
   }
 
+  /** One row of the batch, opened in the wizard. It has to arrive as a proper assessment
+      under a proper enterprise, or the Assessments screen — which lists enterprises — will
+      never show it again. */
   function openInBuilder(r) {
+    const PROJECT = "Batch upload";
     ICL.store.set((s) => {
       for (const k of ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"]) s[k] = JSON.parse(JSON.stringify(r.data[k]));
       s.meta.id = "b_" + r.id;
-      if (!s.library.assessments.find((x) => x.id === s.meta.id)) s.library.assessments.unshift({ id: s.meta.id, name: r.name, owner: "you", project: "Batch upload", param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
+      if (!(s.library.projects || []).some((p) => p.name === PROJECT)) s.library.projects.push({ id: ICL.uid("prj"), name: PROJECT, members: ["you"] });
+      const loc = (r.data.farm && r.data.farm.location_point) || {};
+      const place = [loc.district, loc.region, loc.country].filter(Boolean).join(", ") || null;
+      let ent = (s.library.enterprises || []).find((e) => e.id === "ent_b_" + r.id);
+      if (!ent) { ent = { id: "ent_b_" + r.id, name: r.name, place, owner: "you", project: PROJECT, scale: s.system.scale || "farm" }; s.library.enterprises.unshift(ent); }
+      const year = Number(r.data.meta && r.data.meta.as_of) || new Date().getFullYear();
+      const label = `From the batch (${r.id})`;
+      Object.assign(s.meta, { enterprise: ent.id, as_of: year, kind: "observed", label, project: PROJECT, owner: "you" });
+      if (!s.library.assessments.find((x) => x.id === s.meta.id)) s.library.assessments.unshift({ id: s.meta.id, name: r.name, enterprise: ent.id, as_of: year, kind: "observed", label, owner: "you", project: PROJECT, param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
       return s;
     });
-    ICL.toast(`Opened "${r.name}" from the batch.`);
+    ICL.toast(`Opened "${r.name}" from the batch. It is now an assessment under the "${PROJECT}" project.`);
     ICL.router.go("about");
   }
 

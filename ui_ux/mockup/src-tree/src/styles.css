@@ -48,8 +48,8 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
 .brand-mark { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(from 200deg, var(--success-fill), var(--primary) 60%, var(--accent)); flex: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; } .brand-text strong { font-family: var(--font-head); color: var(--primary); } .brand-text small { color: var(--muted); font-size: .72rem; }
-.topbar-scenario { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
-.topbar-scenario .chip { max-width: 100%; }
+.topbar-assessment { order: 3; flex: 1 1 100%; min-width: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
+.topbar-assessment .chip { max-width: 100%; }
 .topbar-actions { order: 2; margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
 .tb-btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: .84rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .tb-btn[aria-pressed="true"] { background: var(--tint); border-color: var(--primary); color: var(--primary); }
@@ -280,9 +280,9 @@ td.cell-locked { color: var(--muted); } .lock { color: var(--muted); font-size: 
   .topbar-actions { order: 2; margin-left: auto; flex-wrap: nowrap; overflow-x: auto; max-width: 62vw; scrollbar-width: none; }
   .topbar-actions::-webkit-scrollbar { display: none; }
   .topbar-actions .tb-btn { padding: 4px 7px; font-size: .74rem; white-space: nowrap; }
-  .topbar-scenario { order: 3; flex: 0 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .topbar-scenario::-webkit-scrollbar { display: none; }
-  .topbar-scenario .chip { flex: none; }
+  .topbar-assessment { order: 3; flex: 0 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .topbar-assessment::-webkit-scrollbar { display: none; }
+  .topbar-assessment .chip { flex: none; }
 }
 
 /* ---- numbering ---- */
