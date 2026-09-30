@@ -5,7 +5,7 @@
 <meta name="description" content="Clickable mockup of a redesigned iCLEANED data-entry flow, with built-in feedback capture for workshop testing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Merriweather+Sans:wght@300;400;600;700&display=swap">
-<script>window.ICL_BUILD={"version":"v0.7.0 · 2026-09-30 10:29","semver":"0.7.0","sha":"dev","stamp":"2026-09-30 10:29","target":"offline","built":"2026-09-30T07:29:25.694Z"};</script>
+<script>window.ICL_BUILD={"version":"v0.7.0 · 2026-09-30 12:41","semver":"0.7.0","sha":"dev","stamp":"2026-09-30 12:41","target":"offline","built":"2026-09-30T09:41:47.599Z"};</script>
 <style>
 /* iCLEANED Farm Builder mockup — tokens, themes, layout */
 :root {
@@ -3726,8 +3726,8 @@ window.ICL = window.ICL || {};
       why: "Deferred from the mockup review; the wizard currently asks everyone everything.",
       status: "queued", size: "M", source: "review", votes: 1, tags: ["form"] },
     { id: "ft_capacity", rank: 7, title: "Capacity sharing: a training request route, a short course you can re-context, and videos",
-      body: "Three parts. A structured <em>request training</em> route that records who is asking, which segment they are, how many people, which interface they would use, what data they already hold and whether funding is attached \u2014 so demand is visible instead of arriving as email to individuals. A modular short course whose worked examples run on the requester's own country and data: fixed core modules (concepts and scope, the input contract, running the model, reading the output, limitations) plus a context module they supply, so a new country is a config file and a dataset rather than a fork of the materials, with a credit-bearing version a university could adopt. And short task-shaped videos \u2014 \u201cbuild a feed basket\u201d, \u201cread the nitrogen balance\u201d \u2014 indexed by task and segment rather than recorded lectures.",
-      why: "Training is already listed under what we offer, but there is no way to ask for it and nothing to hand over. Every workshop is rebuilt from scratch, capacity leaves when a project ends, universities cannot adopt what does not exist as a course, and the four segments need materially different training. A recorded queue of requests is also the evidence a capacity-sharing budget line needs in a proposal.",
+      body: "Three parts. A structured <em>request training</em> route that records who is asking, which segment they are, how many people, which interface they would use and what data they already hold, so a request can be answered with the right course instead of a conversation starting from nothing. A modular short course whose worked examples run on the requester's own country and data: fixed core modules (concepts and scope, the input contract, running the model, reading the output, limitations) plus a context module they supply, so a new country is a config file and a dataset rather than a fork of the materials, with a credit-bearing version a university could adopt. And short task-shaped videos \u2014 \u201cbuild a feed basket\u201d, \u201cread the nitrogen balance\u201d \u2014 indexed by task and segment rather than recorded lectures.",
+      why: "Training is already listed under what we offer, but there is no way to ask for it and nothing to hand over. Every workshop is rebuilt from scratch, capacity leaves when a project ends, universities cannot adopt what does not exist as a course, and the four segments need materially different training.",
       status: "queued", size: "L", source: "team", votes: 2, tags: ["training", "use cases", "access"] },
     { id: "ft_print", rank: 8, title: "Printable collection form",
       body: "A one-page sheet matching the wizard, for collecting the same description on paper where there is no connection, and an entry mode that follows the same order.",
@@ -3975,12 +3975,12 @@ window.ICL = window.ICL || {};
       honest: "Ingestion is written against that one partner’s spreadsheet — its sheet names, its columns. A second partner is currently a code change, not a setting. The batch run (queue #5) and a reader that takes an ordinary survey export are what turn one delivered project into a repeatable offer.",
       cases: [
         ["Project baseline and ex-ante appraisal", "East Africa", "Appraise an intervention across a project’s sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "The scenario planning feature (queue #1)."],
-        ["Reporting a change to the donor", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
+        ["Reporting the change at endline", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
       ],
       compile: [
         "Whether the delivered partner will be named publicly and act as a reference, and whether they will give a quote.",
         "Final enterprise counts per country and per round, and which rounds are cleared for publication.",
-        "What that partner’s donor actually asked them to report, in the donor’s own words — this is the sentence the offer should answer.",
+        "What that partner was actually asked to report, in the words it was asked in — that is the sentence the tool has to answer.",
         "Which other implementing organisations have asked for this, and for what.",
         "Which survey platforms they collect on (Kobo, ODK, CommCare, something bespoke), because that decides what the generic reader has to read.",
       ],
@@ -4028,7 +4028,7 @@ window.ICL = window.ICL || {};
   const FIFTH = {
     name: "Value chains: dairy hubs, cooperatives and processors",
     q: "In or out?",
-    body: "A processor sourcing from thousands of smallholders has the data, the money and a reporting obligation, and the partner table already lists them. Against it: corporate reporting needs an audited, verifiable figure against a recognised standard, and CLEANED does not meet that bar and is not close to it. Included on those terms, the first serious conversation ends badly.",
+    body: "A processor sourcing from thousands of smallholders holds the data for a whole catchment and has a reporting obligation, and the partner table already lists them. Against it: corporate reporting needs an audited, verifiable figure against a recognised standard, and CLEANED does not meet that bar and is not close to it. Included on those terms, the first serious conversation ends badly.",
     ask: "The team should decide whether this is a fifth segment with an honest scope limit attached, or out until verification exists. Recommendation: out for now.",
   };
 

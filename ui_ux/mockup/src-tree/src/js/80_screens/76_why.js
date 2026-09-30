@@ -62,12 +62,12 @@
       honest: "Ingestion is written against that one partner’s spreadsheet — its sheet names, its columns. A second partner is currently a code change, not a setting. The batch run (queue #5) and a reader that takes an ordinary survey export are what turn one delivered project into a repeatable offer.",
       cases: [
         ["Project baseline and ex-ante appraisal", "East Africa", "Appraise an intervention across a project’s sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "The scenario planning feature (queue #1)."],
-        ["Reporting a change to the donor", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
+        ["Reporting the change at endline", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
       ],
       compile: [
         "Whether the delivered partner will be named publicly and act as a reference, and whether they will give a quote.",
         "Final enterprise counts per country and per round, and which rounds are cleared for publication.",
-        "What that partner’s donor actually asked them to report, in the donor’s own words — this is the sentence the offer should answer.",
+        "What that partner was actually asked to report, in the words it was asked in — that is the sentence the tool has to answer.",
         "Which other implementing organisations have asked for this, and for what.",
         "Which survey platforms they collect on (Kobo, ODK, CommCare, something bespoke), because that decides what the generic reader has to read.",
       ],
@@ -115,7 +115,7 @@
   const FIFTH = {
     name: "Value chains: dairy hubs, cooperatives and processors",
     q: "In or out?",
-    body: "A processor sourcing from thousands of smallholders has the data, the money and a reporting obligation, and the partner table already lists them. Against it: corporate reporting needs an audited, verifiable figure against a recognised standard, and CLEANED does not meet that bar and is not close to it. Included on those terms, the first serious conversation ends badly.",
+    body: "A processor sourcing from thousands of smallholders holds the data for a whole catchment and has a reporting obligation, and the partner table already lists them. Against it: corporate reporting needs an audited, verifiable figure against a recognised standard, and CLEANED does not meet that bar and is not close to it. Included on those terms, the first serious conversation ends badly.",
     ask: "The team should decide whether this is a fifth segment with an honest scope limit attached, or out until verification exists. Recommendation: out for now.",
   };
 
