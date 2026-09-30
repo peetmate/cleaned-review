@@ -36,6 +36,8 @@
   const groups = () => window.ICL_SCHEMA.navGroups || [];
   // Tabs that live inside a single-screen section, surfaced in the sidebar.
   const SUBNAV = {
+    why: (state) => ({ path: "ui.whyTab", current: state.ui.whyTab || "question", route: "why",
+      items: [["question", "The question it answers"], ["offer", "What we offer"], ["partners", "Working with partners"], ["cases", "Use cases"], ["compare", "How it compares"]] }),
     results: (state) => ({ path: "ui.resultsTab", current: state.ui.resultsTab || "summary", route: "results",
       items: [["summary", "Summary"], ["ghg", "Greenhouse gases"], ["land", "Land & feed"], ["water", "Water"], ["nitrogen", "Nitrogen"], ["compare", "Compare"]] }),
     batch: (state) => (state.batch && state.batch.rows && state.batch.rows.length

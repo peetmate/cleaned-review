@@ -8,7 +8,8 @@
     root.append(screenHead(D.section("home")));
     root.append(h("div", { class: "callout", dataset: { fb: "home:what", fbLabel: "What is a scenario", noNumber: "" } },
       h("strong", null, "A scenario"), " is one complete description of a livestock enterprise for one year — the animals, the land that feeds them and their manure. Describe it once as it is today (a ", h("em", null, "baseline"), "), then copy it and change something to test an ", h("em", null, "intervention"), ". ",
-      h("a", { href: "#welcome" }, "More about iCLEANED")));
+      h("a", { href: "#welcome" }, "More about iCLEANED"), " \u00b7 ",
+      h("a", { href: "#why" }, "Why iCLEANED and how it compares")));
 
     const tab = state.ui.homeTab || "mine";
     const counts = { mine: 0, shared: 0, templates: 0 };

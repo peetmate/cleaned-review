@@ -22,7 +22,7 @@
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
       fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { scenarios: (LIB().library || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
-      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, resultsTab: null, featureFilter: null, compareWith: null },
+      ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
       features: [],
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
     };

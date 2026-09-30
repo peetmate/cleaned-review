@@ -200,6 +200,15 @@
    "order": 19,
    "wizard": false,
    "group": "features"
+  },
+  {
+   "id": "why",
+   "title": "Why iCLEANED",
+   "short": "Why iCLEANED",
+   "purpose": "What question it answers, what we can offer a partner, and how it compares with the other tools.",
+   "order": 20,
+   "wizard": false,
+   "group": "why"
   }
  ],
  "systemQuestions": [
@@ -3286,6 +3295,12 @@
   }
  },
  "navGroups": [
+  {
+   "id": "why",
+   "label": "Why iCLEANED",
+   "home": "why",
+   "hint": "The case for it, what we offer, and how it compares."
+  },
   {
    "id": "scenarios",
    "label": "Scenarios",

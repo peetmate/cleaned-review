@@ -8,7 +8,8 @@
       h("p", { class: "lede" }, "iCLEANED estimates the environmental effects of keeping livestock: the land needed to feed the animals, the water they use, soil loss, the nitrogen balance, and greenhouse gas emissions. You describe a livestock enterprise once; the model turns that description into numbers you can compare."),
       h("div", { class: "hero-actions" },
         h("a", { class: "btn", href: "#about" }, "Start describing an enterprise"),
-        h("a", { class: "btn secondary", href: "#home" }, "Open an example or a saved scenario"))));
+        h("a", { class: "btn secondary", href: "#home" }, "Open an example or a saved scenario"),
+        h("a", { class: "btn secondary", href: "#why" }, "Why this tool, and how it compares"))));
 
     root.append(h("h2", { "data-no-number": "" }, "What you will be asked"),
       h("div", { class: "steps-grid", dataset: { fb: "welcome:steps", fbLabel: "Steps overview" } },
