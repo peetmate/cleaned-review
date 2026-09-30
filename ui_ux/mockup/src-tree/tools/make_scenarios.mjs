@@ -210,13 +210,49 @@ const specs = [
   },
 ];
 
+/* An enterprise is the thing that persists; an assessment is one description of it at a
+   point in time, or a described alternative. `kind` separates the two: "observed" is what
+   was there, "what_if" is a described change. */
+const ENTERPRISE_OF = {
+  sc_njombe_baseline: ["ent_njombe", 2024, "observed", "Baseline 2024"],
+  sc_njombe_napier: ["ent_njombe", 2026, "what_if", "Napier & biogas (what-if)"],
+  sc_rungwe_commercial: ["ent_rungwe", 2026, "observed", "Assessment 2026"],
+  tpl_kenya_zero: ["ent_kenya_tpl", 2026, "observed", "Template"],
+  sc_tz_national: ["ent_tz_national", 2026, "observed", "Inventory 2026"],
+};
+const ENTERPRISES = [
+  { id: "ent_njombe", name: "Njombe smallholder dairy", place: "Njombe, Tanzania", owner: "you", project: "Njombe dairy 2026", scale: "farm" },
+  { id: "ent_rungwe", name: "Rungwe commercial dairy", place: "Rungwe, Mbeya, Tanzania", owner: "you", project: "Njombe dairy 2026", scale: "farm" },
+  { id: "ent_kenya_tpl", name: "Kenya zero-grazing unit", place: "Kakamega, Kenya", owner: "iCLEANED team", project: null, scale: "farm" },
+  { id: "ent_tz_national", name: "Tanzania national dairy herd", place: "Tanzania", owner: "you", project: "National inventory 2026", scale: "national" },
+  { id: "ent_shared_rungwe", name: "Rungwe zero-grazing (colleague's)", place: "Rungwe, Mbeya, Tanzania", owner: "Colleague A", project: "Njombe dairy 2026", scale: "farm" },
+];
+
 const scenarios = {}; const library = [];
-for (const spec of specs) {
-  scenarios[spec.id] = build(spec);
-  library.push({ id: spec.id, name: spec.name, owner: spec.owner || "you", project: spec.project ?? "Njombe dairy 2026", param_set: spec.paramSet, updated: spec.updated, purpose: spec.purpose, template: !!spec.template, shared: spec.shared || [], scale: (spec.system && spec.system.scale) || "farm", headline: spec.headline || null });
+const libRow = (spec) => {
+  const e = ENTERPRISE_OF[spec.id] || [null, 2026, "observed", spec.name];
+  return { id: spec.id, name: spec.name, enterprise: e[0], as_of: e[1], kind: e[2], label: e[3],
+    owner: spec.owner || "you", project: spec.project ?? "Njombe dairy 2026", param_set: spec.paramSet,
+    updated: spec.updated, purpose: spec.purpose, template: !!spec.template, shared: spec.shared || [],
+    scale: (spec.system && spec.system.scale) || "farm", headline: spec.headline || null };
+};
+for (const spec of specs) { scenarios[spec.id] = build(spec); library.push(libRow(spec)); }
+
+/* A second observed assessment of the Njombe enterprise two years on, so the timeline and
+   the over-time comparison have something real behind them: the herd grew and the fodder
+   plot was extended. */
+{
+  const base = specs.find((x) => x.id === "sc_njombe_baseline");
+  const follow = JSON.parse(JSON.stringify(base));
+  follow.id = "sc_njombe_2026"; follow.name = "Njombe smallholder dairy \u2014 2026";
+  follow.updated = "2026-09-28";
+  follow.animals[0].n = 16; follow.animals[0].milkLday = 5.5; follow.animals[1].n = 10;
+  follow.plots[0].plot_area_ha = 1.2;
+  scenarios[follow.id] = build(follow);
+  library.push(Object.assign(libRow(follow), { enterprise: "ent_njombe", as_of: 2026, kind: "observed", label: "Assessment 2026" }));
 }
 // one scenario owned by a colleague, to exercise "Shared with me"
-library.push({ id: "sc_shared_rungwe", name: "Rungwe zero-grazing 2025 (colleague)", owner: "Colleague A", project: "Njombe dairy 2026", param_set: "Southern Highland Tanzania Dairy", updated: "2026-09-12", purpose: "baseline", shared: ["you"], scale: "farm" });
+library.push({ id: "sc_shared_rungwe", name: "Rungwe zero-grazing 2025 (colleague)", enterprise: "ent_shared_rungwe", as_of: 2025, kind: "observed", label: "Assessment 2025", owner: "Colleague A", project: "Njombe dairy 2026", param_set: "Southern Highland Tanzania Dairy", updated: "2026-09-12", purpose: "baseline", shared: ["you"], scale: "farm" });
 scenarios.sc_shared_rungwe = JSON.parse(JSON.stringify(scenarios.tpl_kenya_zero));
 Object.assign(scenarios.sc_shared_rungwe.meta, { id: "sc_shared_rungwe", scenario_name: "Rungwe zero-grazing 2025 (colleague)", owner: "Colleague A", project: "Njombe dairy 2026", param_set: "Southern Highland Tanzania Dairy", scenario_purpose: "baseline" });
 
@@ -229,6 +265,6 @@ for (const row of library) {
   row.headline = `${fmt(head)} animals · ${fmt(ha)} ha · ${sc.seasons.length} season${sc.seasons.length > 1 ? "s" : ""}`;
 }
 
-writeFileSync(join(ROOT, "fixtures", "scenarios.json"), JSON.stringify({ default: "sc_njombe_baseline", scenarios, library, projects: [{ id: "prj1", name: "Njombe dairy 2026", members: ["you", "Colleague A", "Colleague B"] }, { id: "prj2", name: "National inventory 2026", members: ["you"] }] }, null, 1));
+writeFileSync(join(ROOT, "fixtures", "scenarios.json"), JSON.stringify({ default: "sc_njombe_baseline", scenarios, library, enterprises: ENTERPRISES, projects: [{ id: "prj1", name: "Njombe dairy 2026", members: ["you", "Colleague A", "Colleague B"] }, { id: "prj2", name: "National inventory 2026", members: ["you"] }] }, null, 1));
 console.log("scenarios.json written:", Object.keys(scenarios).length, "scenarios");
-for (const row of library) console.log("  ", row.id.padEnd(22), row.scale.padEnd(9), row.headline || "");
+for (const row of library) console.log("  ", row.id.padEnd(22), String(row.enterprise || "-").padEnd(18), String(row.as_of).padEnd(6), row.kind.padEnd(9), row.headline || "");

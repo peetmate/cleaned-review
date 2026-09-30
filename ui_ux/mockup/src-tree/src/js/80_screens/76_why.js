@@ -23,9 +23,9 @@
 
   const PARTNERS = [
     ["A national ministry or statistics office", "Needs a defensible inventory number and a method that survives review.", "A national or sub-national herd described once, with the IPCC labels and the assumptions listed; batch runs from existing survey rounds; a parameter set that becomes the country's reference."],
-    ["A research programme or university", "Needs transparency, repeatability and something to cite.", "The open package, the versioned parameter set, the compiled study object for every scenario, and per-cell provenance for every value that went into it."],
-    ["An NGO or development project", "Needs before-and-after numbers for a defined intervention, with limited data.", "Baseline and intervention scenarios that share their defaults, so the comparison is sound even when the absolute numbers are uncertain; the quick route for sites with little data."],
-    ["A dairy hub, cooperative or processor", "Needs the footprint of what it sources and where to act first.", "One scenario per supplier group or a batch from the collection records, ranked, with the largest contributors identified."],
+    ["A research programme or university", "Needs transparency, repeatability and something to cite.", "The open package, the versioned parameter set, the compiled study object for every assessment, and per-cell provenance for every value that went into it."],
+    ["An NGO or development project", "Needs before-and-after numbers for a defined intervention, with limited data.", "Baseline and intervention assessments that share their defaults, so the comparison is sound even when the absolute numbers are uncertain; the quick route for sites with little data."],
+    ["A dairy hub, cooperative or processor", "Needs the footprint of what it sources and where to act first.", "One assessment per supplier group or a batch from the collection records, ranked, with the largest contributors identified."],
     ["An extension or advisory service", "Needs a conversation with a farmer, not a form.", "A short description in plain questions, results a farmer can see the sense of, and a printable form for where there is no connection (queued)."],
   ];
 
@@ -44,7 +44,7 @@
       cases: [
         ["Comparing intensification pathways", "Vietnam", "One enterprise, several described futures — more animals, better feed, better manure storage — and what each does to land, water and nitrogen rather than to emissions alone.", "Real data, and the multi-indicator comparison written up as a result rather than a screenshot."],
         ["Prioritising what is worth a field trial", "—", "Screen a long list of candidate interventions ex ante, and take only the few that move an indicator into an expensive trial.", "A partner willing to say publicly that the screening changed what they trialled."],
-        ["Teaching the livestock–environment link", "Anywhere", "A class describes systems they know and watches which choices move which indicator.", "The quick mode, a worked teaching scenario, and the short course (queue #7)."],
+        ["Teaching the livestock–environment link", "Anywhere", "A class describes systems they know and watches which choices move which indicator.", "The quick mode, a worked teaching assessment, and the short course (in the queue)."],
       ],
       compile: [
         "Every study that has used CLEANED, with its citation, split into peer-reviewed and grey literature.",
@@ -59,9 +59,9 @@
       maturity: ["Done before", "c-user"],
       who: "NGOs and contractors running livestock and dairy programmes — Land O’Lakes Venture37, Heifer, SNV, ACDI/VOCA, Mercy Corps, VSF — plus farmer organisations and cooperative unions.",
       fit: "These organisations already run farm surveys, at scale, on a schedule, and have no way to turn them into environmental numbers. They do not need new data collection; they need somebody to read the data they have. That is the batch route, and it is the one segment where the work has actually been delivered: a partner’s baseline and follow-up rounds across Kenya and Ethiopia, several hundred enterprises, run through to methane intensity per kilogram of milk alongside land, water, soil, nitrogen and productivity, returned as a workbook.",
-      honest: "Ingestion is written against that one partner’s spreadsheet — its sheet names, its columns. A second partner is currently a code change, not a setting. The batch run (queue #5) and a reader that takes an ordinary survey export are what turn one delivered project into a repeatable offer.",
+      honest: "Ingestion is written against that one partner’s spreadsheet — its sheet names, its columns. A second partner is currently a code change, not a setting. The batch run (in the queue) and a reader that takes an ordinary survey export are what turn one delivered project into a repeatable offer.",
       cases: [
-        ["Project baseline and ex-ante appraisal", "East Africa", "Appraise an intervention across a project’s sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "The scenario planning feature (queue #1)."],
+        ["Project baseline and ex-ante appraisal", "East Africa", "Appraise an intervention across a project’s sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "The ex-ante appraisal feature (in the queue)."],
         ["Reporting the change at endline", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
       ],
       compile: [
@@ -77,10 +77,10 @@
       maturity: ["Never tried", "c-blank"],
       who: "National extension services, the extension arms of dairy cooperatives and processors, private agronomy and veterinary advisers, digital advisory platforms.",
       fit: "The only segment where this app is the entire product. An adviser sits with a farmer, has no survey, no parameter file and often no connection, and needs the conversation to be worth the visit. The useful output is not a footprint; it is which of three things the farmer could change is worth changing, and what it costs elsewhere — more milk per cow but more land, or less land but a nitrogen deficit.",
-      honest: "Nothing in this segment has been tried. Quick mode (#6), the printable form (#8) and languages (#9) are all in the queue because without them an adviser cannot use the tool at all. There is also a limit worth stating in public before somebody else states it for us: CLEANED is a rapid ex-ante estimate built for comparison, not a farm-specific prediction. Ranking a farmer’s options is defensible. Telling one farmer what their footprint is, is not.",
+      honest: "Nothing in this segment has been tried. Quick mode, the printable form and languages are all in the queue because without them an adviser cannot use the tool at all. There is also a limit worth stating in public before somebody else states it for us: CLEANED is a rapid ex-ante estimate built for comparison, not a farm-specific prediction. Ranking a farmer’s options is defensible. Telling one farmer what their footprint is, is not.",
       cases: [
         ["A feed basket conversation", "—", "Describe what the animals eat now in plain questions, change one thing, and show the trade-off in terms a farmer recognises.", "Quick mode, a results view a non-specialist can read, and somebody to try it with real advisers."],
-        ["Training the trainers", "—", "A cooperative’s extension staff learn to run the short description themselves and keep using it after the workshop.", "The short course (queue #7), in the right language."],
+        ["Training the trainers", "—", "A cooperative’s extension staff learn to run the short description themselves and keep using it after the workshop.", "The short course (in the queue), in the right language."],
       ],
       compile: [
         "Whether any advisory or extension pilot has happened at all — if not, say so and stop implying otherwise.",
@@ -94,8 +94,8 @@
       name: "Government institutions",
       maturity: ["Never tried", "c-blank"],
       who: "Ministries of livestock and agriculture, national greenhouse gas inventory teams, climate change and NDC units, national statistics offices, planning and investment agencies.",
-      fit: "The clearest recurring mandate of the four — livestock master plans, NDC livestock targets, moving the national inventory from Tier 1 to Tier 2, Biennial Transparency Reports — and the hardest sell, because GLEAM-i is already the reference and is free and FAO-branded. The argument is not a better carbon number. It is the four indicators GLEAM-i does not report, the scenario structure behind a target rather than a single figure, and a description that works from one household up to the national herd so the inventory and the projects inside it are built the same way.",
-      honest: "Three things block this today. There is no uncertainty propagation, and UNFCCC reporting requires one. There is no documented mapping from our equations to the IPCC 2019 Refinement that would survive a technical expert review. And capacity built during a project leaves when the project does — which is why the training request (queue #7) matters more in this segment than anywhere else.",
+      fit: "The clearest recurring mandate of the four — livestock master plans, NDC livestock targets, moving the national inventory from Tier 1 to Tier 2, Biennial Transparency Reports — and the hardest sell, because GLEAM-i is already the reference and is free and FAO-branded. The argument is not a better carbon number. It is the four indicators GLEAM-i does not report, the assessment structure behind a target rather than a single figure, and a description that works from one household up to the national herd so the inventory and the projects inside it are built the same way.",
+      honest: "Three things block this today. There is no uncertainty propagation, and UNFCCC reporting requires one. There is no documented mapping from our equations to the IPCC 2019 Refinement that would survive a technical expert review. And capacity built during a project leaves when the project does — which is why the training request (in the queue) matters more in this segment than anywhere else.",
       cases: [
         ["National herd inventory", "Tanzania", "Describe the national herd in two production systems and compare a feed-improvement pathway against business as usual.", "What data the ministry would have to supply, and a decision on the GLEAM question below."],
         ["Evidence behind an NDC livestock target", "—", "Show what a stated target implies at enterprise level, and whether the pathway to it exists.", "Uncertainty ranges. Point estimates are not usable for this."],
@@ -134,7 +134,7 @@
     { tool: "GLEAM-i 2.0 (FAO)", who: "Policy planners, project designers, NGOs",
       indicators: "GHG", geo: "Every country, from FAO defaults",
       scale: "National and sub-national", access: "Excel workbook with macros; a Shiny version exists",
-      strength: "Country defaults for every variable and a clean Baseline-vs-Scenario structure; the reference for national livestock GHG",
+      strength: "Country defaults for every variable and a clean Baseline-vs-Assessment structure; the reference for national livestock GHG",
       weak: "GHG only, country-average defaults, and an Excel-with-macros delivery that suits few field settings" },
     { tool: "Agrecalc Cloud (SRUC)", who: "Farmers and consultants in the UK",
       indicators: "GHG, with enterprise and product footprints", geo: "UK",
@@ -178,7 +178,7 @@
         h("dl", { class: "glossary" },
           h("dt", null, "One description, any scale"), h("dd", null, "The same questions describe a household with three cows and a national herd of four million. Only the numbers change, so a district estimate and the enterprises inside it are built the same way and can be compared."),
           h("dt", null, "Built for systems where feed is not a bought ration"), h("dd", null, "Crop residues, communal grazing, cut-and-carry, a few kilos of dairy meal — the feed basket is described per season and per animal group, which is how smallholder feeding actually works and where most global tools assume a formulated diet."),
-          h("dt", null, "Comparison before absolutes"), h("dd", null, "Absolute numbers carry all the uncertainty of the inputs. Two scenarios that share their defaults and differ in one thing carry far less, so the tool is built around baseline-against-intervention rather than a single certified figure."))));
+          h("dt", null, "Comparison before absolutes"), h("dd", null, "Absolute numbers carry all the uncertainty of the inputs. Two assessments that share their defaults and differ in one thing carry far less, so the tool is built around baseline-against-intervention rather than a single certified figure."))));
       root.append(ICL.common.disclaimer({ where: "why", short: true }));
     }
 
@@ -202,7 +202,7 @@
           h("li", null, "A question worth answering, written down in one sentence."),
           h("li", null, "A look at what data already exists — usually more than the partner thinks, in survey rounds and monitoring sheets."),
           h("li", null, "A parameter set for the region, from that data plus the published sources, reviewed by someone who knows the systems."),
-          h("li", null, "A handful of scenarios described together, so the assumptions are argued about while they are still cheap to change."),
+          h("li", null, "A handful of assessments described together, so the assumptions are argued about while they are still cheap to change."),
           h("li", null, "Batch runs over the real data, with the QAQC report going back to whoever collected it."),
           h("li", null, "Results, the assumptions behind them, and the parameter set published so the work can be repeated.")),
         h("p", { class: "small" }, "Steps 3 and 5 are where the time goes, and both are mostly data work rather than modelling.")));
@@ -242,7 +242,7 @@
         h("p", null, "Each segment needs a different training product. An inventory team, a monitoring officer, an extension trainer and a postgraduate student do not want the same two days, and the worked examples should run on their own country rather than on the Tanzanian demo. That is why capacity sharing is in the queue as a feature rather than as a line in a workplan."),
         h("div", { class: "control" },
           h("a", { class: "btn", href: "#features" }, "See the capacity sharing request"),
-          h("span", { class: "small" }, "Queue #7."))));
+          h("span", { class: "small" }, "It is in the queue."))));
 
       root.append(h("div", { class: "control" },
         h("a", { class: "btn", href: "#features" }, "Propose a use case in the queue"),

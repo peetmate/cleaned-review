@@ -102,7 +102,7 @@
     root.append(screenHead(D.section("check")));
     const blocking = val.errors;
     root.append(h("div", { class: "tile-row" }, tile(blocking.length, "to fix", blocking.length ? "var(--danger)" : "var(--success)"), tile(val.warnings.length, "to double-check", "var(--warn)"), tile(val.assumptions.length, "assumed values", "var(--prov-default)"), tile(state.animals.reduce((s, a) => s + (Number(a.herd_n) || 0), 0), "animals"), tile(state.feeds.length, "feeds"), tile(state.plots.length, "plots")));
-    root.append(ICL.common.disclaimer({ where: "check", extra: `This scenario carries ${val.assumptions.length} assumed value${val.assumptions.length === 1 ? "" : "s"}, listed below. Every one of them is a number nobody typed.` }));
+    root.append(ICL.common.disclaimer({ where: "check", extra: `This assessment carries ${val.assumptions.length} assumed value${val.assumptions.length === 1 ? "" : "s"}, listed below. Every one of them is a number nobody typed.` }));
     root.append(h("div", { class: "card", dataset: { fb: "check:blocking", fbLabel: "Blocking list" } }, h("h2", null, blocking.length ? `Fix these ${blocking.length} things before running` : "Nothing is blocking ✓"), errorList(blocking, "err") || h("p", { class: "small" }, "Every needed value is present and within range.")));
     if (val.warnings.length) root.append(h("div", { class: "card", dataset: { fb: "check:warnings", fbLabel: "Warnings list" } }, h("h2", null, "Worth a second look"), errorList(val.warnings, "warn")));
     const byScreen = {}; for (const a of val.assumptions) (byScreen[a.screen] = byScreen[a.screen] || []).push(a);
@@ -121,7 +121,7 @@
     "Feeds & crops": { table: "feeditems", cols: [["feed_item_name", "Feed", "text"], ["dm_content", "DM %"], ["me_content", "ME MJ/kg DM"], ["cp_content", "CP % DM"]], second: { table: "crops", cols: [["crop_name", "Crop", "text"], ["category", "Type", "locked"], ["dry_yield", "Yield t DM/ha"], ["residue_dry_yield", "Residue t DM/ha"], ["main_n", "N in product"], ["residue_n", "N in residue"]] }, note: "Feed quality and typical crop yields for this region." },
     "Soils & slopes": { table: "soil", cols: [["desc", "Soil", "text"], ["k", "Erodibility K"]], second: { table: "slope", cols: [["desc", "Slope class", "locked"], ["p", "P factor"]] }, note: "USLE erosion factors. Slope classes are fixed because the model matches them by name." },
     "Land cover": { table: "landcover", cols: [["desc", "Cover", "text"], ["c", "C factor (lower = more protected)"]] },
-    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in a scenario always wins." },
+    "Fertilisers": { table: "fertilizer_default_n_pct", cols: [["name", "Product", "text"], ["n", "Default N %"]], note: "Default nitrogen content; the bag value entered in a assessment always wins." },
   };
   ICL.screens.parameters = function (root, { state }) {
     root.append(screenHead(D.section("parameters")));
@@ -133,8 +133,8 @@
     const head = h("div", { class: "card soft", dataset: { fb: "params:head", fbLabel: "Parameter set header" } },
       h("div", { class: "card-head" }, h("h2", null, copy ? `${copy.label} · my copy` : shipped.label), h("div", { class: "actions" }, switcher)),
       copy
-        ? h("p", { class: "small" }, `Your editable copy of "${shipped.label}". ${nChanges ? `${nChanges} value${nChanges === 1 ? "" : "s"} changed` : "No changes yet"}. Every scenario that uses this copy gets these values as its defaults. `, copy.shared ? h("span", { class: "chip c-derived" }, "shared with project") : h("span", { class: "chip c-blank" }, "private"))
-        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on a scenario card (that scenario only), or make your own copy of the set (all your scenarios that use the copy).`),
+        ? h("p", { class: "small" }, `Your editable copy of "${shipped.label}". ${nChanges ? `${nChanges} value${nChanges === 1 ? "" : "s"} changed` : "No changes yet"}. Every assessment that uses this copy gets these values as its defaults. `, copy.shared ? h("span", { class: "chip c-derived" }, "shared with project") : h("span", { class: "chip c-blank" }, "private"))
+        : h("p", { class: "small" }, h("span", { class: "lock" }, "🔒 "), `Shipped by ${shipped.owner} for ${shipped.countries.join(", ")}. Read-only so results stay comparable across users. To change a value: override it on a assessment card (that assessment only), or make your own copy of the set (all your assessments that use the copy).`),
       h("div", { class: "control" },
         copy ? h("button", { type: "button", class: "btn-sm", onclick: () => ICL.store.set((s) => { const c = s.paramSets.copies.find((x) => x.value === copy.value); c.shared = !c.shared; return s; }) }, copy.shared ? "Stop sharing" : "Share with project") : h("button", { type: "button", class: "btn", onclick: () => makeCopy(shipped) }, "Make my own copy"),
         copy && nChanges ? ICL.common.confirmButton("Discard all changes", () => ICL.store.set((s) => { s.paramSets.copies.find((x) => x.value === copy.value).changes = {}; return s; }), "btn-sm") : null,
@@ -143,8 +143,8 @@
     root.append(head);
     // legend of value states
     root.append(h("div", { class: "card", dataset: { fb: "params:legend", fbLabel: "Value states legend" } }, h("h2", null, "How values are set"), h("div", { class: "states" },
-      h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-user" }, "✎ you entered")), "Your number for this scenario. Overrides everything below. Reset from the chip menu."),
-      h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-db" }, "🗄 from database")), "An editable default from the parameter set. Change it here (all scenarios using the set) or override it on the card (one scenario)."),
+      h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-user" }, "✎ you entered")), "Your number for this assessment. Overrides everything below. Reset from the chip menu."),
+      h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-db" }, "🗄 from database")), "An editable default from the parameter set. Change it here (all assessments using the set) or override it on the card (one assessment)."),
       h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-default" }, "≈ assumed / from maps")), "Filled from the location or typical practice because you left it blank. Listed on Check & run until you confirm or change it."),
       h("div", { class: "st" }, h("strong", null, h("span", { class: "chip c-fixed" }, "🔒 fixed")), "Model constants (IPCC factors, conversions). Nobody edits these in the app; propose a change to the maintainers with a source."))));
     const tabs = [...Object.keys(TABLES), "Manure systems", "Land-use factors", "Fixed constants", copy ? `Changes (${nChanges})` : null, "Propose a change"].filter(Boolean);
@@ -244,7 +244,7 @@
         box.append(h("details", { class: "advanced" }, h("summary", null, `${later.length} values that do not apply to this animal (pigs and other species)`), h("div", { class: "tablewrap" }, t2)));
       }
       box.append(h("p", { class: "small" }, unlocked
-        ? `Editing here changes the parameter set "${copy.label} \u00b7 my copy" \u2014 every scenario of yours that uses it. To change one scenario only, override the value on the card that uses it.`
+        ? `Editing here changes the parameter set "${copy.label} \u00b7 my copy" \u2014 every assessment of yours that uses it. To change one assessment only, override the value on the card that uses it.`
         : editable ? "Locked so a stray keypress cannot move a default. Unlock to edit." : "Shipped sets are read-only so results stay comparable. Make a copy to edit, or override the value on the card that uses it."));
       return box;
     };

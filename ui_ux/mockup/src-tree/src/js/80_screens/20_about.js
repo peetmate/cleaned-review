@@ -3,8 +3,8 @@
   const { h } = ICL; const D = ICL.dict, C = ICL.cond; const { screenHead } = ICL.common;
   ICL.screens.about = function (root, { state }) {
     root.append(screenHead(D.section("about")));
-    const nameField = ICL.fields.renderField(D.field("scenario_name"), { state, entity: state.meta, entityId: null, collection: null, errors: [], warnings: [], onChange: (fid, v) => ICL.store.set((s) => { s.meta.scenario_name = v; const lib = s.library.scenarios.find((x) => x.id === s.meta.id); if (lib) lib.name = v; return s; }) });
-    root.append(h("div", { class: "card", dataset: { fb: "field:scenario_name", fbLabel: "Scenario name" } }, nameField, h("div", { class: "small" }, "Defaults from: ", h("a", { href: "#parameters" }, state.meta.param_set || "choose a parameter set"))));
+    const nameField = ICL.fields.renderField(D.field("scenario_name"), { state, entity: state.meta, entityId: null, collection: null, errors: [], warnings: [], onChange: (fid, v) => ICL.store.set((s) => { s.meta.scenario_name = v; const lib = s.library.assessments.find((x) => x.id === s.meta.id); if (lib) lib.name = v; return s; }) });
+    root.append(h("div", { class: "card", dataset: { fb: "field:scenario_name", fbLabel: "Assessment name" } }, nameField, h("div", { class: "small" }, "Defaults from: ", h("a", { href: "#parameters" }, state.meta.param_set || "choose a parameter set"))));
     const qs = window.ICL_SCHEMA.systemQuestions;
     const ctx = { system: state.system, farm: state.farm, ui: state.ui };
     for (const q of qs) {

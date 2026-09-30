@@ -14,12 +14,12 @@
     const menu = h("div", { class: "prov-menu", role: "menu", hidden: true });
     const item = (txt, fn, note) => h("button", { type: "button", role: "menuitem", onclick: () => { menu.hidden = true; chip.setAttribute("aria-expanded", "false"); fn(); } }, h("span", null, txt), note ? h("small", null, note) : null);
     const focusInput = () => { const box = wrap.closest(".field, fieldset") || wrap.parentElement; const inp = box && box.querySelector("input:not([type=radio]):not([type=checkbox]), select, textarea, input"); if (inp) { inp.focus(); inp.select && inp.select(); } };
-    if (prov !== "user") menu.append(item("Enter my own value", focusInput, "for this scenario only"));
+    if (prov !== "user") menu.append(item("Enter my own value", focusInput, "for this assessment only"));
     if (opts && opts.onKeep) menu.append(item("Looks right — keep it", opts.onKeep, "confirms the value as yours"));
     if (prov === "user" && onReset && (f.default !== undefined || f.default_source)) menu.append(item(fromDb ? "Use the value from the parameter set" : fromHerd ? "Follow the herd again" : f.default_source === "map" ? "Use the value from maps" : "Use the default", onReset, "removes your override"));
     if (prov === "user" && onReset && !(f.default !== undefined || f.default_source)) menu.append(item("Clear the value", onReset, "leave it blank"));
     if (fromHerd && opts && opts.herdId) menu.append(item("Change it on the herd", () => ICL.router.go("herds", opts.herdId), "affects every group in the herd"));
-    if (fromDb) menu.append(item("Change it in the parameter set", () => { ICL.store.update("ui.paramTab", PARAM_TAB[f.entity] || "Animal types"); ICL.router.go("parameters"); }, "affects every scenario that uses it"));
+    if (fromDb) menu.append(item("Change it in the parameter set", () => { ICL.store.update("ui.paramTab", PARAM_TAB[f.entity] || "Animal types"); ICL.router.go("parameters"); }, "affects every assessment that uses it"));
     menu.append(h("div", { class: "prov-legend" }, h("span", { class: "chip c-user" }, "✎ you entered"), h("span", { class: "chip c-db" }, "🗄 from database"), h("span", { class: "chip c-default" }, "≈ assumed / maps"), h("span", { class: "chip c-fixed" }, "🔒 fixed")));
     chip.addEventListener("click", () => { const open = menu.hidden; document.querySelectorAll(".prov-menu").forEach((m) => (m.hidden = true)); menu.hidden = !open; chip.setAttribute("aria-expanded", String(open)); });
     menu.addEventListener("keydown", (e) => { if (e.key === "Escape") { menu.hidden = true; chip.focus(); } });

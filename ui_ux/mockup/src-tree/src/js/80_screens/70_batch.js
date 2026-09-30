@@ -69,7 +69,7 @@
     }).filter(Boolean);
   }
 
-  // ---- build one scenario state from the sheet rows -----------------------------
+  // ---- build one assessment state from the sheet rows -----------------------------
   function buildOne(id, sheets, problems) {
     const ent = (sheets.enterprises || []).find((r) => r.enterprise_id === id) || { enterprise_id: id, name: id };
     const say = (severity, where, msg) => problems.push({ id, severity, where, msg });
@@ -343,7 +343,7 @@
     root.append(h("div", { class: "callout", dataset: { fb: "batch:what", fbLabel: "What batch mode is for", noNumber: "" } },
       h("strong", null, "One file, many enterprises. "),
       "Use this when the descriptions already exist — a household survey, a project's monitoring sheet, a district inventory — instead of typing each one into the wizard. ",
-      "The file is checked the same way as a typed scenario, enterprise by enterprise, and anything the model would reject is listed with the sheet, the column and the row it came from. ",
+      "The file is checked the same way as a typed assessment, enterprise by enterprise, and anything the model would reject is listed with the sheet, the column and the row it came from. ",
       h("strong", null, "This mockup checks and compiles but does not run the model.")));
 
     root.append(ICL.common.disclaimer({ where: "batch", extra: "A batch multiplies this: one mistaken column applies to every row in the file. The QAQC check below finds what the model would reject, not what is simply wrong." }));
@@ -437,7 +437,7 @@
     ICL.store.set((s) => {
       for (const k of ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"]) s[k] = JSON.parse(JSON.stringify(r.data[k]));
       s.meta.id = "b_" + r.id;
-      if (!s.library.scenarios.find((x) => x.id === s.meta.id)) s.library.scenarios.unshift({ id: s.meta.id, name: r.name, owner: "you", project: "Batch upload", param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
+      if (!s.library.assessments.find((x) => x.id === s.meta.id)) s.library.assessments.unshift({ id: s.meta.id, name: r.name, owner: "you", project: "Batch upload", param_set: s.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: "baseline", shared: [], scale: s.system.scale || "farm", headline: `${ICL.fmt(r.head, 0)} animals · ${ICL.fmt(r.area, 1)} ha · from the batch` });
       return s;
     });
     ICL.toast(`Opened "${r.name}" from the batch.`);

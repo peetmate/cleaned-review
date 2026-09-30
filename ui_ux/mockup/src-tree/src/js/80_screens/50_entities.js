@@ -53,7 +53,7 @@
         "That last point matters, and it is a limit of the model rather than of this screen: the model keeps ",
         h("strong", null, "one row per animal type"), ", so if the same type appears in two herds their hours, manure handling and diet are merged by head count before it is sent, and the merge is listed on ",
         h("a", { href: "#check" }, "Check & run"), ". Sending the two rows unmerged makes the model stop with an error, so merging is not a choice we have. ",
-        "To keep two groups apart in the results, give them different animal types, or describe them as two scenarios and compare."));
+        "To keep two groups apart in the results, give them different animal types, or describe them as two assessments and compare."));
     if (shared.length) box.append(h("div", { class: "small", style: "margin-top:6px" },
       h("span", { class: "chip", style: "color:var(--warn);border-color:var(--warn)" }, "merging"), " ",
       shared.map(([desc, list]) => `${D.livetypeLabel(desc)} is in ${new Set(list.map((a) => a.herd_ref)).size} herds (${list.map((a) => ICL.fmt(a.herd_n || 0, 0)).join(" + ")} head)`).join(" \u00b7 "), "."));
@@ -337,7 +337,7 @@
     frag.append(inherited);
     frag.append(ICL.fields.renderFields("animals", ctx, (f) => ["Manure for this group only", "Collected manure"].includes(f.group)));
     frag.append(ICL.fields.renderFields("animals", ctx, (f) => f.group === "Values from the parameter set"));
-    frag.append(h("p", { class: "small" }, "Values marked \"from database\" come from the parameter set ", h("a", { href: "#parameters" }, state.meta.param_set), ". Overriding here changes this scenario only; edit the parameter set to change every scenario."));
+    frag.append(h("p", { class: "small" }, "Values marked \"from database\" come from the parameter set ", h("a", { href: "#parameters" }, state.meta.param_set), ". Overriding here changes this assessment only; edit the parameter set to change every assessment."));
     return frag;
   }
 
@@ -350,7 +350,7 @@
     return frag;
   }
 
-  /** Feed quality: shown read-only in a folder, unlockable for this scenario or in the parameter set. */
+  /** Feed quality: shown read-only in a folder, unlockable for this assessment or in the parameter set. */
   function nutritionFolder(e, ctx, state) {
     const unlocked = state.ui.unlockFeed === e.id;
     const fields = D.fieldsFor("feeds").filter((f) => f.group === "Nutritional parameters");
@@ -372,15 +372,15 @@
       box.append(h("div", { class: "tablewrap" }, t));
     } else {
       box.append(ICL.fields.renderFields("feeds", ctx, (f) => f.group === "Nutritional parameters"));
-      box.append(h("p", { class: "small" }, "These values now apply to ", h("strong", null, "this scenario only"), ". The parameter set is untouched, and the chip on each value shows the change."));
+      box.append(h("p", { class: "small" }, "These values now apply to ", h("strong", null, "this assessment only"), ". The parameter set is untouched, and the chip on each value shows the change."));
     }
     const fi = e._feedItem;
     box.append(h("div", { class: "control" },
       h("button", { type: "button", class: unlocked ? "btn-sm" : "btn secondary", onclick: () => ICL.store.update("ui.unlockFeed", unlocked ? null : e.id) },
-        unlocked ? "Lock again" : "Unlock for this scenario only"),
+        unlocked ? "Lock again" : "Unlock for this assessment only"),
       fi ? h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.set((s) => { s.ui.paramTab = "Feeds & crops"; s.ui.paramRow = { table: "feeditems", key: String(fi.feed_item_code) }; s.ui.paramUnlocked = true; return s; }); ICL.router.go("parameters"); } }, "Edit in the parameter set") : null,
       e._crop ? h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.set((s) => { s.ui.paramTab = "Feeds & crops"; s.ui.paramRow = { table: "crops", key: String(e._crop.crop_code) }; s.ui.paramUnlocked = true; return s; }); ICL.router.go("parameters"); } }, `Edit the crop row (${e._crop.crop_name})`) : null));
-    box.append(h("p", { class: "small" }, "Scenario only \u2192 this feed in this scenario. Parameter set \u2192 every scenario of yours that uses the set, and anyone you share the set with; it needs your own copy of the set, and each change is listed so colleagues can see what differs."));
+    box.append(h("p", { class: "small" }, "Assessment only \u2192 this feed in this assessment. Parameter set \u2192 every assessment of yours that uses the set, and anyone you share the set with; it needs your own copy of the set, and each change is listed so colleagues can see what differs."));
     return box;
   }
 

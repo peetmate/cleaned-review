@@ -12,9 +12,9 @@
   },
   {
    "id": "home",
-   "title": "Scenarios",
-   "short": "Home",
-   "purpose": "A scenario is one complete description of a livestock enterprise for one year. Open one, copy one, or start a new one.",
+   "title": "Enterprises",
+   "short": "Enterprises",
+   "purpose": "Your enterprises, the assessments of each one over time, and the alternatives you are testing.",
    "order": 0,
    "wizard": false,
    "group": "scenarios"
@@ -169,7 +169,7 @@
    "id": "parameters",
    "title": "Parameter set",
    "short": "Parameters",
-   "purpose": "The reference values this scenario starts from. Shipped sets are read-only; make your own copy to change values.",
+   "purpose": "The reference values this assessment starts from. Shipped sets are read-only; make your own copy to change values.",
    "order": 15,
    "wizard": false,
    "group": "parameters"
@@ -214,7 +214,7 @@
  "systemQuestions": [
   {
    "id": "scale",
-   "label": "What does this scenario describe?",
+   "label": "What does this assessment describe?",
    "type": "radio",
    "help": "CLEANED is a livestock enterprise model: a herd, the land that feeds it and its manure. The same description works from one household to a national herd; only the numbers change.",
    "options": [
@@ -559,7 +559,7 @@
    "id": "scenario_name",
    "section": "home",
    "entity": "meta",
-   "label": "Scenario name",
+   "label": "Assessment name",
    "type": "text",
    "help": "Something you will recognise later, for example \"Njombe baseline 2026\" or \"Njombe + Napier\".",
    "required_if": "always",
@@ -626,7 +626,7 @@
    "section": "location",
    "entity": "farm",
    "group": "Where",
-   "label": "How many enterprises does this scenario represent?",
+   "label": "How many enterprises does this assessment represent?",
    "unit": "enterprises",
    "definition": "Enter the herd and land as totals across the group, or as one typical enterprise and give the number it stands for.",
    "type": "integer",
@@ -3303,9 +3303,9 @@
   },
   {
    "id": "scenarios",
-   "label": "Scenarios",
+   "label": "Enterprises",
    "home": "home",
-   "hint": "Open, copy, compare and share scenarios."
+   "hint": "Open, assess again, test a change, compare."
   },
   {
    "id": "describe",
@@ -3317,7 +3317,7 @@
    "id": "results",
    "label": "Results",
    "home": "results",
-   "hint": "Indicators for the open scenario, and comparison."
+   "hint": "Indicators for the open assessment, and comparison."
   },
   {
    "id": "batch",

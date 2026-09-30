@@ -208,3 +208,24 @@ Corrections made when merging: the cross-references to the queue were written ag
 ## v0.8.3 — no funding or fundraising content in the tool
 
 The merged draft carried two traces of it — a training-request field recording “whether funding is attached” framed as making demand visible, and a line arguing that a request queue is the evidence a capacity-sharing budget line needs in a proposal. Both are removed: the tool describes what it does for the people using it, and anything about instruments, budget lines or demand evidence lives in internal notes outside this repository. Also reworded: a “the money” phrase in the value-chain question, a compile item asking what a partner’s donor wanted in the donor’s own words, and a use case titled “Reporting a change to the donor”, now “Reporting the change at endline”. A sweep of every screen and every tab for funding vocabulary comes back empty.
+
+## v0.9 — "scenario" becomes "assessment", and an enterprise now holds a timeline
+
+**The word changed because the thing was two things.** "Scenario" was carrying both *this is the herd as it was in 2024* and *this is what would happen if we did X*, which is why it read as jargon and why tracking over time was impossible. Split:
+
+- An **enterprise** is what persists — a herd and the land that feeds it. It has a name, a place and an owner.
+- An **assessment** is one description of that enterprise: dated when it records what was there that year, marked **what-if** when it describes a change being considered.
+
+Tracking over time is then ordinary rather than a feature: another dated assessment of the same enterprise. Home is now a list of enterprises, each showing its assessments as a timeline with year, label, kind and size, and three actions — *Assess again this year*, *Test a change*, *See the change over time*. A follow-up copies the most recent observed assessment, so a re-assessment is a review of what changed rather than a re-entry from nothing. The examples were regrouped into five enterprises, and the Njombe enterprise gained a real 2026 follow-up (herd 20 → 26, fodder plot 0.8 → 1.2 ha) so the timeline has something behind it.
+
+**Results gained three comparison modes**, replacing a single mocked one:
+- **Over time** — the same enterprise's dated assessments in a table, each figure carrying the percentage change on the previous one. On the Njombe enterprise: animals +30 %, total sketch emissions +32 %, **emissions per kg of milk −28 %**, which is exactly the trade-off shape a monitoring conversation needs. It also states what it cannot do: it shows *that* something changed, not *why*, and attribution is queued.
+- **Against another assessment** — the baseline-versus-what-if comparison, now able to reach any assessment of any enterprise.
+- **Against a benchmark** — deliberately unbuilt, with what it would compare against listed in order of honesty (others in the same project or batch first, since method and parameter set match) and the trap named: a single national average presented as a target invites a like-for-unlike judgement.
+
+**Three feature requests added**, at ranks 3, 4 and 5:
+- **Track an enterprise over time, and attribute what changed.** The structure now exists; trends, a stated comparison basis and attribution do not. Without a stated basis, a trend line is worse than no trend line — it is how a rainfall year gets attributed to a project.
+- **Benchmark context for every result.** A figure with no context is the most common way a result is misread.
+- **Test a range of values, not one value at a time.** Enter several candidate values for one or more inputs and run every combination; ranked results and the inputs that move the answer most. Covers sensitivity and option screening, and is the cheapest honest answer to the uncertainty problem: if an input can plausibly take three values and the ranking does not change, the ranking is robust.
+
+**Also:** queue cross-references are now by name rather than by number, since they broke twice when the queue was reordered; the collection key in the data model was renamed with the vocabulary, not just the labels; and the mangled auto-rename of the first queue item ("Assessment planning for ex-ante assessment") was rewritten as "Ex-ante appraisal".

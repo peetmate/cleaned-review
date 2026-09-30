@@ -150,20 +150,91 @@
     }
 
     if (tab === "compare") {
-      const others = (state.library.scenarios || []).filter((x) => x.id !== state.meta.id && !x.template);
-      root.append(h("div", { class: "card", dataset: { fb: "results:compare", fbLabel: "Comparison" } },
-        h("h2", null, "Compare with another scenario"),
-        h("p", { class: "small" }, "Comparison is the reason for the baseline / intervention pair: the absolute numbers carry all the uncertainty of the inputs, while the difference between two descriptions that share their defaults is far more trustworthy."),
-        others.length
-          ? h("div", { class: "control" }, h("select", { "aria-label": "Scenario to compare", onchange: (e) => ICL.store.update("ui.compareWith", e.target.value) },
-              h("option", { value: "" }, "Choose a scenario…"),
-              ...others.map((o) => h("option", { value: o.id, selected: state.ui.compareWith === o.id }, o.name))),
-            h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: the real app runs both and shows the difference per indicator, with the inputs that differ listed beside it.") }, "Compare"))
-          : h("p", { class: "small" }, "Only one scenario here yet. Duplicate this one from ", h("a", { href: "#home" }, "Scenarios"), " and change something.")));
-      if (state.ui.compareWith) {
-        const other = others.find((o) => o.id === state.ui.compareWith);
-        root.append(h("div", { class: "callout" }, "Mocked comparison against ", h("strong", null, other ? other.name : "?"),
-          ". In the real app: one row per indicator, absolute and percentage change, the direction stated in words (“12% lower emissions per kg of milk”), and a list of exactly which inputs differ between the two."));
+      const mode = state.ui.compareMode || "time";
+      const modes = h("div", { class: "chips" });
+      for (const [k, l] of [["time", "Over time"], ["other", "Against another assessment"], ["bench", "Against a benchmark"]])
+        modes.append(h("button", { type: "button", class: "filterchip", "aria-pressed": String(mode === k), onclick: () => ICL.store.update("ui.compareMode", k) }, l));
+      root.append(h("div", { class: "listfilter" }, modes));
+
+      const rows = state.library.assessments || [];
+      const here = rows.find((r) => r.id === state.meta.id);
+      const siblings = here && here.enterprise ? rows.filter((r) => r.enterprise === here.enterprise) : [];
+      const overTime = siblings.filter((r) => r.kind === "observed").sort((a, b) => (a.as_of || 0) - (b.as_of || 0));
+      const ent = (state.library.enterprises || []).find((e) => e.id === (here && here.enterprise));
+
+      if (mode === "time") {
+        const card = h("div", { class: "card", dataset: { fb: "results:overtime", fbLabel: "Comparison over time" } },
+          h("h2", null, "The same enterprise, assessed more than once"));
+        if (overTime.length < 2) {
+          card.append(h("p", null, ent
+            ? `${ent.name} has one dated assessment. Assess it again — from Enterprises, "Assess again this year" copies this description so you only change what has changed on the ground.`
+            : "This assessment does not belong to an enterprise yet, so there is nothing to compare it against over time."),
+            h("a", { class: "btn", href: "#home" }, "Go to Enterprises"));
+        } else {
+          const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Year"), h("th", null, "Assessment"), h("th", null, "Animals"), h("th", null, "Land"), h("th", null, "Sketch GHG"), h("th", null, "Per kg milk"), h("th", null, ""))));
+          const body = h("tbody");
+          let prev = null;
+          for (const r of overTime) {
+            const data = (window.ICL_SCENARIOS.scenarios || {})[r.id];
+            let ghg = null, intensity = null, head = null, area = null;
+            if (data) {
+              const st2 = Object.assign({}, state, data, { ui: Object.assign({}, state.ui, { validateAll: false }) });
+              const sk = sketch(st2, ICL.compile(st2));
+              ghg = sk.ghg; intensity = sk.ghg_per_kg_milk; head = st2.animals.reduce((t2, a) => t2 + (Number(a.herd_n) || 0), 0);
+              area = st2.plots.reduce((t2, p) => t2 + (Number(p.plot_area_ha) || 0), 0);
+            }
+            const delta = (now, was, digits) => was == null || now == null ? "" : ` (${now >= was ? "+" : ""}${fmt((now - was) / (was || 1) * 100, 0)}%)`;
+            body.append(h("tr", { class: r.id === state.meta.id ? "row-sel" : "" },
+              h("td", null, String(r.as_of || "\u2014")),
+              h("td", null, r.label || r.name),
+              h("td", null, head != null ? fmt(head, 0) + (prev ? delta(head, prev.head) : "") : "\u2014"),
+              h("td", null, area != null ? fmt(area, 2) + " ha" : "\u2014"),
+              h("td", null, ghg != null ? fmt(ghg / 1000, 1) + " t" + (prev ? delta(ghg, prev.ghg) : "") : "\u2014"),
+              h("td", null, intensity != null ? fmt(intensity, 2) + (prev ? delta(intensity, prev.intensity) : "") : "\u2014"),
+              h("td", null, r.id === state.meta.id ? h("span", { class: "chip c-user" }, "open") : h("button", { type: "button", class: "btn-sm", onclick: () => { ICL.store.load(r.id); ICL.toast(`Opened ${r.label || r.name}.`); } }, "Open"))));
+            prev = { head, area, ghg, intensity };
+          }
+          t.append(body);
+          card.append(h("div", { class: "tablewrap" }, t));
+          card.append(h("p", { class: "small" }, "Percentages are the change on the previous assessment. Sketch numbers, as everywhere on this screen."));
+          card.append(h("div", { class: "callout warn" }, h("strong", null, "What this view cannot yet do. "),
+            "It shows that something changed, not why. Separating the effect of an intervention from a different year's rainfall, a changed parameter set or a differently-asked question needs attribution the model does not do yet — it is in ",
+            h("a", { href: "#features" }, "the feature queue"), " as tracking an enterprise over time."));
+        }
+        root.append(card);
+      }
+
+      if (mode === "other") {
+        const others = rows.filter((r) => r.id !== state.meta.id);
+        root.append(h("div", { class: "card", dataset: { fb: "results:compare", fbLabel: "Comparison with another assessment" } },
+          h("h2", null, "Against another assessment"),
+          h("p", { class: "small" }, "The reason for keeping a what-if beside the observed assessment: absolute numbers carry all the uncertainty of the inputs, while the difference between two descriptions that share their defaults carries far less."),
+          others.length
+            ? h("div", { class: "control" }, h("select", { "aria-label": "Assessment to compare", onchange: (e2) => ICL.store.update("ui.compareWith", e2.target.value) },
+                h("option", { value: "" }, "Choose an assessment\u2026"),
+                ...others.map((o) => h("option", { value: o.id, selected: state.ui.compareWith === o.id }, `${o.name}${o.as_of ? " \u00b7 " + o.as_of : ""}`))),
+              h("button", { type: "button", class: "btn-sm", onclick: () => ICL.toast("Mocked: the real app runs both and shows the difference per indicator, with the inputs that differ listed beside it.") }, "Compare"))
+            : h("p", { class: "small" }, "Nothing else to compare with yet.")));
+        if (state.ui.compareWith) {
+          const other = others.find((o) => o.id === state.ui.compareWith);
+          root.append(h("div", { class: "callout" }, "Mocked comparison against ", h("strong", null, other ? other.name : "?"),
+            ". In the real app: one row per indicator, absolute and percentage change, the direction stated in words (\u201c12% lower emissions per kg of milk\u201d), and a list of exactly which inputs differ between the two."));
+        }
+      }
+
+      if (mode === "bench") {
+        root.append(h("div", { class: "card", dataset: { fb: "results:benchmark", fbLabel: "Benchmark placeholder" } },
+          h("h2", null, "Against a benchmark"),
+          h("div", { class: "callout warn" }, h("strong", null, "Not built. "),
+            "A number on its own answers nothing: 4.6 kg CO\u2082e per kg of milk is only meaningful beside what comparable enterprises produce. Today this screen gives you a figure with no context, which is the most common way a result gets misread."),
+          h("p", null, "What it would compare against, in rough order of usefulness:"),
+          h("ul", null,
+            h("li", null, h("strong", null, "Other assessments in the same project or batch"), " \u2014 the honest one, because the method and the parameter set are identical. A distribution with this enterprise marked on it."),
+            h("li", null, h("strong", null, "A regional typical value"), " from the parameter set, carrying its own source and date."),
+            h("li", null, h("strong", null, "Published reference ranges"), " for the system type, cited, with the caveat that boundaries and methods differ between studies."),
+            h("li", null, h("strong", null, "The same enterprise in an earlier year"), " \u2014 already possible under Over time.")),
+          h("p", { class: "small" }, "The trap to avoid is a single national average presented as a target: it invites a user to conclude they are doing well or badly on a comparison that was never like for like. Any benchmark shown has to carry what it is, where it came from and who is in it."),
+          h("div", { class: "control" }, h("a", { class: "btn", href: "#features" }, "See the benchmark request in the queue"))));
       }
     }
 

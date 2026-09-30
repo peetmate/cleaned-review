@@ -1,4 +1,4 @@
-/* Layout: topbar scenario chip, sidebar tree with status, wizard bar, preview panel, rating strip. */
+/* Layout: topbar assessment chip, sidebar tree with status, wizard bar, preview panel, rating strip. */
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
   const REFERENCE = ["boundary", "help"]; // reading, not steps: listed at the bottom
@@ -44,10 +44,16 @@
       ? { path: "batch.tab", current: (state.batch || {}).tab || "check", route: "batch",
           items: [["check", "QAQC check", state.batch.rows.length], ["viz", "Visualise the batch"], ["export", "Download"]] }
       : null),
-    scenarios: (state) => ({ path: "ui.homeTab", current: state.ui.homeTab || "mine", route: "home",
-      items: [["mine", "My scenarios", (state.library.scenarios || []).filter((x) => x.owner === "you" && !x.template).length],
-              ["shared", "Shared with me", (state.library.scenarios || []).filter((x) => x.owner !== "you" && !x.template).length],
-              ["templates", "Templates", (state.library.scenarios || []).filter((x) => x.template).length]] }),
+    // key must match the nav group id in schema.json
+    scenarios: (state) => {
+      const rows = state.library.assessments || [];
+      const tpl = (e) => rows.some((r) => r.enterprise === e.id && r.template);
+      const ents = state.library.enterprises || [];
+      return { path: "ui.homeTab", current: state.ui.homeTab || "mine", route: "home",
+        items: [["mine", "My enterprises", ents.filter((e) => e.owner === "you" && !tpl(e)).length],
+                ["shared", "Shared with me", ents.filter((e) => e.owner !== "you" && !tpl(e)).length],
+                ["templates", "Templates", ents.filter(tpl).length]] };
+    },
     parameters: (state) => ({ path: "ui.paramTab", current: state.ui.paramTab || "Animal types", route: "parameters",
       items: [["Animal types", "Animal types"], ["Feeds & crops", "Feeds & crops"], ["Soils & slopes", "Soils & slopes"], ["Land cover", "Land cover"], ["Fertilisers", "Fertilisers"], ["Manure systems", "Manure systems"], ["Land-use factors", "Land-use factors"], ["Fixed constants", "Fixed constants"], ["Propose a change", "Propose a change"]] }),
     features: (state) => ({ path: "ui.featureFilter", current: state.ui.featureFilter || "open", route: "features",
@@ -171,28 +177,28 @@
     if (bb) {
       const b = ICL.env.build;
       bb.textContent = "";
-      bb.append(h("span", { class: "bt-name" }, "Scenario Builder · mockup "), h("span", { class: "bt-ver" }, ICL.buildShort()));
+      bb.append(h("span", { class: "bt-name" }, "Assessment Builder · mockup "), h("span", { class: "bt-ver" }, ICL.buildShort()));
       bb.title = "Build " + ICL.buildLong();
     }
-    const el = document.getElementById("topbar-scenario"); el.innerHTML = "";
+    const el = document.getElementById("topbar-assessment"); el.innerHTML = "";
     if (state.route.screen === "home" || state.route.screen === "feedback") return;
-    const row = (state.library.scenarios || []).find((x) => x.id === state.meta.id);
+    const row = (state.library.assessments || []).find((x) => x.id === state.meta.id);
     const SC = { farm: "one enterprise", group: "group of enterprises", region: "region", national: "national herd" };
     // Each chip says what it is, and its tooltip says how the things nest.
-    const NEST = "How it nests: project \u2192 scenarios \u2192 the herds, land and feeds described in each. A parameter set sits beside them and supplies the default values.";
+    const NEST = "How it nests: project \u2192 assessments \u2192 the herds, land and feeds described in each. A parameter set sits beside them and supplies the default values.";
     const chip = (kind, label, value, title, cls, extra) => h("span", { class: "chip tb-chip" + (cls ? " " + cls : ""), title },
       h("span", { class: "k" }, label), h("span", { class: "v" }, value), extra || null);
     el.append(
       chip("project", "Project", state.meta.project || "none",
-        `A project groups scenarios that belong together \u2014 one study, one district, one piece of work \u2014 and the people who may see them. Scenarios in a project can be compared with each other. ${NEST}`),
-      chip("scenario", "Scenario", state.meta.scenario_name || "Untitled",
+        `A project groups assessments that belong together \u2014 one study, one district, one piece of work \u2014 and the people who may see them. Enterprises in a project can be compared with each other. ${NEST}`),
+      chip("assessment", "Assessment", state.meta.scenario_name || "Untitled",
         `One complete description of one livestock enterprise for one year: the animals, the land that feeds them and their manure. A baseline describes things as they are; an intervention is a copy with something changed. ${NEST}`),
       chip("scale", "Describes", (SC[state.system.scale] || "one enterprise") + (row && row.headline ? " \u00b7 " + row.headline : ""),
-        "What this scenario stands for, and its size. The same questions are asked from a household herd to a national one; only the numbers change. Set it on step 1."),
+        "What this assessment stands for, and its size. The same questions are asked from a household herd to a national one; only the numbers change. Set it on step 1."),
       (() => {
         const copy = D.activeCopy(); const n = copy ? D.changeCount(copy) : 0;
         return chip("params", "Defaults from", (copy ? copy.label + " (my copy" + (n ? `, ${n} change${n === 1 ? "" : "s"}` : "") + ")" : (state.meta.param_set || "\u2014")),
-          "The parameter set: reference values this scenario starts from \u2014 animal weights, feed quality, soil factors. Shipped sets are read-only; a copy of one can be edited and shared with a project. Values you type always win over it.",
+          "The parameter set: reference values this assessment starts from \u2014 animal weights, feed quality, soil factors. Shipped sets are read-only; a copy of one can be edited and shared with a project. Values you type always win over it.",
           "c-db", [" ", h("a", { href: "#parameters" }, copy ? "edit" : "view")]);
       })());
     document.getElementById("main").querySelector(".fb-banner") && null;

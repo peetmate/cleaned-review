@@ -6,14 +6,14 @@
   const PERSIST = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation", "library", "ui", "paramSets", "features"];
 
   const LIB = () => window.ICL_SCENARIOS || { scenarios: {}, library: [], projects: [], default: null };
-  /** The saved dataset of one example scenario, deep-copied. */
+  /** The saved dataset of one example assessment, deep-copied. */
   function dataset(id) {
     const all = LIB().scenarios || {};
     const sc = all[id] || all[LIB().default] || {};
     return JSON.parse(JSON.stringify(sc));
   }
   const DATA_KEYS = ["meta", "system", "farm", "provenance", "plots", "seasons", "herds", "animals", "feeds", "fertilizer", "allocation"];
-  // `features` is a queue about the tool, not about a scenario, so it survives loads and resets
+  // `features` is a queue about the tool, not about a assessment, so it survives loads and resets
 
   function freshState() {
     const d = dataset(LIB().default);
@@ -21,7 +21,7 @@
       route: { screen: "home", entity: null },
       meta: d.meta || {}, system: d.system || {}, farm: d.farm || {}, provenance: d.provenance || {},
       plots: d.plots || [], seasons: d.seasons || [], herds: d.herds || [], animals: d.animals || [], feeds: d.feeds || [],
-      fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { scenarios: (LIB().library || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
+      fertilizer: d.fertilizer || {}, allocation: d.allocation || {}, library: { assessments: (LIB().library || []).slice(), enterprises: (LIB().enterprises || []).slice(), projects: (LIB().projects || []).slice() }, paramSets: { copies: [] },
       ui: { theme: "auto", showTech: false, previewOpen: window.innerWidth > 1100, variant: {}, feedingSeason: null, feedingHerd: null, dmMode: false, sidebarOpen: false, boundarySeen: false, addGroupTo: null, paramRow: null, paramUnlocked: false, unlockFeed: null, listFilter: {}, listView: {}, resultsTab: null, whyTab: null, featureFilter: null, compareWith: null },
       features: [],
       fb: { mode: "off", adapterName: "none", canWrite: null, viewerId: null, viewerLabel: "", group: "", session: "workshop-2026-10", docs: [], ratings: [], votes: [], focusSnapshot: null },
@@ -88,22 +88,29 @@
       /** Load one of the example scenarios, keeping feedback, parameter-set copies and the library. */
       load(id) {
         const d = dataset(id); if (!d.meta) return false;
-        const lib = state.library; const known = lib.scenarios.find((x) => x.id === id);
+        const lib = state.library; const known = lib.assessments.find((x) => x.id === id);
         for (const k of DATA_KEYS) state[k] = d[k] !== undefined ? d[k] : (Array.isArray(state[k]) ? [] : {});
         if (known && known.owner) state.meta.owner = known.owner;
+        if (known) { state.meta.enterprise = known.enterprise || null; state.meta.as_of = known.as_of || null; state.meta.kind = known.kind || "observed"; state.meta.label = known.label || null; }
         state.library = lib;
         state.ui = Object.assign(state.ui, { feedingSeason: null, feedingHerd: null, paramTab: null, paramRow: null, paramUnlocked: false, unlockFeed: null, addGroupTo: null, listFilter: {}, listView: {}, validateAll: false, homeTab: state.ui.homeTab });
         persist(); notify(); return true;
       },
-      /** Copy the scenario that is open into a new library entry. */
-      duplicateOpen(newName) {
-        const id = ICL.uid("sc");
+      /** Copy the assessment that is open into a new library entry. */
+      /** Copy the open assessment. `opts` places the copy: same enterprise (a follow-up or a
+          what-if) or a new one. */
+      duplicateOpen(newName, opts) {
+        const o = opts || {};
+        const id = ICL.uid("as");
         const copy = {}; for (const k of DATA_KEYS) copy[k] = JSON.parse(JSON.stringify(state[k]));
-        copy.meta = Object.assign({}, copy.meta, { id, scenario_name: newName, owner: "you" });
+        const enterprise = o.enterprise !== undefined ? o.enterprise : state.meta.enterprise;
+        const as_of = o.as_of || new Date().getFullYear();
+        const kind = o.kind || "what_if";
+        copy.meta = Object.assign({}, copy.meta, { id, scenario_name: newName, owner: "you", enterprise, as_of, kind, label: o.label || newName });
         (window.ICL_SCENARIOS = window.ICL_SCENARIOS || { scenarios: {} }).scenarios[id] = copy;
         const head = state.animals.reduce((t, a) => t + (Number(a.herd_n) || 0), 0);
         const ha = state.plots.reduce((t, p) => t + (Number(p.plot_area_ha) || 0), 0);
-        state.library.scenarios.unshift({ id, name: newName, owner: "you", project: state.meta.project, param_set: state.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: state.meta.scenario_purpose, shared: [], scale: state.system.scale || "farm", headline: `${Math.round(head)} animals · ${Math.round(ha * 10) / 10} ha · ${state.seasons.length} season${state.seasons.length > 1 ? "s" : ""}` });
+        state.library.assessments.unshift({ id, name: newName, enterprise, as_of, kind, label: o.label || newName, owner: "you", project: state.meta.project, param_set: state.meta.param_set, updated: new Date().toISOString().slice(0, 10), purpose: state.meta.scenario_purpose, shared: [], scale: state.system.scale || "farm", headline: `${Math.round(head)} animals · ${Math.round(ha * 10) / 10} ha · ${state.seasons.length} season${state.seasons.length > 1 ? "s" : ""}` });
         persist(); notify(); return id;
       },
       notify,
