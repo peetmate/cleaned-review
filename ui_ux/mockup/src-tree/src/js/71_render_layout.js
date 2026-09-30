@@ -50,7 +50,7 @@
       const tpl = (e) => rows.some((r) => r.enterprise === e.id && r.template);
       const ents = state.library.enterprises || [];
       return { path: "ui.homeTab", current: state.ui.homeTab || "mine", route: "home",
-        items: [["mine", "My enterprises", ents.filter((e) => e.owner === "you" && !tpl(e)).length],
+        items: [["mine", "My assessments", ents.filter((e) => e.owner === "you" && !tpl(e)).length],
                 ["shared", "Shared with me", ents.filter((e) => e.owner !== "you" && !tpl(e)).length],
                 ["templates", "Templates", ents.filter(tpl).length]] };
     },

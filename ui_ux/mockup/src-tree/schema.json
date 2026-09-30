@@ -12,9 +12,9 @@
   },
   {
    "id": "home",
-   "title": "Enterprises",
-   "short": "Enterprises",
-   "purpose": "Your enterprises, the assessments of each one over time, and the alternatives you are testing.",
+   "title": "Assessments",
+   "short": "Assessments",
+   "purpose": "Every assessment you have made, grouped by the enterprise it describes.",
    "order": 0,
    "wizard": false,
    "group": "scenarios"
@@ -3303,9 +3303,9 @@
   },
   {
    "id": "scenarios",
-   "label": "Enterprises",
+   "label": "Assessments",
    "home": "home",
-   "hint": "Open, assess again, test a change, compare."
+   "hint": "Open an assessment, assess again, test a change, compare."
   },
   {
    "id": "describe",

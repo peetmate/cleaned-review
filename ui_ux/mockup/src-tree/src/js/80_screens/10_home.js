@@ -14,9 +14,9 @@
   ICL.screens.home = function (root, { state }) {
     root.append(screenHead(D.section("home")));
     root.append(h("div", { class: "callout", dataset: { fb: "home:what", fbLabel: "Enterprise and assessment", noNumber: "" } },
-      h("strong", null, "An enterprise"), " is the thing you keep coming back to — a herd and the land that feeds it. ",
-      h("strong", null, "An assessment"), " is one description of that enterprise: dated, when it records what was there that year, or marked ",
-      h("em", null, "what-if"), " when it describes a change you are considering. Assess the same enterprise again next year and the two sit side by side; copy an assessment and change one thing to test it. ",
+      h("strong", null, "An assessment"), " is one description of a livestock enterprise: dated, when it records what was there that year, or marked ",
+      h("em", null, "what-if"), " when it describes a change you are considering. It is the thing you open, run, compare and share. ",
+      "Assessments are grouped by the ", h("strong", null, "enterprise"), " they describe \u2014 the herd and the land that feeds it \u2014 so assessing the same one next year puts the two side by side instead of leaving two unrelated files. ",
       h("a", { href: "#welcome" }, "More about iCLEANED"), " · ", h("a", { href: "#why" }, "Why iCLEANED and how it compares")));
 
     const tab = state.ui.homeTab || "mine";
@@ -26,7 +26,7 @@
     const counts = { mine: 0, shared: 0, templates: 0 };
     for (const e of ents) counts[bucket(e)]++;
     const tabs = h("div", { class: "tabs", role: "tablist" });
-    for (const [k, l] of [["mine", "My enterprises"], ["shared", "Shared with me"], ["templates", "Templates"]])
+    for (const [k, l] of [["mine", "My assessments"], ["shared", "Shared with me"], ["templates", "Templates"]])
       tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => ICL.store.update("ui.homeTab", k) }, `${l} (${counts[k]})`));
     root.append(tabs);
 
@@ -38,7 +38,7 @@
     root.append(grid);
 
     root.append(h("div", { class: "card", dataset: { fb: "home:batch", fbLabel: "Batch card" } },
-      h("div", { class: "card-head" }, h("h2", null, "Many enterprises at once"), h("a", { class: "btn", href: "#batch" }, "Open batch processing →")),
+      h("div", { class: "card-head" }, h("h2", null, "Many assessments at once"), h("a", { class: "btn", href: "#batch" }, "Open batch processing →")),
       h("p", { class: "small" }, "If the descriptions already exist — a household survey, a monitoring sheet, a district inventory — upload the spreadsheet instead of typing each one. Every enterprise is checked the same way as a typed assessment, and you get a QAQC report naming the sheet, the column and the row of anything the model would reject, plus the compiled model input to download.")));
 
     root.append(h("div", { class: "card soft", style: "margin-top:18px" },
@@ -117,7 +117,7 @@
     const from = h("select", { id: "new_ent_from", "aria-label": "Start from" }, h("option", { value: "" }, "Empty description"),
       ...(state.library.assessments || []).map((s) => h("option", { value: s.id }, `Copy of ${s.name}`)));
     const start = h("button", { type: "button", class: "btn", onclick: () => {
-      if (!name.value.trim()) { ICL.toast("Give the enterprise a name first."); name.focus(); return; }
+      if (!name.value.trim()) { ICL.toast("Name the enterprise this assessment describes."); name.focus(); return; }
       const entId = ICL.uid("ent");
       const year = new Date().getFullYear();
       ICL.store.set((s) => { s.library.enterprises.unshift({ id: entId, name: name.value.trim(), place: place.value.trim() || null, owner: "you", project: s.meta.project, scale: "farm" }); return s; });
@@ -126,8 +126,8 @@
       ICL.store.set((s) => { s.meta.param_set = ps.value; const row = s.library.assessments.find((x) => x.id === s.meta.id); if (row) row.param_set = ps.value; return s; });
       ICL.router.go("about");
     } }, "Start →");
-    return h("div", { class: "card scen-card scen-new", dataset: { fb: "home:new", fbLabel: "New enterprise card" } }, h("h3", null, "New enterprise"),
-      h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_name" }, "Name"), name),
+    return h("div", { class: "card scen-card scen-new", dataset: { fb: "home:new", fbLabel: "New assessment card" } }, h("h3", null, "New assessment"),
+      h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_name" }, "Enterprise this describes"), name),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_place" }, "Where it is"), place),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_from" }, "Start from"), from, h("div", { class: "small" }, "Copying a similar enterprise is usually faster than starting empty.")),
       h("div", { class: "field" }, h("label", { class: "field-label", for: "new_ent_param" }, "Defaults from ", h("span", { class: "unit" }, "(parameter set)")), ps),
