@@ -29,13 +29,95 @@
     ["An extension or advisory service", "Needs a conversation with a farmer, not a form.", "A short description in plain questions, results a farmer can see the sense of, and a printable form for where there is no connection (queued)."],
   ];
 
-  const CASES = [
-    ["Placeholder · National dairy herd inventory", "Tanzania", "Describe the national herd in two production systems and compare a feed-improvement pathway against business as usual.", "What the tool would produce, and what data the partner would need to supply. To be written with the partner."],
-    ["Placeholder · Project baseline and ex-ante appraisal", "East Africa", "Appraise a forage intervention across a project's sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "Waiting on the scenario-planning feature (#1 in the queue) to be built before this can be written honestly."],
-    ["Placeholder · Sourcing footprint for a dairy hub", "Kenya", "Run every supplier group from the hub's own collection records and rank them by emission intensity per kilogram of milk.", "Needs the batch run (#5 in the queue)."],
-    ["Placeholder · Comparing intensification pathways", "Vietnam", "One enterprise, several described futures: more animals, better feed, better manure storage — and what each does to land, water, nitrogen and emissions rather than emissions alone.", "The multi-indicator comparison is the point; the write-up needs real data."],
-    ["Placeholder · Teaching the livestock–environment link", "Anywhere", "A class describes their own systems and watches which choices move which indicator.", "Needs the quick mode and a worked teaching scenario."],
+  /* Use cases, organised by the four segments the team named. Every one is a
+     placeholder. `fit` is a first pass written to be argued with, `cases` are
+     candidates, and `compile` is the list of things somebody has to go and find
+     out before any of this can be published. Maturity is deliberately honest:
+     two of the four have never been done. */
+  const SEGMENTS = [
+    {
+      name: "Research networks",
+      maturity: ["Done before", "c-user"],
+      who: "CGIAR science programmes, national agricultural research institutes, universities with livestock and animal science faculties, regional research networks, the Global Research Alliance on Agricultural Greenhouse Gases, FAO LEAP.",
+      fit: "Here the R package is the product and this app is beside the point. A research group wants the equations, a version it can cite, and the ability to run the model a few hundred times without a browser in the way. What CLEANED offers over writing it yourself is a documented method with the IPCC tables already in it, calibrated for systems where feed comes from residues and communal grazing, and results another group can reproduce.",
+      honest: "Reproducibility is the weak point, not a strength. The batch workflow currently sources its functions over HTTP from a moving development branch, so the same script run a month apart can give different answers. Until runs are pinned to a released, citable version, “reproducible” is a claim we cannot make.",
+      cases: [
+        ["Comparing intensification pathways", "Vietnam", "One enterprise, several described futures — more animals, better feed, better manure storage — and what each does to land, water and nitrogen rather than to emissions alone.", "Real data, and the multi-indicator comparison written up as a result rather than a screenshot."],
+        ["Prioritising what is worth a field trial", "—", "Screen a long list of candidate interventions ex ante, and take only the few that move an indicator into an expensive trial.", "A partner willing to say publicly that the screening changed what they trialled."],
+        ["Teaching the livestock–environment link", "Anywhere", "A class describes systems they know and watches which choices move which indicator.", "The quick mode, a worked teaching scenario, and the short course (queue #7)."],
+      ],
+      compile: [
+        "Every study that has used CLEANED, with its citation, split into peer-reviewed and grey literature.",
+        "Whether each package release gets a DOI, and what the canonical citation is today.",
+        "Theses supervised with CLEANED, and at which universities.",
+        "Which networks and institutes there is an actual agreement with, versus a contact.",
+        "Whether a method paper exists that a reviewer would accept, and if not, what it would take.",
+      ],
+    },
+    {
+      name: "Implementing partners",
+      maturity: ["Done before", "c-user"],
+      who: "NGOs and contractors running livestock and dairy programmes — Land O’Lakes Venture37, Heifer, SNV, ACDI/VOCA, Mercy Corps, VSF — plus farmer organisations and cooperative unions.",
+      fit: "These organisations already run farm surveys, at scale, on a schedule, and have no way to turn them into environmental numbers. They do not need new data collection; they need somebody to read the data they have. That is the batch route, and it is the one segment where the work has actually been delivered: a partner’s baseline and follow-up rounds across Kenya and Ethiopia, several hundred enterprises, run through to methane intensity per kilogram of milk alongside land, water, soil, nitrogen and productivity, returned as a workbook.",
+      honest: "Ingestion is written against that one partner’s spreadsheet — its sheet names, its columns. A second partner is currently a code change, not a setting. The batch run (queue #5) and a reader that takes an ordinary survey export are what turn one delivered project into a repeatable offer.",
+      cases: [
+        ["Project baseline and ex-ante appraisal", "East Africa", "Appraise an intervention across a project’s sites before it starts, with adoption assumptions, and set the baseline the project is later measured against.", "The scenario planning feature (queue #1)."],
+        ["Reporting a change to the donor", "Kenya and Ethiopia", "Two survey rounds, the same defaults, the difference attributed to the intervention rather than to the weather or the modelling.", "Permission to publish the delivered example, and confirmation of the numbers."],
+      ],
+      compile: [
+        "Whether the delivered partner will be named publicly and act as a reference, and whether they will give a quote.",
+        "Final enterprise counts per country and per round, and which rounds are cleared for publication.",
+        "What that partner’s donor actually asked them to report, in the donor’s own words — this is the sentence the offer should answer.",
+        "Which other implementing organisations have asked for this, and for what.",
+        "Which survey platforms they collect on (Kobo, ODK, CommCare, something bespoke), because that decides what the generic reader has to read.",
+      ],
+    },
+    {
+      name: "Advisory services",
+      maturity: ["Never tried", "c-blank"],
+      who: "National extension services, the extension arms of dairy cooperatives and processors, private agronomy and veterinary advisers, digital advisory platforms.",
+      fit: "The only segment where this app is the entire product. An adviser sits with a farmer, has no survey, no parameter file and often no connection, and needs the conversation to be worth the visit. The useful output is not a footprint; it is which of three things the farmer could change is worth changing, and what it costs elsewhere — more milk per cow but more land, or less land but a nitrogen deficit.",
+      honest: "Nothing in this segment has been tried. Quick mode (#6), the printable form (#8) and languages (#9) are all in the queue because without them an adviser cannot use the tool at all. There is also a limit worth stating in public before somebody else states it for us: CLEANED is a rapid ex-ante estimate built for comparison, not a farm-specific prediction. Ranking a farmer’s options is defensible. Telling one farmer what their footprint is, is not.",
+      cases: [
+        ["A feed basket conversation", "—", "Describe what the animals eat now in plain questions, change one thing, and show the trade-off in terms a farmer recognises.", "Quick mode, a results view a non-specialist can read, and somebody to try it with real advisers."],
+        ["Training the trainers", "—", "A cooperative’s extension staff learn to run the short description themselves and keep using it after the workshop.", "The short course (queue #7), in the right language."],
+      ],
+      compile: [
+        "Whether any advisory or extension pilot has happened at all — if not, say so and stop implying otherwise.",
+        "Who would deliver it: a cooperative, a ministry extension service, a private adviser network.",
+        "What an adviser can realistically collect in one visit, from someone who has done the visit.",
+        "Which languages, and whether the printed form matters more than the app.",
+        "Whether offline is a requirement or a preference — it changes the build substantially.",
+      ],
+    },
+    {
+      name: "Government institutions",
+      maturity: ["Never tried", "c-blank"],
+      who: "Ministries of livestock and agriculture, national greenhouse gas inventory teams, climate change and NDC units, national statistics offices, planning and investment agencies.",
+      fit: "The clearest recurring mandate of the four — livestock master plans, NDC livestock targets, moving the national inventory from Tier 1 to Tier 2, Biennial Transparency Reports — and the hardest sell, because GLEAM-i is already the reference and is free and FAO-branded. The argument is not a better carbon number. It is the four indicators GLEAM-i does not report, the scenario structure behind a target rather than a single figure, and a description that works from one household up to the national herd so the inventory and the projects inside it are built the same way.",
+      honest: "Three things block this today. There is no uncertainty propagation, and UNFCCC reporting requires one. There is no documented mapping from our equations to the IPCC 2019 Refinement that would survive a technical expert review. And capacity built during a project leaves when the project does — which is why the training request (queue #7) matters more in this segment than anywhere else.",
+      cases: [
+        ["National herd inventory", "Tanzania", "Describe the national herd in two production systems and compare a feed-improvement pathway against business as usual.", "What data the ministry would have to supply, and a decision on the GLEAM question below."],
+        ["Evidence behind an NDC livestock target", "—", "Show what a stated target implies at enterprise level, and whether the pathway to it exists.", "Uncertainty ranges. Point estimates are not usable for this."],
+      ],
+      compile: [
+        "Which governments have used CLEANED, for what, and how formally — a workshop is not the same as a submission.",
+        "The agreed position on CLEANED against GLEAM: complementary or competing. This is a decision for the team, not a research task, and no government conversation should happen before it is made.",
+        "Whether any NDC, inventory or BTR has cited CLEANED anywhere.",
+        "Who in each ministry would own the tool after a project ends, by role rather than by name.",
+        "What a UNFCCC technical expert review would ask for, from someone who has been through one.",
+      ],
+    },
   ];
+
+  // Named in the partner table but not among the four segments above. Left here
+  // as an open question rather than quietly included or quietly dropped.
+  const FIFTH = {
+    name: "Value chains: dairy hubs, cooperatives and processors",
+    q: "In or out?",
+    body: "A processor sourcing from thousands of smallholders has the data, the money and a reporting obligation, and the partner table already lists them. Against it: corporate reporting needs an audited, verifiable figure against a recognised standard, and CLEANED does not meet that bar and is not close to it. Included on those terms, the first serious conversation ends badly.",
+    ask: "The team should decide whether this is a fifth segment with an honest scope limit attached, or out until verification exists. Recommendation: out for now.",
+  };
 
   // From each tool's own documentation, September 2026. "GHG" means greenhouse gases only.
   const COMPARE = [
@@ -128,15 +210,43 @@
 
     if (tab === "cases") {
       root.append(h("div", { class: "callout warn", dataset: { fb: "why:cases_note", fbLabel: "Use cases are placeholders" } },
-        h("strong", null, "These are placeholders. "),
-        "Each needs a real partner, real data and a real result before it can be written. They are here so the shape of a use case can be argued about, and so the workshop can say which ones matter. Nothing below has been done yet."));
-      for (const [title, where, what, missing] of CASES)
-        root.append(h("div", { class: "card", dataset: { fb: "why:case:" + title, fbLabel: "Use case: " + title } },
-          h("div", { class: "card-head" }, h("h2", null, title), h("span", { class: "chip c-blank" }, where)),
-          h("p", null, what), h("p", { class: "small" }, h("strong", null, "Before this can be written: "), missing)));
+        h("strong", null, "All of this is a placeholder. "),
+        "Four segments, because each makes a different decision and needs a different thing from the same model. What is written under ", h("em", null, "How CLEANED fits"), " is a first pass, put here to be argued with rather than agreed to. ",
+        h("em", null, "What still has to be compiled"), " is the list of things somebody has to go and find out — most of it is not research, it is asking a partner a question. Two of the four segments have never been tried and say so."));
+
+      for (const s of SEGMENTS) {
+        const card = h("div", { class: "card", dataset: { fb: "why:segment:" + s.name, fbLabel: "Segment: " + s.name } },
+          h("div", { class: "card-head" }, h("h2", null, s.name), h("span", { class: "chip " + s.maturity[1] }, s.maturity[0])),
+          h("p", { class: "small" }, h("strong", null, "Who this is: "), s.who),
+          h("h3", null, "How CLEANED fits"),
+          h("p", null, s.fit),
+          h("p", { class: "small" }, h("strong", null, "The honest part: "), s.honest),
+          h("h3", null, "Candidate use cases"));
+        const t = h("table", { class: "grid" }, h("thead", null, h("tr", null, h("th", null, "Case"), h("th", null, "Where"), h("th", null, "What it would do"), h("th", null, "Blocked on"))));
+        const tb2 = h("tbody");
+        for (const [title, where, what, blocked] of s.cases)
+          tb2.append(h("tr", null, h("td", null, h("strong", null, title)), h("td", null, h("span", { class: "chip c-blank" }, where)), h("td", null, what), h("td", { class: "small" }, blocked)));
+        t.append(tb2);
+        card.append(h("div", { class: "tablewrap" }, t));
+        card.append(h("h3", null, "What still has to be compiled"));
+        const ul = h("ul");
+        for (const c of s.compile) ul.append(h("li", null, c));
+        card.append(ul);
+        root.append(card);
+      }
+
+      root.append(h("div", { class: "callout", dataset: { fb: "why:fifth", fbLabel: "Fifth segment question" } },
+        h("strong", null, FIFTH.name + " — " + FIFTH.q + " "), FIFTH.body, " ", h("em", null, FIFTH.ask)));
+
+      root.append(h("div", { class: "card soft" }, h("h2", null, "One thing that runs through all four"),
+        h("p", null, "Each segment needs a different training product. An inventory team, a monitoring officer, an extension trainer and a postgraduate student do not want the same two days, and the worked examples should run on their own country rather than on the Tanzanian demo. That is why capacity sharing is in the queue as a feature rather than as a line in a workplan."),
+        h("div", { class: "control" },
+          h("a", { class: "btn", href: "#features" }, "See the capacity sharing request"),
+          h("span", { class: "small" }, "Queue #7."))));
+
       root.append(h("div", { class: "control" },
         h("a", { class: "btn", href: "#features" }, "Propose a use case in the queue"),
-        h("span", { class: "small" }, "Or leave a comment on the one closest to your work.")));
+        h("span", { class: "small" }, "Or leave a comment on the segment closest to your work — including to say the four are wrong.")));
     }
 
     if (tab === "compare") {
