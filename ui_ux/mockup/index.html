@@ -5,7 +5,7 @@
 <meta name="description" content="Clickable mockup of a redesigned iCLEANED data-entry flow, with built-in feedback capture for workshop testing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Merriweather+Sans:wght@300;400;600;700&display=swap">
-<script>window.ICL_BUILD={"version":"v0.9.1 · 2026-09-30 15:35","semver":"0.9.1","sha":"dev","stamp":"2026-09-30 15:35","target":"offline","built":"2026-09-30T12:35:22.898Z"};</script>
+<script>window.ICL_BUILD={"version":"v0.9.2 · 2026-09-30 15:49","semver":"0.9.2","sha":"dev","stamp":"2026-09-30 15:49","target":"offline","built":"2026-09-30T12:49:40.367Z"};</script>
 <style>
 /* iCLEANED Farm Builder mockup — tokens, themes, layout */
 :root {
@@ -4419,9 +4419,14 @@ window.ICL = window.ICL || {};
 
   // ---- localStorage adapter ---------------------------------------------------------
   function localAdapter() {
-    const key = (c) => "icleaned.fb." + c + ".v1"; const ev = {}; COLLS.forEach((c) => (ev[c] = emitter()));
-    const read = (c) => ICL.storage.get(key(c), []); const write = (c, arr) => { ICL.storage.set(key(c), arr); ev[c].emit(arr); };
-    window.addEventListener("storage", (e) => { for (const c of COLLS) if (e.key === key(c)) ev[c].emit(read(c)); });
+    const key = (c) => "icleaned.fb." + c + ".v1"; const ev = {};
+    // Collections are created on demand: the store self-test writes to one that is not in
+    // COLLS, and an adapter that throws on an unknown collection is an adapter that cannot
+    // be tested.
+    const chan = (c) => (ev[c] = ev[c] || emitter());
+    const read = (c) => ICL.storage.get(key(c), []); const write = (c, arr) => { ICL.storage.set(key(c), arr); chan(c).emit(arr); };
+    COLLS.forEach(chan);
+    window.addEventListener("storage", (e) => { for (const c of Object.keys(ev)) if (e.key === key(c)) chan(c).emit(read(c)); });
     let anon = ICL.storage.get("icleaned.fb.anonId", null); if (!anon) { anon = "anon_" + Math.random().toString(36).slice(2, 10); ICL.storage.set("icleaned.fb.anonId", anon); }
     return {
       name: "localStorage", async ready() {}, async canWrite() { return true; }, async viewerId() { return anon; },
@@ -4429,17 +4434,19 @@ window.ICL = window.ICL || {};
       async update(c, id, patch) { const arr = read(c); const i = arr.findIndex((d) => d.id === id); if (i >= 0) { arr[i] = Object.assign({}, arr[i], patch); write(c, arr); } },
       async remove(c, id) { write(c, read(c).filter((d) => d.id !== id)); },
       async list(c) { return read(c); },
-      subscribe(c, cb) { cb(read(c)); return ev[c].on(cb); },
+      subscribe(c, cb) { cb(read(c)); return chan(c).on(cb); },
       async dump() { const o = {}; for (const c of COLLS) o[c] = read(c); return o; },
     };
   }
   function memoryAdapter() {
-    const data = {}; const ev = {}; COLLS.forEach((c) => { data[c] = []; ev[c] = emitter(); });
+    const data = {}; const ev = {};
+    const chan = (c) => { data[c] = data[c] || []; ev[c] = ev[c] || emitter(); return ev[c]; };
+    COLLS.forEach(chan);
     return { name: "memory", async ready() {}, async canWrite() { return true; }, async viewerId() { return "mem_" + Math.random().toString(36).slice(2, 8); },
-      async set(c, id, doc) { data[c] = data[c].filter((d) => d.id !== id).concat([Object.assign({}, doc, { id })]); ev[c].emit(data[c]); },
-      async update(c, id, patch) { data[c] = data[c].map((d) => (d.id === id ? Object.assign({}, d, patch) : d)); ev[c].emit(data[c]); },
-      async remove(c, id) { data[c] = data[c].filter((d) => d.id !== id); ev[c].emit(data[c]); },
-      async list(c) { return data[c]; }, subscribe(c, cb) { cb(data[c]); return ev[c].on(cb); }, async dump() { return JSON.parse(JSON.stringify(data)); } };
+      async set(c, id, doc) { chan(c); data[c] = data[c].filter((d) => d.id !== id).concat([Object.assign({}, doc, { id })]); ev[c].emit(data[c]); },
+      async update(c, id, patch) { chan(c); data[c] = data[c].map((d) => (d.id === id ? Object.assign({}, d, patch) : d)); ev[c].emit(data[c]); },
+      async remove(c, id) { chan(c); data[c] = data[c].filter((d) => d.id !== id); ev[c].emit(data[c]); },
+      async list(c) { chan(c); return data[c]; }, subscribe(c, cb) { const e = chan(c); cb(data[c]); return e.on(cb); }, async dump() { return JSON.parse(JSON.stringify(data)); } };
   }
   // ---- claude db adapter -------------------------------------------------------------
   function claudeAdapter(db, user) {
@@ -4470,6 +4477,10 @@ window.ICL = window.ICL || {};
 
   // ---- API ----------------------------------------------------------------------------------
   const fb = { adapter: null, viewerId: null, canWrite: null, docs: [], ratings: [], votes: [], unsubs: [], local: null, remote: null };
+  // Why the store ended up as it did. Surfaced on the Feedback screen, because a toast
+  // nobody reads is not a way to tell a facilitator their session is not being recorded.
+  const diag = { runtime: null, db: null, user: null, canWrite: null, viewerId: null, reason: null, lastError: null, lastWriteAt: null, lastWriteOk: null };
+  fb.diag = diag;
   const READ_ONLY_MSG = "You can view everyone's feedback, but your own comments are saved on this device only. Use Export on the Feedback screen and hand the file to a facilitator.";
   function subscribeAll(adapter) {
     fb.unsubs.forEach((u) => u()); fb.unsubs = [];
@@ -4490,9 +4501,10 @@ window.ICL = window.ICL || {};
     if (ICL.env.hasClaude) {
       await ICL.env.ready;
       const { db, user } = ICL.env.caps;
-      if (db) { fb.remote = claudeAdapter(db, user); await fb.remote.ready(); const cw = await fb.remote.canWrite(); adapter = cw === false ? compositeAdapter(fb.remote, fb.local) : fb.remote; fb.canWrite = cw; if (cw === false) showBanner(READ_ONLY_MSG); }
+      diag.runtime = true; diag.db = !!db; diag.user = !!user;
+      if (db) { fb.remote = claudeAdapter(db, user); await fb.remote.ready(); const cw = await fb.remote.canWrite(); adapter = cw === false ? compositeAdapter(fb.remote, fb.local) : fb.remote; fb.canWrite = cw; diag.canWrite = cw; diag.viewerId = await fb.remote.viewerId(); diag.reason = cw === false ? "the runtime says this viewer may not write to the shared store" : null; if (cw === false) showBanner(READ_ONLY_MSG); }
     }
-    if (!adapter) { adapter = fb.local; fb.canWrite = true; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
+    if (!adapter) { adapter = fb.local; fb.canWrite = true; diag.reason = diag.runtime ? "the runtime offered no shared database to this page" : "this copy is running outside the artifact runtime (offline file or local server)"; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
     fb.adapter = adapter;
     // viewer id: the platform id when known, else this device's anonymous id (never "null")
     fb.viewerId = (await adapter.viewerId()) || (await fb.local.viewerId());
@@ -4502,6 +4514,39 @@ window.ICL = window.ICL || {};
   };
   const SAFE_ID = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
   const safeId = (s) => String(s).replace(/[^A-Za-z0-9_\-.~:@+]/g, "_").slice(0, 200);
+  /** One line a facilitator can read before the session starts. */
+  fb.storeStatus = function () {
+    const shared = fb.adapter && fb.adapter.name === "claudeDb";
+    return {
+      adapter: fb.adapter ? fb.adapter.name : "connecting",
+      shared, canWrite: fb.canWrite, viewerId: diag.viewerId, reason: diag.reason,
+      runtime: diag.runtime, hasDb: diag.db, lastWriteOk: diag.lastWriteOk, lastError: diag.lastError,
+      lastWriteAt: diag.lastWriteAt,
+      verdict: shared
+        ? "Comments are being written to the shared store and every facilitator sees them."
+        : (fb.adapter && fb.adapter.name === "composite")
+          ? "You can read everyone else's comments, but yours stay on this device. Export before you close the tab."
+          : "Comments are staying on this device only. Export before you close the tab.",
+    };
+  };
+
+  /** Write a throwaway document, read it back, delete it. Proves the path end to end. */
+  fb.testStore = async function () {
+    const id = "selftest_" + ICL.uid("").slice(1);
+    const doc = { id, v: 1, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, kind: "selftest", text: "storage self-test" };
+    try {
+      await fb.adapter.set("selftest", id, doc);
+      const back = await fb.adapter.list("selftest");
+      const found = (back || []).some((d) => d.id === id);
+      try { await fb.adapter.remove("selftest", id); } catch {}
+      diag.lastWriteOk = found; diag.lastError = found ? null : "written but not read back";
+      return { ok: found, where: fb.adapter.name, detail: found ? "wrote, read back and cleaned up" : "the write reported success but the document did not come back" };
+    } catch (e) {
+      diag.lastWriteOk = false; diag.lastError = (e && (e.code || e.message)) || String(e);
+      return { ok: false, where: fb.adapter && fb.adapter.name, detail: diag.lastError };
+    }
+  };
+
   function showBanner(text) {
     const main = document.getElementById("main"); if (!main) return;
     const old = main.querySelector(".fb-store-banner"); if (old) old.remove();
@@ -4521,8 +4566,8 @@ window.ICL = window.ICL || {};
     if (doc.text && doc.text.length > 4000) doc.text = doc.text.slice(0, 4000);
     const bytes = (o) => new TextEncoder().encode(JSON.stringify(o)).length;
     if (bytes(doc) > 240 * 1024 && doc.screenshot) { for (const [w, q] of [[900, 0.6], [700, 0.5], [500, 0.4]]) { doc.screenshot = await ICL.fb.rescale(doc.screenshot, w, q); if (bytes(doc) <= 240 * 1024) break; } if (bytes(doc) > 240 * 1024) { doc.screenshot = null; doc.screenshotNote = "too large"; } }
-    try { await fb.adapter.set("feedback", id, doc); ICL.toast("Feedback saved" + (fb.adapter.name === "claudeDb" ? " and shared." : " on this device.")); }
-    catch (e) { console.error(e); await fb.local.set("feedback", id, doc); degradeToLocalWrites(); ICL.toast("The shared store refused the write; kept on this device."); }
+    try { await fb.adapter.set("feedback", id, doc); diag.lastWriteAt = Date.now(); diag.lastWriteOk = true; diag.lastError = null; ICL.toast("Feedback saved" + (fb.adapter.name === "claudeDb" ? " and shared." : " on this device.")); }
+    catch (e) { console.error(e); diag.lastWriteAt = Date.now(); diag.lastWriteOk = false; diag.lastError = (e && (e.code || e.message)) || String(e); await fb.local.set("feedback", id, doc); degradeToLocalWrites(); ICL.toast("The shared store refused the write; kept on this device."); }
     return id;
   };
   fb.rate = async function (screen, patch) { if (!fb.adapter) return; const id = safeId(`${fb.viewerId}_${screen}`); const cur = (fb.ratings || []).find((r) => r.id === id) || { id, screen, viewerId: fb.viewerId, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, appVersion: ICL.env.build.version }; try { await fb.adapter.set("ratings", id, Object.assign({}, cur, patch, { updatedAt: new Date().toISOString() })); } catch (e) { ICL.toast("Could not save the rating here."); } };
@@ -4682,9 +4727,44 @@ window.ICL = window.ICL || {};
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict;
   const TYPE_LABEL = { confusing: "Confusing", missing: "Missing", wrong_unit: "Wrong unit/value", love_it: "Works well", dont_need: "Don't need", bug: "Bug" };
+  /** Storage status, and a button that proves it rather than claiming it. */
+  function storeCard(state) {
+    const st = (ICL.fb.storeStatus && ICL.fb.storeStatus()) || { adapter: state.fb.adapterName, verdict: "" };
+    const ok = st.shared === true;
+    const card = h("div", { class: "card", dataset: { fb: "fb:store", fbLabel: "Storage status" } },
+      h("div", { class: "card-head" },
+        h("h2", null, "Where this session is being saved"),
+        h("span", { class: "chip " + (ok ? "c-user" : "c-blank"), style: ok ? "" : "color:var(--warn);border-color:var(--warn)" }, ok ? "shared store" : "this device only")),
+      h("p", null, st.verdict),
+      h("dl", { class: "kv" },
+        h("dt", null, "Store"), h("dd", null, String(st.adapter)),
+        h("dt", null, "Write access"), h("dd", null, st.canWrite === true ? "yes" : st.canWrite === false ? "no" : "not reported"),
+        h("dt", null, "Runtime"), h("dd", null, st.runtime ? (st.hasDb ? "artifact, shared database offered" : "artifact, no shared database offered") : "outside the artifact runtime"),
+        ...(st.reason ? [h("dt", null, "Why"), h("dd", null, st.reason)] : []),
+        ...(st.lastError ? [h("dt", null, "Last error"), h("dd", null, String(st.lastError))] : []),
+        ...(st.viewerId ? [h("dt", null, "You are"), h("dd", { class: "small" }, String(st.viewerId))] : [])));
+    const out = h("div", { class: "msg" });
+    card.append(h("div", { class: "control" },
+      h("button", { type: "button", class: "btn", onclick: async () => {
+        out.className = "msg"; out.textContent = "Testing\u2026";
+        const r = await ICL.fb.testStore();
+        out.className = "msg " + (r.ok && st.shared ? "ok" : r.ok ? "warn" : "err");
+        out.textContent = r.ok
+          ? `Wrote and read back from "${r.where}" \u2014 ${r.where === "claudeDb" ? "the shared store works." : "but that is local storage, not the shared store."}`
+          : `Failed against "${r.where}": ${r.detail}`;
+      } }, "Test the store now"),
+      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("json") }, "Export everything (JSON)"),
+      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("csv") }, "Export comments (CSV)")), out);
+    if (!ok) card.append(h("p", { class: "small" }, "Run this before a session starts. If it does not say the shared store works, the facilitator must export at the end of the session or the notes are lost when the tab closes."));
+    return card;
+  }
+
   ICL.screens.feedback = function (root, { state }) {
     const docs = state.fb.docs || []; const f = state.ui.fbFilter || {};
     root.append(h("div", { class: "screen-head" }, h("h1", null, "Feedback dashboard"), h("p", { class: "purpose" }, `Everything captured in session "${state.fb.session}". Store: ${state.fb.adapterName}${state.fb.canWrite === false ? " (read-only for you)" : ""}. Click an item to jump to the element as the participant saw it.`)));
+    // Where the data is going, stated permanently rather than in a toast that vanishes.
+    root.append(storeCard(state));
+
     // counts per screen
     const per = {}; for (const d of docs) per[d.screen] = (per[d.screen] || 0) + 1;
     const tiles = h("div", { class: "tile-row" }, h("div", { class: "tile" }, h("b", null, String(docs.length)), h("span", { class: "small" }, "comments")), h("div", { class: "tile" }, h("b", null, String((state.fb.ratings || []).length)), h("span", { class: "small" }, "ratings")), h("div", { class: "tile" }, h("b", null, String((state.fb.votes || []).length)), h("span", { class: "small" }, "votes")), h("div", { class: "tile" }, h("b", null, String(docs.filter((d) => d.severity === 3).length)), h("span", { class: "small" }, "blockers")), h("div", { class: "tile" }, h("b", null, String(docs.filter((d) => d.triaged).length)), h("span", { class: "small" }, "triaged")));

@@ -5,9 +5,14 @@
 
   // ---- localStorage adapter ---------------------------------------------------------
   function localAdapter() {
-    const key = (c) => "icleaned.fb." + c + ".v1"; const ev = {}; COLLS.forEach((c) => (ev[c] = emitter()));
-    const read = (c) => ICL.storage.get(key(c), []); const write = (c, arr) => { ICL.storage.set(key(c), arr); ev[c].emit(arr); };
-    window.addEventListener("storage", (e) => { for (const c of COLLS) if (e.key === key(c)) ev[c].emit(read(c)); });
+    const key = (c) => "icleaned.fb." + c + ".v1"; const ev = {};
+    // Collections are created on demand: the store self-test writes to one that is not in
+    // COLLS, and an adapter that throws on an unknown collection is an adapter that cannot
+    // be tested.
+    const chan = (c) => (ev[c] = ev[c] || emitter());
+    const read = (c) => ICL.storage.get(key(c), []); const write = (c, arr) => { ICL.storage.set(key(c), arr); chan(c).emit(arr); };
+    COLLS.forEach(chan);
+    window.addEventListener("storage", (e) => { for (const c of Object.keys(ev)) if (e.key === key(c)) chan(c).emit(read(c)); });
     let anon = ICL.storage.get("icleaned.fb.anonId", null); if (!anon) { anon = "anon_" + Math.random().toString(36).slice(2, 10); ICL.storage.set("icleaned.fb.anonId", anon); }
     return {
       name: "localStorage", async ready() {}, async canWrite() { return true; }, async viewerId() { return anon; },
@@ -15,17 +20,19 @@
       async update(c, id, patch) { const arr = read(c); const i = arr.findIndex((d) => d.id === id); if (i >= 0) { arr[i] = Object.assign({}, arr[i], patch); write(c, arr); } },
       async remove(c, id) { write(c, read(c).filter((d) => d.id !== id)); },
       async list(c) { return read(c); },
-      subscribe(c, cb) { cb(read(c)); return ev[c].on(cb); },
+      subscribe(c, cb) { cb(read(c)); return chan(c).on(cb); },
       async dump() { const o = {}; for (const c of COLLS) o[c] = read(c); return o; },
     };
   }
   function memoryAdapter() {
-    const data = {}; const ev = {}; COLLS.forEach((c) => { data[c] = []; ev[c] = emitter(); });
+    const data = {}; const ev = {};
+    const chan = (c) => { data[c] = data[c] || []; ev[c] = ev[c] || emitter(); return ev[c]; };
+    COLLS.forEach(chan);
     return { name: "memory", async ready() {}, async canWrite() { return true; }, async viewerId() { return "mem_" + Math.random().toString(36).slice(2, 8); },
-      async set(c, id, doc) { data[c] = data[c].filter((d) => d.id !== id).concat([Object.assign({}, doc, { id })]); ev[c].emit(data[c]); },
-      async update(c, id, patch) { data[c] = data[c].map((d) => (d.id === id ? Object.assign({}, d, patch) : d)); ev[c].emit(data[c]); },
-      async remove(c, id) { data[c] = data[c].filter((d) => d.id !== id); ev[c].emit(data[c]); },
-      async list(c) { return data[c]; }, subscribe(c, cb) { cb(data[c]); return ev[c].on(cb); }, async dump() { return JSON.parse(JSON.stringify(data)); } };
+      async set(c, id, doc) { chan(c); data[c] = data[c].filter((d) => d.id !== id).concat([Object.assign({}, doc, { id })]); ev[c].emit(data[c]); },
+      async update(c, id, patch) { chan(c); data[c] = data[c].map((d) => (d.id === id ? Object.assign({}, d, patch) : d)); ev[c].emit(data[c]); },
+      async remove(c, id) { chan(c); data[c] = data[c].filter((d) => d.id !== id); ev[c].emit(data[c]); },
+      async list(c) { chan(c); return data[c]; }, subscribe(c, cb) { const e = chan(c); cb(data[c]); return e.on(cb); }, async dump() { return JSON.parse(JSON.stringify(data)); } };
   }
   // ---- claude db adapter -------------------------------------------------------------
   function claudeAdapter(db, user) {
@@ -56,6 +63,10 @@
 
   // ---- API ----------------------------------------------------------------------------------
   const fb = { adapter: null, viewerId: null, canWrite: null, docs: [], ratings: [], votes: [], unsubs: [], local: null, remote: null };
+  // Why the store ended up as it did. Surfaced on the Feedback screen, because a toast
+  // nobody reads is not a way to tell a facilitator their session is not being recorded.
+  const diag = { runtime: null, db: null, user: null, canWrite: null, viewerId: null, reason: null, lastError: null, lastWriteAt: null, lastWriteOk: null };
+  fb.diag = diag;
   const READ_ONLY_MSG = "You can view everyone's feedback, but your own comments are saved on this device only. Use Export on the Feedback screen and hand the file to a facilitator.";
   function subscribeAll(adapter) {
     fb.unsubs.forEach((u) => u()); fb.unsubs = [];
@@ -76,9 +87,10 @@
     if (ICL.env.hasClaude) {
       await ICL.env.ready;
       const { db, user } = ICL.env.caps;
-      if (db) { fb.remote = claudeAdapter(db, user); await fb.remote.ready(); const cw = await fb.remote.canWrite(); adapter = cw === false ? compositeAdapter(fb.remote, fb.local) : fb.remote; fb.canWrite = cw; if (cw === false) showBanner(READ_ONLY_MSG); }
+      diag.runtime = true; diag.db = !!db; diag.user = !!user;
+      if (db) { fb.remote = claudeAdapter(db, user); await fb.remote.ready(); const cw = await fb.remote.canWrite(); adapter = cw === false ? compositeAdapter(fb.remote, fb.local) : fb.remote; fb.canWrite = cw; diag.canWrite = cw; diag.viewerId = await fb.remote.viewerId(); diag.reason = cw === false ? "the runtime says this viewer may not write to the shared store" : null; if (cw === false) showBanner(READ_ONLY_MSG); }
     }
-    if (!adapter) { adapter = fb.local; fb.canWrite = true; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
+    if (!adapter) { adapter = fb.local; fb.canWrite = true; diag.reason = diag.runtime ? "the runtime offered no shared database to this page" : "this copy is running outside the artifact runtime (offline file or local server)"; if (ICL.env.hasClaude) showBanner("Shared feedback store unavailable here; comments are saved on this device. Export them from the Feedback screen."); }
     fb.adapter = adapter;
     // viewer id: the platform id when known, else this device's anonymous id (never "null")
     fb.viewerId = (await adapter.viewerId()) || (await fb.local.viewerId());
@@ -88,6 +100,39 @@
   };
   const SAFE_ID = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
   const safeId = (s) => String(s).replace(/[^A-Za-z0-9_\-.~:@+]/g, "_").slice(0, 200);
+  /** One line a facilitator can read before the session starts. */
+  fb.storeStatus = function () {
+    const shared = fb.adapter && fb.adapter.name === "claudeDb";
+    return {
+      adapter: fb.adapter ? fb.adapter.name : "connecting",
+      shared, canWrite: fb.canWrite, viewerId: diag.viewerId, reason: diag.reason,
+      runtime: diag.runtime, hasDb: diag.db, lastWriteOk: diag.lastWriteOk, lastError: diag.lastError,
+      lastWriteAt: diag.lastWriteAt,
+      verdict: shared
+        ? "Comments are being written to the shared store and every facilitator sees them."
+        : (fb.adapter && fb.adapter.name === "composite")
+          ? "You can read everyone else's comments, but yours stay on this device. Export before you close the tab."
+          : "Comments are staying on this device only. Export before you close the tab.",
+    };
+  };
+
+  /** Write a throwaway document, read it back, delete it. Proves the path end to end. */
+  fb.testStore = async function () {
+    const id = "selftest_" + ICL.uid("").slice(1);
+    const doc = { id, v: 1, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, kind: "selftest", text: "storage self-test" };
+    try {
+      await fb.adapter.set("selftest", id, doc);
+      const back = await fb.adapter.list("selftest");
+      const found = (back || []).some((d) => d.id === id);
+      try { await fb.adapter.remove("selftest", id); } catch {}
+      diag.lastWriteOk = found; diag.lastError = found ? null : "written but not read back";
+      return { ok: found, where: fb.adapter.name, detail: found ? "wrote, read back and cleaned up" : "the write reported success but the document did not come back" };
+    } catch (e) {
+      diag.lastWriteOk = false; diag.lastError = (e && (e.code || e.message)) || String(e);
+      return { ok: false, where: fb.adapter && fb.adapter.name, detail: diag.lastError };
+    }
+  };
+
   function showBanner(text) {
     const main = document.getElementById("main"); if (!main) return;
     const old = main.querySelector(".fb-store-banner"); if (old) old.remove();
@@ -107,8 +152,8 @@
     if (doc.text && doc.text.length > 4000) doc.text = doc.text.slice(0, 4000);
     const bytes = (o) => new TextEncoder().encode(JSON.stringify(o)).length;
     if (bytes(doc) > 240 * 1024 && doc.screenshot) { for (const [w, q] of [[900, 0.6], [700, 0.5], [500, 0.4]]) { doc.screenshot = await ICL.fb.rescale(doc.screenshot, w, q); if (bytes(doc) <= 240 * 1024) break; } if (bytes(doc) > 240 * 1024) { doc.screenshot = null; doc.screenshotNote = "too large"; } }
-    try { await fb.adapter.set("feedback", id, doc); ICL.toast("Feedback saved" + (fb.adapter.name === "claudeDb" ? " and shared." : " on this device.")); }
-    catch (e) { console.error(e); await fb.local.set("feedback", id, doc); degradeToLocalWrites(); ICL.toast("The shared store refused the write; kept on this device."); }
+    try { await fb.adapter.set("feedback", id, doc); diag.lastWriteAt = Date.now(); diag.lastWriteOk = true; diag.lastError = null; ICL.toast("Feedback saved" + (fb.adapter.name === "claudeDb" ? " and shared." : " on this device.")); }
+    catch (e) { console.error(e); diag.lastWriteAt = Date.now(); diag.lastWriteOk = false; diag.lastError = (e && (e.code || e.message)) || String(e); await fb.local.set("feedback", id, doc); degradeToLocalWrites(); ICL.toast("The shared store refused the write; kept on this device."); }
     return id;
   };
   fb.rate = async function (screen, patch) { if (!fb.adapter) return; const id = safeId(`${fb.viewerId}_${screen}`); const cur = (fb.ratings || []).find((r) => r.id === id) || { id, screen, viewerId: fb.viewerId, createdAt: new Date().toISOString(), session: ICL.store.get().fb.session, appVersion: ICL.env.build.version }; try { await fb.adapter.set("ratings", id, Object.assign({}, cur, patch, { updatedAt: new Date().toISOString() })); } catch (e) { ICL.toast("Could not save the rating here."); } };

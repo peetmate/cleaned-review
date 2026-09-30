@@ -256,3 +256,18 @@ The repository had no agent-facing or contributor-facing documentation, so three
 - **`CLAUDE.md`** at the repository root: what each document is, the four non-negotiable rules (no funding content in the tool or site, no issues filed on the upstream repositories, never commit from the stale `site/` clone, read before overwriting), how to ship a mockup change end to end, the version-bump discipline, how to verify in the browser, the house style, and the four traps this repository has already fallen into.
 - **`ui_ux/DECISIONS.md`**: thirteen decisions with their reasoning — herd not farm, assessment not scenario, the three levels, why the results are deliberately a visible sketch, the four provenance states, blank as unknown, manure at herd level and why the head-weighted merge is compulsory rather than convenient, asking what people know, computed numbering, comparison before absolutes, two-level navigation, no funding content, and stating every limitation where it bites. Several of these reverse a choice that looks obvious, which is exactly why they are written down.
 - **`ui_ux/mockup/README.md`** brought up to date: it still described a flat list of six scenarios and the old screen set.
+
+## v0.9.2 — the feedback store now states where it is saving, and proves it
+
+**Why:** reading the published artifact's database found it completely empty — no comments, no ratings — after two saves had been made in it. The page had been telling the truth all along, in a toast that disappears after a few seconds and a banner with a Dismiss button. For the one mechanism the whole mockup exists to serve, that is not good enough: a facilitator can run a session believing it is being recorded and find out afterwards that it was not.
+
+**What changed:**
+
+- **A permanent storage card at the top of the Feedback dashboard.** A chip reading *shared store* or *this device only*, a sentence saying what that means for the session ("Comments are staying on this device only. Export before you close the tab."), and the facts underneath: which adapter, whether the runtime offered a shared database, whether this viewer may write to it, why it fell back if it did, the last error verbatim, and the viewer id.
+- **A "Test the store now" button** that writes a throwaway document, reads it back, deletes it, and reports what happened — including the distinction that matters: *wrote and read back, but that is local storage, not the shared store*. It is meant to be run before a session starts.
+- **Export buttons moved onto that card**, next to the verdict, because that is where someone reads that they will need them.
+- **Every write now records its outcome** (ok, the error code, the time) instead of only logging to a console nobody has open.
+
+**A bug the self-test found immediately:** both local adapters pre-created an event emitter for each known collection and threw `Cannot read properties of undefined (reading 'emit')` on any other — so the self-test could not run against them, and any future collection would have failed the same way. Collections are now created on demand. An adapter that cannot be tested is an adapter that should not be trusted.
+
+**Still unproven:** whether the shared store works *inside the published artifact*. The local build always reports "outside the artifact runtime", correctly, because it is. That verdict can only be read in the artifact itself.

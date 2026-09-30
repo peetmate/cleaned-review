@@ -2,9 +2,44 @@
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict;
   const TYPE_LABEL = { confusing: "Confusing", missing: "Missing", wrong_unit: "Wrong unit/value", love_it: "Works well", dont_need: "Don't need", bug: "Bug" };
+  /** Storage status, and a button that proves it rather than claiming it. */
+  function storeCard(state) {
+    const st = (ICL.fb.storeStatus && ICL.fb.storeStatus()) || { adapter: state.fb.adapterName, verdict: "" };
+    const ok = st.shared === true;
+    const card = h("div", { class: "card", dataset: { fb: "fb:store", fbLabel: "Storage status" } },
+      h("div", { class: "card-head" },
+        h("h2", null, "Where this session is being saved"),
+        h("span", { class: "chip " + (ok ? "c-user" : "c-blank"), style: ok ? "" : "color:var(--warn);border-color:var(--warn)" }, ok ? "shared store" : "this device only")),
+      h("p", null, st.verdict),
+      h("dl", { class: "kv" },
+        h("dt", null, "Store"), h("dd", null, String(st.adapter)),
+        h("dt", null, "Write access"), h("dd", null, st.canWrite === true ? "yes" : st.canWrite === false ? "no" : "not reported"),
+        h("dt", null, "Runtime"), h("dd", null, st.runtime ? (st.hasDb ? "artifact, shared database offered" : "artifact, no shared database offered") : "outside the artifact runtime"),
+        ...(st.reason ? [h("dt", null, "Why"), h("dd", null, st.reason)] : []),
+        ...(st.lastError ? [h("dt", null, "Last error"), h("dd", null, String(st.lastError))] : []),
+        ...(st.viewerId ? [h("dt", null, "You are"), h("dd", { class: "small" }, String(st.viewerId))] : [])));
+    const out = h("div", { class: "msg" });
+    card.append(h("div", { class: "control" },
+      h("button", { type: "button", class: "btn", onclick: async () => {
+        out.className = "msg"; out.textContent = "Testing\u2026";
+        const r = await ICL.fb.testStore();
+        out.className = "msg " + (r.ok && st.shared ? "ok" : r.ok ? "warn" : "err");
+        out.textContent = r.ok
+          ? `Wrote and read back from "${r.where}" \u2014 ${r.where === "claudeDb" ? "the shared store works." : "but that is local storage, not the shared store."}`
+          : `Failed against "${r.where}": ${r.detail}`;
+      } }, "Test the store now"),
+      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("json") }, "Export everything (JSON)"),
+      h("button", { type: "button", class: "btn-sm", onclick: () => ICL.fb.exportAll("csv") }, "Export comments (CSV)")), out);
+    if (!ok) card.append(h("p", { class: "small" }, "Run this before a session starts. If it does not say the shared store works, the facilitator must export at the end of the session or the notes are lost when the tab closes."));
+    return card;
+  }
+
   ICL.screens.feedback = function (root, { state }) {
     const docs = state.fb.docs || []; const f = state.ui.fbFilter || {};
     root.append(h("div", { class: "screen-head" }, h("h1", null, "Feedback dashboard"), h("p", { class: "purpose" }, `Everything captured in session "${state.fb.session}". Store: ${state.fb.adapterName}${state.fb.canWrite === false ? " (read-only for you)" : ""}. Click an item to jump to the element as the participant saw it.`)));
+    // Where the data is going, stated permanently rather than in a toast that vanishes.
+    root.append(storeCard(state));
+
     // counts per screen
     const per = {}; for (const d of docs) per[d.screen] = (per[d.screen] || 0) + 1;
     const tiles = h("div", { class: "tile-row" }, h("div", { class: "tile" }, h("b", null, String(docs.length)), h("span", { class: "small" }, "comments")), h("div", { class: "tile" }, h("b", null, String((state.fb.ratings || []).length)), h("span", { class: "small" }, "ratings")), h("div", { class: "tile" }, h("b", null, String((state.fb.votes || []).length)), h("span", { class: "small" }, "votes")), h("div", { class: "tile" }, h("b", null, String(docs.filter((d) => d.severity === 3).length)), h("span", { class: "small" }, "blockers")), h("div", { class: "tile" }, h("b", null, String(docs.filter((d) => d.triaged).length)), h("span", { class: "small" }, "triaged")));
