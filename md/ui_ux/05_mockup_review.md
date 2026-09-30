@@ -119,3 +119,13 @@ Four changes from your reading of the structure. The wizard is now **10 steps, n
 **Seasons are proposed from the rainy months, which answers the naming problem.** You already tick the months with rain in a normal year. The app reads the contiguous runs of those months and offers named seasons — "Rainy season (Nov–Apr) · Dry season (May–Oct)", or "Long rains / Short rains / Dry season" where there are two wet runs — with one button to accept and inline renaming afterwards. The suggestion disappears once the seasons match it, however they are named and in whatever order they are listed, and taking it warns first when it would clear an existing feeding plan. Verified on the Kenyan template: nine rainy months became "Rainy season (Mar–Nov)" and "Dry season (Dec–Feb)", 365 days placed.
 
 Also fixed in passing: the feeding plan showed as "not started" in the sidebar even when fully entered, because the diet lives in `allocation`, which is not provenance-tracked.
+
+## v0.7.3 — sidebar as a map, enterprise wording, labelled chips
+
+**Records left the sidebar.** Feeds, animals, herds, plots and seasons no longer list one line each in the contents. A step shows a count (`Feeds ×12`) and nothing more, so the sidebar stays a map of the ten steps at any enterprise size.
+
+**Records became tabs on their own screen.** Each entity screen carries a tab strip — `5.1 Brachiaria hybrid · 5.2 Maize stover · 5.3 Rhodes grass · + Add · All feeds` — with the numbered heading on each tab, an error badge where something is blocking, and previous/next under the card. The numbers are the same ones used for feedback, so "5.2 is confusing" still resolves to one record. The filter chips and the compact list remain for long lists.
+
+**"Farm" became "enterprise" throughout.** The scale words now read enterprise / on your own land / off your land (communal or rented) / enterprise gate, and the questions follow: "Which animals does this enterprise keep?", "Grown on land you manage", "Collected off your land". The scale question's own first option keeps the word where it is the literal unit — "One enterprise (a household or a farm)" — and the two deliberate contrasts stay ("a herd model, not a farm model"). A sweep of every screen and every entity card found no other use.
+
+**Top-bar chips say what they are.** Each is now labelled and carries a tooltip explaining the concept and how things nest: **Project** (groups scenarios and the people who may see them; project → scenarios → the herds, land and feeds in each, with a parameter set beside them), **Scenario** (one enterprise for one year; baseline vs intervention), **Describes** (the scale and size), **Defaults from** (the parameter set, what may be edited and what wins).

@@ -1,7 +1,6 @@
 /* Layout: topbar scenario chip, sidebar tree with status, wizard bar, preview panel, rating strip. */
 (function (ICL) {
   const { h, fmt } = ICL; const D = ICL.dict, C = ICL.cond;
-  const CHILD_LIMIT = 6; // above this the sidebar shows a count instead of every record
   const REFERENCE = ["boundary", "help"]; // reading, not steps: listed at the bottom
 
   function statusFor(sectionId, state, val, entityId) {
@@ -48,24 +47,12 @@
       const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
       ul.append(li);
       if (sec.entity && st !== "off") {
-        // The sidebar is a map of the steps, not a list of records: a national herd can
-        // have dozens of feeds. Children are listed only while the list is short enough
-        // to be a map; beyond that the count links to the step, which has its own filter.
+        // The sidebar is a map of the steps, never a list of records. Records are
+        // reached through tabs on their own screen, so a hundred feeds cost one line.
         const list = state[sec.id] || [];
         const errCount = list.filter((e) => val.errors.some((x) => x.screen === sec.id && x.entityId === e.id)).length;
-        if (list.length) li.querySelector("a").append(h("span", { class: "cnt", title: `${list.length} ${list.length === 1 ? sec.entity : sec.entity + "s"}` }, "\u00d7" + list.length));
-        if (list.length && list.length <= CHILD_LIMIT) {
-          list.forEach((e, i) => {
-            const est = val.errors.some((x) => x.screen === sec.id && x.entityId === e.id) ? "block" : "done";
-            ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id, e.id), "aria-current": route.screen === sec.id && route.entity === e.id ? "page" : null }, statusIcon(est), h("span", { class: "num" }, `${num}.${i + 1}`), h("span", null, entityLabel(sec.id, e, state)))));
-          });
-        } else if (list.length) {
-          ul.append(h("li", { class: "child" }, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && route.entity ? "page" : null },
-            statusIcon(errCount ? "block" : "done"),
-            h("span", null, `${list.length} ${sec.entity === "plot" ? ICL.dict.words().plot + "s" : sec.entity + "s"}`, errCount ? ` · ${errCount} to fix` : ""),
-            h("span", { class: "cnt", title: "Open the step to search and filter" }, "filter"))));
-        }
-        ul.append(h("li", { class: "child add" }, h("a", { href: ICL.router.hashFor(sec.id, "new") }, statusIcon("opt"), h("span", null, "+ Add " + (sec.entity === "plot" ? ICL.dict.words().plot : sec.entity)))));
+        const a = li.querySelector("a");
+        if (list.length) a.append(h("span", { class: "cnt", title: `${list.length} ${list.length === 1 ? sec.entity : sec.entity + "s"}${errCount ? `, ${errCount} to fix` : ""}` }, "\u00d7" + list.length));
       }
       // Sections that are part of this step (seasons, land) hang under it rather than
       // taking a step number of their own.
@@ -114,11 +101,24 @@
     const el = document.getElementById("topbar-scenario"); el.innerHTML = "";
     if (state.route.screen === "home" || state.route.screen === "feedback") return;
     const row = (state.library.scenarios || []).find((x) => x.id === state.meta.id);
-    const SC = { farm: "one farm", group: "group of farms", region: "region", national: "national herd" };
-    el.append(h("strong", { class: "chip", title: "Open scenario" }, state.meta.scenario_name || "Untitled scenario"),
-      h("span", { class: "chip", title: "Scale and size of the open scenario" }, SC[state.system.scale] || "one farm", row && row.headline ? " · " + row.headline : ""),
-      (() => { const copy = D.activeCopy(); const n = copy ? D.changeCount(copy) : 0; return h("span", { class: "chip c-db" }, copy ? "✎ " : "🔒 ", "Defaults from: ", copy ? copy.label + " (my copy" + (n ? `, ${n} change${n === 1 ? "" : "s"}` : "") + ")" : (state.meta.param_set || "—"), " ", h("a", { href: "#parameters" }, copy ? "edit" : "view")); })(),
-      h("span", { class: "chip" }, state.meta.project || "no project"));
+    const SC = { farm: "one enterprise", group: "group of enterprises", region: "region", national: "national herd" };
+    // Each chip says what it is, and its tooltip says how the things nest.
+    const NEST = "How it nests: project \u2192 scenarios \u2192 the herds, land and feeds described in each. A parameter set sits beside them and supplies the default values.";
+    const chip = (kind, label, value, title, cls, extra) => h("span", { class: "chip tb-chip" + (cls ? " " + cls : ""), title },
+      h("span", { class: "k" }, label), h("span", { class: "v" }, value), extra || null);
+    el.append(
+      chip("project", "Project", state.meta.project || "none",
+        `A project groups scenarios that belong together \u2014 one study, one district, one piece of work \u2014 and the people who may see them. Scenarios in a project can be compared with each other. ${NEST}`),
+      chip("scenario", "Scenario", state.meta.scenario_name || "Untitled",
+        `One complete description of one livestock enterprise for one year: the animals, the land that feeds them and their manure. A baseline describes things as they are; an intervention is a copy with something changed. ${NEST}`),
+      chip("scale", "Describes", (SC[state.system.scale] || "one enterprise") + (row && row.headline ? " \u00b7 " + row.headline : ""),
+        "What this scenario stands for, and its size. The same questions are asked from a household herd to a national one; only the numbers change. Set it on step 1."),
+      (() => {
+        const copy = D.activeCopy(); const n = copy ? D.changeCount(copy) : 0;
+        return chip("params", "Defaults from", (copy ? copy.label + " (my copy" + (n ? `, ${n} change${n === 1 ? "" : "s"}` : "") + ")" : (state.meta.param_set || "\u2014")),
+          "The parameter set: reference values this scenario starts from \u2014 animal weights, feed quality, soil factors. Shipped sets are read-only; a copy of one can be edited and shared with a project. Values you type always win over it.",
+          "c-db", [" ", h("a", { href: "#parameters" }, copy ? "edit" : "view")]);
+      })());
     document.getElementById("main").querySelector(".fb-banner") && null;
   }
 

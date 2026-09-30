@@ -115,6 +115,17 @@ small, .small { font-size: .85rem; color: var(--muted); }
 .filterchip.bad[aria-pressed="true"] { background: var(--danger); border-color: var(--danger); color: #fff; }
 .filterchip .cnt { background: var(--surface-2); border-radius: 999px; padding: 0 6px; font-size: .74rem; color: var(--muted); }
 .listfilter input[type="search"] { min-width: 220px; flex: 1; }
+.tb-chip .k { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; margin-right: 5px; }
+.tb-chip .v { font-weight: 600; }
+.tb-chip.c-db .k { color: inherit; opacity: .75; }
+.rec-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.rec-tab { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: .84rem; text-decoration: none; color: var(--text); background: var(--surface); }
+.rec-tab:hover { border-color: var(--prov-db); }
+.rec-tab.on { background: var(--prov-db); border-color: var(--prov-db); color: #fff; }
+.rec-tab.on .num { color: rgba(255,255,255,.8); }
+.rec-tab .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.rec-tab.add { border-style: dashed; color: var(--primary); }
+.rec-tab .badge { background: var(--danger); color: #fff; border-radius: 999px; padding: 0 6px; font-size: .72rem; }
 .dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 22px; text-align: center; display: grid; gap: 4px; margin-bottom: 10px; }
 .dropzone.over { border-color: var(--prov-db); background: var(--surface-2); }
 ul.problems { margin: 6px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; }

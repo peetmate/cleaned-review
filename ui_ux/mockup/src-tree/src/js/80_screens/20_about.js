@@ -1,4 +1,4 @@
-/* About this farm: system questions. */
+/* About this enterprise: system questions. */
 (function (ICL) {
   const { h } = ICL; const D = ICL.dict, C = ICL.cond; const { screenHead } = ICL.common;
   ICL.screens.about = function (root, { state }) {

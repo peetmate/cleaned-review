@@ -12,10 +12,17 @@
       if (collection === "animals" && !route.entity) root.append(ICL.common.variantsBox(["V1", "V2", "V5"], state));
       if (route.entity === "new") { root.append(addFlow(collection, state)); return; }
       const selected = route.entity ? list.find((e) => e.id === route.entity) : null;
-      if (selected) { root.append(card(collection, selected, state, val, true)); return; }
+      if (selected) {
+        root.append(recordTabs(collection, list, state, val, selected.id));
+        root.append(card(collection, selected, state, val, true));
+        root.append(recordNav(collection, list, selected));
+        return;
+      }
+      if (list.length) root.append(recordTabs(collection, list, state, val, null));
       // list view
       const noun = ICL.common.entityNoun(collection);
       if (collection === "seasons") root.append(seasonsOverview(state, val));
+      if (collection === "herds" && !route.entity) root.append(herdsExplainer(state));
       if (collection === "animals" && (state.ui.variant.V1 || "A") === "B") { root.append(animalsTable(state, val)); }
       else if (!list.length) root.append(h("div", { class: "empty" }, emptyText(collection, state), h("div", { style: "margin-top:10px" }, h("a", { class: "btn", href: ICL.router.hashFor(collection, "new") }, "+ Add " + noun))));
       else {
@@ -33,6 +40,50 @@
     };
   }
   const emptyText = (c, s) => ({ plots: `Add the first ${ICL.dict.words().plot} that grows feed or is grazed.`, seasons: "Add the first feeding period, or pick a template below.", herds: "Add a herd: animals kept together and managed the same way. One herd is enough for most enterprises.", animals: "Add the first group of animals, for example the milking cows.", feeds: "Add the first feed the animals eat, for example the grass they graze or are cut." }[c]);
+
+  /** How many herds an enterprise may have, and what the model actually receives. */
+  function herdsExplainer(state) {
+    const dup = {};
+    for (const a of state.animals) { const d = D.decorate(a, "animal", state); if (!d._desc) continue; (dup[d._desc] = dup[d._desc] || []).push(a); }
+    const shared = Object.entries(dup).filter(([, list]) => new Set(list.map((a) => a.herd_ref)).size > 1);
+    const box = h("div", { class: "callout", dataset: { fb: "herds:explainer", fbLabel: "What a herd is", noNumber: "" } },
+      h("strong", null, "As many herds as you keep. "),
+      ICL.t("A herd is animals kept together and managed the same way \u2014 one shed, one grazing pattern, one way of handling dung. Most {enterprise}s have one; separate the young stock, a second site or a zero-grazing unit into their own herd when they are managed differently. Herds are how you describe and check the enterprise; the model itself receives one row per animal type."),
+      h("div", { class: "small", style: "margin-top:6px" },
+        "That last point matters: if the same animal type appears in two herds, their hours, manure handling and diet are merged by head count before the model sees them, and the merge is listed on ",
+        h("a", { href: "#check" }, "Check & run"), ". Give the two groups different animal types, or describe them as two scenarios, when you need them kept apart in the results."));
+    if (shared.length) box.append(h("div", { class: "small", style: "margin-top:6px" },
+      h("span", { class: "chip", style: "color:var(--warn);border-color:var(--warn)" }, "merging"), " ",
+      shared.map(([desc, list]) => `${D.livetypeLabel(desc)} is in ${new Set(list.map((a) => a.herd_ref)).size} herds (${list.map((a) => ICL.fmt(a.herd_n || 0, 0)).join(" + ")} head)`).join(" \u00b7 "), "."));
+    return box;
+  }
+
+  // ---- record tabs -------------------------------------------------------------
+  /** One tab per record, so moving between feeds or animals happens on the page
+      rather than in the sidebar, which has to stay a map of the steps. */
+  function recordTabs(collection, list, state, val, currentId) {
+    const wrap = h("div", { class: "rec-tabs", role: "tablist", "aria-label": ICL.common.entityNoun(collection) + " list", dataset: { fb: "tabs:" + collection, fbLabel: "Record tabs: " + collection, noNumber: "" } });
+    const num = ICL.num.prefix(collection);
+    list.forEach((e, i) => {
+      const errs = val.errors.filter((x) => x.screen === collection && x.entityId === e.id).length;
+      wrap.append(h("a", { class: "rec-tab" + (e.id === currentId ? " on" : ""), role: "tab", "aria-selected": String(e.id === currentId), href: ICL.router.hashFor(collection, e.id) },
+        num ? h("span", { class: "num" }, `${num}.${i + 1}`) : null,
+        h("span", null, ICL.layout.entityLabel(collection, e, state)),
+        errs ? h("span", { class: "badge" }, String(errs)) : null));
+    });
+    wrap.append(h("a", { class: "rec-tab add", href: ICL.router.hashFor(collection, "new") }, "+ Add"));
+    if (currentId) wrap.append(h("a", { class: "rec-tab", href: ICL.router.hashFor(collection) }, "All " + (list.length > 1 ? ICL.common.entityNoun(collection) + "s" : ICL.common.entityNoun(collection))));
+    return wrap;
+  }
+  /** Previous / next within the collection, for keyboard and for long lists. */
+  function recordNav(collection, list, selected) {
+    const i = list.findIndex((e) => e.id === selected.id);
+    const prev = list[i - 1], next = list[i + 1];
+    return h("div", { class: "control", style: "margin-top:10px" },
+      prev ? h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, prev.id) }, "\u2190 " + ICL.layout.entityLabel(collection, prev, ICL.store.get())) : null,
+      h("span", { class: "small" }, `${i + 1} of ${list.length}`),
+      next ? h("a", { class: "btn-sm", href: ICL.router.hashFor(collection, next.id) }, ICL.layout.entityLabel(collection, next, ICL.store.get()) + " \u2192") : null);
+  }
 
   // ---- filtering and compact lists ---------------------------------------------
   const FILTERABLE = { feeds: true, animals: true, plots: true };

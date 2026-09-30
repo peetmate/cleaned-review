@@ -183,12 +183,13 @@
    "options": [
     {
      "value": "farm",
-     "label": "One farm or household"
+     "label": "One enterprise (a household or a farm)",
+     "definition": "One herd, the land that feeds it and its manure. Crops that are not fed to the animals stay outside."
     },
     {
      "value": "group",
-     "label": "A group of farms (village, cooperative, project)",
-     "definition": "Enter totals or a typical farm and say how many it represents."
+     "label": "A group of enterprises (village, cooperative, project)",
+     "definition": "Enter totals, or one typical enterprise and how many it represents."
     },
     {
      "value": "region",
@@ -204,7 +205,7 @@
   },
   {
    "id": "species",
-   "label": "Which animals does this {farm} keep?",
+   "label": "Which animals does this {enterprise} keep?",
    "type": "multichip",
    "options": [
     {
@@ -270,13 +271,13 @@
   },
   {
    "id": "buysFeed",
-   "label": "Do you buy or collect any feed from outside the {farm}?",
+   "label": "Do you buy or collect any feed from outside the {enterprise}?",
    "type": "yesno",
    "help": "Bought concentrate or hay, or grass cut from roadsides and communal land."
   },
   {
    "id": "buysInputs",
-   "label": "Do you bring manure, compost or bedding onto the {farm} from outside?",
+   "label": "Do you bring manure, compost or bedding in from outside the {enterprise}?",
    "type": "yesno",
    "help": null
   },
@@ -344,7 +345,7 @@
   },
   {
    "value": "night_shed",
-   "label": "Shed at night, grazing on the {farm} by day",
+   "label": "Shed at night, grazing {onfarm} by day",
    "hours": {
     "stable": 12,
     "pen": 0,
@@ -354,7 +355,7 @@
   },
   {
    "value": "mostly_grazing",
-   "label": "Mostly grazing on the {farm}",
+   "label": "Mostly grazing {onfarm}",
    "hours": {
     "stable": 6,
     "pen": 0,
@@ -364,7 +365,7 @@
   },
   {
    "value": "offfarm",
-   "label": "Grazing off the {farm} (communal land) part of the time",
+   "label": "Grazing {offfarm} part of the time",
    "hours": {
     "stable": 12,
     "pen": 0,
@@ -588,9 +589,9 @@
    "section": "location",
    "entity": "farm",
    "group": "Where",
-   "label": "How many farms does this scenario represent?",
-   "unit": "farms",
-   "definition": "Enter the herd and land as totals across the group, or as one typical farm and give the number it stands for.",
+   "label": "How many enterprises does this scenario represent?",
+   "unit": "enterprises",
+   "definition": "Enter the herd and land as totals across the group, or as one typical enterprise and give the number it stands for.",
    "type": "integer",
    "min": 1,
    "max": 10000000,
@@ -1284,7 +1285,7 @@
    "entity": "herd",
    "label": "Herd name",
    "type": "text",
-   "help": "For example 'Dairy herd' or 'Young stock at the hill farm'.",
+   "help": "For example “Dairy herd” or “Young stock at the hill grazing”.",
    "required_if": "always",
    "na_policy": "block",
    "package_field": "_meta.herd",
@@ -2154,7 +2155,7 @@
    "options": [
     {
      "value": "grown",
-     "label": "Grown on this farm",
+     "label": "Grown on land you manage",
      "visible_if": {
       "path": "system.growsFeed",
       "eq": true
@@ -2170,7 +2171,7 @@
     },
     {
      "value": "collected",
-     "label": "Collected off the farm",
+     "label": "Collected off your land",
      "definition": "Roadsides, communal land, neighbours' fields.",
      "visible_if": {
       "path": "system.buysFeed",
@@ -3212,26 +3213,26 @@
  },
  "scaleWords": {
   "farm": {
-   "farm": "farm",
+   "farm": "enterprise",
    "plot": "plot",
-   "onfarm": "on the farm",
-   "offfarm": "off the farm (communal land)",
-   "location": "Farm location",
+   "onfarm": "on your own land",
+   "offfarm": "off your land (communal or rented)",
+   "location": "Where the enterprise is",
    "numbers": "How many animals in this group?",
-   "about": "farm",
-   "gate": "farm gate",
-   "enterprise": "farm"
+   "about": "enterprise",
+   "gate": "enterprise gate",
+   "enterprise": "enterprise"
   },
   "group": {
-   "farm": "group of farms",
+   "farm": "group of enterprises",
    "plot": "typical plot",
-   "onfarm": "on the farms",
+   "onfarm": "on their own land",
    "offfarm": "on communal land",
-   "location": "Where the farms are",
-   "numbers": "How many animals in this group, across all the farms?",
-   "about": "group of farms",
-   "gate": "farm gate",
-   "enterprise": "group of farms"
+   "location": "Where the enterprises are",
+   "numbers": "How many animals in this group, across all the enterprises?",
+   "about": "group of enterprises",
+   "gate": "producer gate",
+   "enterprise": "group of enterprises"
   },
   "region": {
    "farm": "region",
