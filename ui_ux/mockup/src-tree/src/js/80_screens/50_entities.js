@@ -50,8 +50,10 @@
       h("strong", null, "As many herds as you keep. "),
       ICL.t("A herd is animals kept together and managed the same way \u2014 one shed, one grazing pattern, one way of handling dung. Most {enterprise}s have one; separate the young stock, a second site or a zero-grazing unit into their own herd when they are managed differently. Herds are how you describe and check the enterprise; the model itself receives one row per animal type."),
       h("div", { class: "small", style: "margin-top:6px" },
-        "That last point matters: if the same animal type appears in two herds, their hours, manure handling and diet are merged by head count before the model sees them, and the merge is listed on ",
-        h("a", { href: "#check" }, "Check & run"), ". Give the two groups different animal types, or describe them as two scenarios, when you need them kept apart in the results."));
+        "That last point matters, and it is a limit of the model rather than of this screen: the model keeps ",
+        h("strong", null, "one row per animal type"), ", so if the same type appears in two herds their hours, manure handling and diet are merged by head count before it is sent, and the merge is listed on ",
+        h("a", { href: "#check" }, "Check & run"), ". Sending the two rows unmerged makes the model stop with an error, so merging is not a choice we have. ",
+        "To keep two groups apart in the results, give them different animal types, or describe them as two scenarios and compare."));
     if (shared.length) box.append(h("div", { class: "small", style: "margin-top:6px" },
       h("span", { class: "chip", style: "color:var(--warn);border-color:var(--warn)" }, "merging"), " ",
       shared.map(([desc, list]) => `${D.livetypeLabel(desc)} is in ${new Set(list.map((a) => a.herd_ref)).size} herds (${list.map((a) => ICL.fmt(a.herd_n || 0, 0)).join(" + ")} head)`).join(" \u00b7 "), "."));
