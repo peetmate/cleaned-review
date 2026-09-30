@@ -29,7 +29,7 @@
     document.getElementById("btn-preview").setAttribute("aria-pressed", String(!!state.ui.previewOpen));
     const fbCounts = {}; for (const d of state.fb.docs || []) fbCounts[d.screen] = (fbCounts[d.screen] || 0) + 1;
     const cnt = document.getElementById("fb-count"); cnt.textContent = String((state.fb.docs || []).length); cnt.hidden = !(state.fb.docs || []).length;
-    ICL.layout.renderTopbar(state); ICL.layout.renderSidebar(state, val, fbCounts); ICL.layout.renderWizardBar(state, val); if (state.ui.previewOpen) ICL.layout.renderPreview(state, compiled); ICL.layout.renderRating(state, state.route.screen);
+    ICL.layout.renderTopbar(state); ICL.layout.renderTopnav(state, val, fbCounts); ICL.layout.renderSidebar(state, val, fbCounts); ICL.layout.renderWizardBar(state, val); if (state.ui.previewOpen) ICL.layout.renderPreview(state, compiled); ICL.layout.renderRating(state, state.route.screen);
     const screen = document.getElementById("screen");
     const key = JSON.stringify(state.route);
     const active = document.activeElement; const focusKey = active && screen.contains(active) ? focusKeyOf(active, screen) : null; const scrollY = window.scrollY;

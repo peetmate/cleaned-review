@@ -7,7 +7,8 @@
    "short": "Welcome",
    "purpose": "What iCLEANED does and what you will be asked.",
    "order": -1,
-   "wizard": false
+   "wizard": false,
+   "group": "help"
   },
   {
    "id": "home",
@@ -15,7 +16,8 @@
    "short": "Home",
    "purpose": "A scenario is one complete description of a livestock enterprise for one year. Open one, copy one, or start a new one.",
    "order": 0,
-   "wizard": false
+   "wizard": false,
+   "group": "scenarios"
   },
   {
    "id": "about",
@@ -23,7 +25,8 @@
    "short": "Your system",
    "purpose": "A few questions about what you keep and how, so we only ask what applies to you.",
    "order": 1,
-   "wizard": true
+   "wizard": true,
+   "group": "describe"
   },
   {
    "id": "location",
@@ -31,7 +34,8 @@
    "short": "Place & land",
    "purpose": "Where the animals are, what the year looks like there, and the land that feeds them.",
    "order": 2,
-   "wizard": true
+   "wizard": true,
+   "group": "describe"
   },
   {
    "id": "boundary",
@@ -39,7 +43,8 @@
    "short": "What we count",
    "purpose": "Background: where the enterprise starts and stops, and what stays outside it.",
    "order": 18,
-   "wizard": false
+   "wizard": false,
+   "group": "help"
   },
   {
    "id": "plots",
@@ -53,7 +58,8 @@
     "path": "system.growsFeed",
     "eq": true
    },
-   "parent": "location"
+   "parent": "location",
+   "group": "describe"
   },
   {
    "id": "seasons",
@@ -63,7 +69,8 @@
    "order": 4,
    "wizard": false,
    "entity": "season",
-   "parent": "location"
+   "parent": "location",
+   "group": "describe"
   },
   {
    "id": "herds",
@@ -72,7 +79,8 @@
    "purpose": "Group animals that are kept together and managed the same way.",
    "order": 6,
    "wizard": true,
-   "entity": "herd"
+   "entity": "herd",
+   "group": "describe"
   },
   {
    "id": "animals",
@@ -81,7 +89,8 @@
    "purpose": "Describe each group of animals separately, because they eat and produce differently.",
    "order": 7,
    "wizard": true,
-   "entity": "animal"
+   "entity": "animal",
+   "group": "describe"
   },
   {
    "id": "feeds",
@@ -90,7 +99,8 @@
    "purpose": "List every feed the animals eat during the year, where it comes from and how it is grown.",
    "order": 8,
    "wizard": true,
-   "entity": "feed"
+   "entity": "feed",
+   "group": "describe"
   },
   {
    "id": "fertiliser",
@@ -102,7 +112,8 @@
    "visible_if": {
     "path": "system.fertiliser",
     "eq": true
-   }
+   },
+   "group": "describe"
   },
   {
    "id": "inputs",
@@ -114,7 +125,8 @@
    "visible_if": {
     "path": "system.buysInputs",
     "eq": true
-   }
+   },
+   "group": "describe"
   },
   {
    "id": "feeding",
@@ -122,7 +134,8 @@
    "short": "Feeding",
    "purpose": "For each animal group, what share of what they eat in this season comes from each feed?",
    "order": 11,
-   "wizard": true
+   "wizard": true,
+   "group": "describe"
   },
   {
    "id": "losses",
@@ -131,7 +144,8 @@
    "purpose": "Optional: milk and meat lost between the producer and the consumer.",
    "order": 12,
    "wizard": true,
-   "optional": true
+   "optional": true,
+   "group": "describe"
   },
   {
    "id": "check",
@@ -139,15 +153,17 @@
    "short": "Check",
    "purpose": "Fix anything blocking, review what we assumed, then run.",
    "order": 13,
-   "wizard": true
+   "wizard": true,
+   "group": "describe"
   },
   {
    "id": "results",
    "title": "Results",
    "short": "Results",
-   "purpose": "Results will appear here after running.",
+   "purpose": "What the description means for land, water, soil, nitrogen and greenhouse gases.",
    "order": 14,
-   "wizard": false
+   "wizard": false,
+   "group": "results"
   },
   {
    "id": "parameters",
@@ -155,7 +171,8 @@
    "short": "Parameters",
    "purpose": "The reference values this scenario starts from. Shipped sets are read-only; make your own copy to change values.",
    "order": 15,
-   "wizard": false
+   "wizard": false,
+   "group": "parameters"
   },
   {
    "id": "batch",
@@ -163,7 +180,8 @@
    "short": "Batch processing",
    "purpose": "Check, compile and summarise many enterprises at once from a spreadsheet or a JSON file.",
    "order": 16,
-   "wizard": false
+   "wizard": false,
+   "group": "batch"
   },
   {
    "id": "help",
@@ -171,7 +189,17 @@
    "short": "Help & FAQ",
    "purpose": "Common questions, what to do when you are stuck, and how to reach the team.",
    "order": 17,
-   "wizard": false
+   "wizard": false,
+   "group": "help"
+  },
+  {
+   "id": "features",
+   "title": "Feature requests",
+   "short": "Feature requests",
+   "purpose": "What is queued, what is being built, and what you have asked for.",
+   "order": 19,
+   "wizard": false,
+   "group": "features"
   }
  ],
  "systemQuestions": [
@@ -3256,5 +3284,49 @@
    "gate": "producer",
    "enterprise": "national herd"
   }
- }
+ },
+ "navGroups": [
+  {
+   "id": "scenarios",
+   "label": "Scenarios",
+   "home": "home",
+   "hint": "Open, copy, compare and share scenarios."
+  },
+  {
+   "id": "describe",
+   "label": "Describe",
+   "home": "about",
+   "hint": "The ten steps that describe one enterprise."
+  },
+  {
+   "id": "results",
+   "label": "Results",
+   "home": "results",
+   "hint": "Indicators for the open scenario, and comparison."
+  },
+  {
+   "id": "batch",
+   "label": "Batch processing",
+   "home": "batch",
+   "hint": "Many enterprises at once from a spreadsheet."
+  },
+  {
+   "id": "parameters",
+   "label": "Parameters",
+   "home": "parameters",
+   "hint": "Every default value and where it comes from."
+  },
+  {
+   "id": "features",
+   "label": "Feature requests",
+   "home": "features",
+   "hint": "The queue of what is coming next."
+  },
+  {
+   "id": "help",
+   "label": "Help",
+   "home": "help",
+   "hint": "FAQ, background and contact."
+  }
+ ]
 }

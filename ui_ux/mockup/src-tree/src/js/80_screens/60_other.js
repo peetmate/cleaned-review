@@ -115,29 +115,6 @@
   };
   const tile = (n, l, color) => h("div", { class: "tile" }, h("b", { style: color ? `color:${color}` : "" }, String(n)), h("span", { class: "small" }, l));
 
-  ICL.screens.results = function (root, { state, compiled }) {
-    root.append(screenHead(D.section("results")));
-    root.append(ICL.common.disclaimer({ where: "results", short: true }));
-    root.append(h("div", { class: "callout", dataset: { fb: "results:what", fbLabel: "Where results come from", noNumber: "" } },
-      h("strong", null, "This mockup does not run the model. "),
-      "In the real app, Check & run sends the description you built to the ", h("em", null, "cleaned"), " model and the answers land on this screen: greenhouse gases, land needed, water, soil loss and the nitrogen balance, per hectare and per kilogram of milk, with a link from every number back to the inputs that drive it. ",
-      "What the mockup can show you now is exactly what would be sent \u2014 see ", h("a", { href: "#check" }, "Check & run"), "."));
-    const tabs = h("div", { class: "tabs" }); for (const t of ["Emissions", "Land", "Water", "Soil", "Nitrogen", "Compare"]) tabs.append(h("button", { type: "button", role: "tab", "aria-selected": String(t === "Emissions"), onclick: () => ICL.toast(`Mocked: the ${t} tab would show the model output plus the assumptions behind it.`) }, t));
-    root.append(tabs);
-    // What we can state without the model: the size of what was described.
-    const head = state.animals.reduce((t, a) => t + (Number(a.herd_n) || 0), 0);
-    const area = state.plots.reduce((t, p) => t + (Number(p.plot_area_ha) || 0), 0);
-    const milk = (compiled && compiled.input && compiled.input.livestock || []).reduce((t, l) => t + (Number(l.annual_milk) || 0) * (Number(l.herd_composition) || 0), 0);
-    root.append(h("div", { class: "tile-row", dataset: { fb: "results:size", fbLabel: "Size of the description" } },
-      tile(ICL.fmt(head, 0), "animals"), tile(ICL.fmt(area, area < 100 ? 1 : 0), "ha of land"),
-      tile(ICL.fmt(milk, 0), "kg of milk a year"), tile(state.herds.length, state.herds.length === 1 ? "herd" : "herds"),
-      tile(state.feeds.length, "feeds"), tile(state.seasons.length, state.seasons.length === 1 ? "season" : "seasons")));
-    root.append(h("p", { class: "small" }, "These are your inputs added up, not model results \u2014 they are here so you can check the scale of what you described before running. Milk is the annual figure the model would receive for the whole herd."));
-    root.append(h("div", { class: "empty", dataset: { fb: "results:placeholder", fbLabel: "Results placeholder" } },
-      h("p", null, "Which result would you want to see first, and in what unit?"),
-      h("p", { class: "small" }, "Turn on Comment at the bottom right and tell us here \u2014 this screen is deliberately empty so the workshop decides what goes on it.")));
-  };
-
   // ---- parameter set -----------------------------------------------------------
   const TABLES = {
     "Animal types": { table: "livetype", cols: [["desc", "Group", "text"], ["body_weight", "Weight kg"], ["adult_weight", "Adult kg"], ["fat_milkcontent", "Milk fat %"], ["protein_milkcontent", "Milk protein %"], ["birth_interval", "Calving interval yr"], ["n_manure_content", "Manure N kg/kg"], ["ipcc_meth_man_category", "IPCC manure class", "locked"]], note: "Starting values for each animal group. Body weights can also be overridden per group on its card." },

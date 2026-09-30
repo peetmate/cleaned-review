@@ -33,15 +33,64 @@
     return e.id;
   }
 
+  const groups = () => window.ICL_SCHEMA.navGroups || [];
+  // Tabs that live inside a single-screen section, surfaced in the sidebar.
+  const SUBNAV = {
+    results: (state) => ({ path: "ui.resultsTab", current: state.ui.resultsTab || "summary", route: "results",
+      items: [["summary", "Summary"], ["ghg", "Greenhouse gases"], ["land", "Land & feed"], ["water", "Water"], ["nitrogen", "Nitrogen"], ["compare", "Compare"]] }),
+    batch: (state) => (state.batch && state.batch.rows && state.batch.rows.length
+      ? { path: "batch.tab", current: (state.batch || {}).tab || "check", route: "batch",
+          items: [["check", "QAQC check", state.batch.rows.length], ["viz", "Visualise the batch"], ["export", "Download"]] }
+      : null),
+    scenarios: (state) => ({ path: "ui.homeTab", current: state.ui.homeTab || "mine", route: "home",
+      items: [["mine", "My scenarios", (state.library.scenarios || []).filter((x) => x.owner === "you" && !x.template).length],
+              ["shared", "Shared with me", (state.library.scenarios || []).filter((x) => x.owner !== "you" && !x.template).length],
+              ["templates", "Templates", (state.library.scenarios || []).filter((x) => x.template).length]] }),
+    parameters: (state) => ({ path: "ui.paramTab", current: state.ui.paramTab || "Animal types", route: "parameters",
+      items: [["Animal types", "Animal types"], ["Feeds & crops", "Feeds & crops"], ["Soils & slopes", "Soils & slopes"], ["Land cover", "Land cover"], ["Fertilisers", "Fertilisers"], ["Manure systems", "Manure systems"], ["Land-use factors", "Land-use factors"], ["Fixed constants", "Fixed constants"], ["Propose a change", "Propose a change"]] }),
+    features: (state) => ({ path: "ui.featureFilter", current: state.ui.featureFilter || "open", route: "features",
+      items: [["open", "Open requests"], ["shipped", "Already in the mockup"], ["all", "Everything"]] }),
+  };
+  const groupOf = (screenId) => { const sec = D.section(screenId); return (sec && sec.group) || (screenId === "feedback" ? "help" : "describe"); };
+
+  /** Major sections across the top; the sidebar is then only the sub-sections of one. */
+  function renderTopnav(state, val, fbCounts) {
+    const nav = document.getElementById("topnav"); if (!nav) return;
+    nav.innerHTML = "";
+    const cur = groupOf(state.route.screen);
+    for (const g of groups()) {
+      const secs = D.sections().filter((x) => x.group === g.id);
+      const errs = val.errors.filter((e) => secs.some((x) => x.id === e.screen)).length;
+      const a = h("a", { class: "topnav-tab" + (g.id === cur ? " on" : ""), href: "#" + g.home, title: g.hint,
+        "aria-current": g.id === cur ? "page" : null, dataset: { fb: "nav:group:" + g.id, fbLabel: "Section: " + g.label } },
+        h("span", null, g.label));
+      if (g.id === "describe") {
+        const done = D.sections().filter((x) => x.wizard && C.sectionVisible(x, state) && statusFor(x.id, state, val) === "done").length;
+        a.append(h("span", { class: "cnt" }, `${done}/${ICL.num.totalSteps()}`));
+      }
+      if (errs) a.append(h("span", { class: "badge" }, String(errs)));
+      if (g.id === "features") { const n = (state.features || []).filter((f) => f.status !== "shipped").length; if (n) a.append(h("span", { class: "cnt" }, String(n))); }
+      nav.append(a);
+    }
+    const fbN = (state.fb.docs || []).length;
+    nav.append(h("a", { class: "topnav-tab side" + (state.route.screen === "feedback" ? " on" : ""), href: "#feedback", title: "Everything reported in this session" },
+      h("span", null, "\u270e Feedback"), fbN ? h("span", { class: "cnt" }, String(fbN)) : null));
+  }
+
   function renderSidebar(state, val, fbCounts) {
     const nav = document.getElementById("sidebar-nav"); nav.innerHTML = "";
     const ul = h("ul");
     const route = state.route;
     const assumedBy = {}; for (const a of val.assumptions) assumedBy[a.screen] = (assumedBy[a.screen] || 0) + 1;
     const CHILDREN = {}; for (const sec of D.sections()) if (sec.parent) (CHILDREN[sec.parent] = CHILDREN[sec.parent] || []).push(sec);
-    for (const sec of D.sections()) {
-      if (sec.id === "results" || sec.parent || REFERENCE.includes(sec.id)) continue;
-      if (sec.id === "parameters") ul.append(h("li", { class: "sep" }), h("li", { class: "grp" }, "Tools and reference"));
+    const cur = groupOf(state.route.screen);
+    const g = groups().find((x) => x.id === cur);
+    const inGroup = D.sections().filter((x) => x.group === cur && !x.parent);
+    ul.append(h("li", { class: "grp" }, g ? g.label : "Steps"));
+    if (g && g.hint) ul.append(h("li", { class: "grp-hint" }, g.hint));
+    const hideSelf = inGroup.length === 1 && !!SUBNAV[cur];
+    for (const sec of inGroup) {
+      if (sec.parent || hideSelf) continue;
       const st = statusFor(sec.id, state, val);
       const num = ICL.num.prefix(sec.id);
       const li = h("li", null, h("a", { href: ICL.router.hashFor(sec.id), "aria-current": route.screen === sec.id && !route.entity ? "page" : null, title: statusText[st], dataset: { fb: "nav:" + sec.id, fbLabel: "Step: " + ICL.t(sec.title) } }, statusIcon(st), num ? h("span", { class: "num" }, num + ".") : null, h("span", null, ICL.t(sec.short || sec.title)), assumedBy[sec.id] ? h("span", { class: "cnt", title: `${assumedBy[sec.id]} assumed values` }, `≈${assumedBy[sec.id]}`) : null, fbCounts && fbCounts[sec.id] ? h("span", { class: "fbc", title: "feedback items" }, fbCounts[sec.id]) : null));
@@ -67,11 +116,19 @@
           list.length ? h("span", { class: "cnt", title: `${list.length} in this step` }, "\u00d7" + list.length) : null)));
       }
     }
-    ul.append(h("li", null, h("a", { href: "#feedback" }, statusIcon("opt"), h("span", null, "Feedback dashboard"))));
-    ul.append(h("li", { class: "sep" }),
-      h("li", null, h("a", { href: "#welcome" }, statusIcon("opt"), h("span", null, "What is iCLEANED?"))),
-      h("li", null, h("a", { href: "#boundary" }, statusIcon("opt"), h("span", null, ICL.t(D.section("boundary").short || "What we count")))),
-      h("li", null, h("a", { href: "#help" }, statusIcon("opt"), h("span", null, "Help, FAQ and contact"))));
+    // A group that is one screen has sub-sections inside the page: put its tabs in the
+    // sidebar, so the sidebar is always the level below the horizontal nav.
+    const sub = SUBNAV[cur] && SUBNAV[cur](state);
+    if (sub) {
+      for (const [key, label, count] of sub.items) {
+        const on = sub.current === key;
+        ul.append(h("li", { class: hideSelf ? "" : "child" }, h("a", { href: "#" + (g ? g.home : ""), "aria-current": on ? "true" : null,
+          onclick: (ev) => { ev.preventDefault(); ICL.store.update(sub.path, key); if (state.route.screen !== sub.route) ICL.router.go(sub.route); } },
+          statusIcon(on ? "done" : "opt"), h("span", null, label), count != null ? h("span", { class: "cnt" }, String(count)) : null)));
+      }
+    }
+    if (cur === "describe") ul.append(h("li", { class: "sep" }), h("li", null, h("a", { href: "#results" }, statusIcon("opt"), h("span", null, "See the results \u2192"))));
+    if (cur === "help") ul.append(h("li", { class: "sep" }), h("li", null, h("a", { href: "#feedback" }, statusIcon("opt"), h("span", null, "Feedback dashboard"))));
     nav.append(ul);
   }
 
@@ -178,5 +235,5 @@
     body.append(h("span", null, "How clear is this screen? ", h("small", null, "1 = confusing, 5 = very clear")), scale, h("span", null, "Would you know what to enter here?"), know);
   }
 
-  ICL.layout = { renderDraft, renderSidebar, renderWizardBar, renderTopbar, renderPreview, renderRating, wizardOrder, statusFor, entityLabel };
+  ICL.layout = { renderDraft, renderTopnav, renderSidebar, renderWizardBar, renderTopbar, renderPreview, renderRating, wizardOrder, statusFor, entityLabel };
 })(window.ICL);
