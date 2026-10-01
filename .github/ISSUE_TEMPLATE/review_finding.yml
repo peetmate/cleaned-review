@@ -1,0 +1,29 @@
+name: Review finding
+description: A defect or risk found in the package, the app or the mockup during review work.
+title: "[finding] "
+labels: ["review"]
+body:
+  - type: textarea
+    id: finding
+    attributes:
+      label: The finding
+      description: What is wrong, with file:line or screen if you have it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: How it was confirmed. Say if it is unverified.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: [blocker, high, medium, low]
+  - type: input
+    id: ref
+    attributes:
+      label: Existing reference
+      placeholder: "UX-89, or a section of md/ui_ux/01_uiux_review.md"

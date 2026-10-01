@@ -4,6 +4,8 @@ Observers fill in one block per issue during the session. The facilitator triage
 
 ## Where issues go (routing)
 
+> **Update, 2026-10-01.** Feedback on the **redesign mockup** no longer needs this routing: it files itself to `peetmate/cleaned-review`, either one click at a time from the Feedback screen or in bulk with `ui_ux/mockup/tools/file_feedback_issues.mjs`. That repository now has its own issue templates. The routing below still applies to findings about the **live app and the package**, which belong upstream.
+
 The GitHub issue forms (`bug_report.yml`, `data_issue.yml`, `feature_request.yml`, `question.yml`, with `blank_issues_enabled: false`) currently exist in the **CIAT/cleaned** package repository. The web app lives in a separate repository, **CIAT/icleaned**, which has no issue templates. The package forms are written for R users. The bug form **requires** a component from the package-function list, an R reproducible example, and `packageVersion("cleaned")`, and workshop participants cannot supply any of those.
 
 Route each issue as follows:

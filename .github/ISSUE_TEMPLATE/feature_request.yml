@@ -1,0 +1,28 @@
+name: Feature request
+description: Something the tool should be able to do and cannot.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it do
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: The decision or task it unblocks. This is the part that usually gets lost.
+    validations:
+      required: true
+  - type: dropdown
+    id: segment
+    attributes:
+      label: Which user segment needs it most
+      options: [research networks, implementing partners, advisory services, government institutions, all of them, not sure]
+  - type: dropdown
+    id: size
+    attributes:
+      label: Rough size, if you can judge
+      options: ["days", "weeks", "months", "no idea"]

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A problem with the cleaned R package itself
+    url: https://github.com/CIAT/cleaned/issues
+    about: Wrong or implausible model results, package data, emission factors. File upstream, not here.
+  - name: A problem with the live iCLEANED Shiny app
+    url: https://github.com/CIAT/icleaned/issues
+    about: The deployed app at icleaned.alliance.cgiar.org. File upstream, not here.

@@ -4,8 +4,12 @@ Review of the `cleaned` R package and the iCLEANED app, plus a clickable redesig
 
 ## What is here
 
+**Start every session by reading `STATE.md`** — what exists, what is deployed where, and what is in flight. Then `BACKLOG.md` for what is open. **End every session by updating both.** A session that leaves them stale costs the next one an hour.
+
 | Path | What it is |
 |---|---|
+| `STATE.md` | Where the work stands right now. The only file that claims to be current |
+| `BACKLOG.md` | Index of the open issues, and which of them a session cannot do alone |
 | `00_summary.md` … `09_*.md` | The package review: findings, critical tests, fix log, demo, scoping notes |
 | `ui_ux/01_uiux_review.md` | 88-finding UI/UX review of the live Shiny app (UX-nn ids) |
 | `ui_ux/02_workshop_script.md` | Facilitator run sheet for the user-testing workshop |
@@ -17,12 +21,24 @@ Review of the `cleaned` R package and the iCLEANED app, plus a clickable redesig
 | `funding/` | **Local only, never published.** Record templates and archived searches |
 | `site/` | A stale, dirty clone. **Do not use it** (see below) |
 
+## Issues
+
+Work is tracked as issues on `peetmate/cleaned-review`, with templates in `.github/ISSUE_TEMPLATE/`:
+
+- **Anything you can finish yourself: do it, do not file it.**
+- Anything needing a person — a decision, an access right, a conversation: file it and label it `needs-a-person`, saying exactly what is needed from whom.
+- Anything found while doing something else: file it rather than widening the change you are in.
+- Labels: `blocker` · `review` · `mockup` · `package` · `workshop-feedback` · `needs-a-person` · `enhancement` · `documentation`.
+
+Mockup feedback files itself: the Feedback screen has a per-item "File as issue" link, and `ui_ux/mockup/tools/file_feedback_issues.mjs` files a whole export through the `gh` CLI. Neither ships a token — see the note in that script about why there is no silent submit.
+
 ## Rules that are not negotiable
 
 1. **Never publish funding or fundraising content in the tool or the site.** No instruments, no budget lines, no target-organisation lists, no demand-evidence arguments. That material lives in `funding/` locally and stays there. The tool describes what it does for the people using it.
 2. **Do not file issues on `CIAT/cleaned` or `CIAT/icleaned`.** Findings stay in this repository until the team decides otherwise.
 3. **Do not commit or push from `cleaned_review/site/`.** It is many commits behind with uncommitted work in it and pushing from it would clobber that. Work from a fresh clone of `peetmate/cleaned-review`.
 4. **Read a file before overwriting it.** Several documents here are long, hand-written and not reconstructible from the mockup.
+5. **Never ship a credential to the browser.** The mockup is a static page; anything in it is public. This is why feedback reaches GitHub through a prefilled link or a CLI script run by a person, and not through a token in the page.
 
 ## Shipping a change to the mockup
 

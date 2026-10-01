@@ -1,0 +1,32 @@
+name: Mockup feedback
+description: Something in the redesign mockup is confusing, missing, wrong or good. Usually filed automatically from the mockup's Feedback screen.
+title: "[mockup] "
+labels: ["workshop-feedback"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, in your words
+      placeholder: Quote the numbered heading if you can, e.g. "7.1.2 Numbers".
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Screen and numbered element
+      placeholder: "animals · 7.1.2 Numbers"
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [confusing, missing, wrong unit or value, bug, not needed, works well]
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: ["blocker — cannot continue", "high — wrong data likely", "low — annoyance"]
+  - type: input
+    id: build
+    attributes:
+      label: Build stamp
+      placeholder: "v0.9.3 · 2026-10-01 09:12 (shown in the header)"
